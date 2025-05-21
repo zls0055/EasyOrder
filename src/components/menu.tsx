@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Dish } from '@/types';
@@ -31,10 +32,10 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
           <Card key={dish.id} className="flex flex-col justify-between shadow-md hover:shadow-xl transition-shadow duration-300">
             <CardHeader>
               <div className="relative w-full h-40 mb-2 rounded-md overflow-hidden">
-                <Image 
-                  src={`https://placehold.co/400x300.png?text=${encodeURIComponent(dish.name)}`} 
-                  alt={dish.name} 
-                  layout="fill" 
+                <Image
+                  src="https://placehold.co/400x300.png"
+                  alt={dish.name}
+                  layout="fill"
                   objectFit="cover"
                   data-ai-hint="food cuisine"
                 />
