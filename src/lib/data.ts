@@ -1,14 +1,14 @@
 import type { Dish, Table } from '@/types';
 
 export const initialDishes: Dish[] = [
-  { id: 'dish-1', name: 'Kung Pao Chicken', price: 15.99 },
-  { id: 'dish-2', name: 'Mapo Tofu (Vegetarian)', price: 12.50 },
-  { id: 'dish-3', name: 'Sweet and Sour Pork', price: 16.00 },
-  { id: 'dish-4', name: 'Spring Rolls (4 pcs)', price: 6.50 },
-  { id: 'dish-5', name: 'Steamed Rice', price: 2.00 },
-  { id: 'dish-6', name: 'Wonton Soup', price: 7.00 },
-  { id: 'dish-7', name: 'Beef with Broccoli', price: 17.50 },
-  { id: 'dish-8', name: 'Vegetable Stir-fry', price: 11.00 },
+  { id: 'dish-1', name: '宫保鸡丁', price: 15.99 },
+  { id: 'dish-2', name: '麻婆豆腐 (素)', price: 12.50 },
+  { id: 'dish-3', name: '咕噜肉', price: 16.00 },
+  { id: 'dish-4', name: '春卷 (4件)', price: 6.50 },
+  { id: 'dish-5', name: '白饭', price: 2.00 },
+  { id: 'dish-6', name: '云吞汤', price: 7.00 },
+  { id: 'dish-7', name: '西兰花牛肉', price: 17.50 },
+  { id: 'dish-8', name: '炒时蔬', price: 11.00 },
 ];
 
 export const initialTables: Table[] = [

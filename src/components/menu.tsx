@@ -18,11 +18,11 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Utensils className="h-6 w-6 text-primary" />
-          Menu
+          菜单
         </CardTitle>
         {!isTableSelected && (
           <CardDescription className="text-destructive">
-            Please select a table to start ordering.
+            请选择一个餐桌开始点餐。
           </CardDescription>
         )}
       </CardHeader>
@@ -41,7 +41,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
               </div>
               <CardTitle className="text-xl">{dish.name}</CardTitle>
               <CardDescription className="text-lg font-semibold text-primary">
-                ${dish.price.toFixed(2)}
+                ￥{dish.price.toFixed(2)}
               </CardDescription>
             </CardHeader>
             <CardFooter>
@@ -50,10 +50,10 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
                 className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
                 onClick={() => onAddDish(dish)}
                 disabled={!isTableSelected}
-                aria-label={`Add ${dish.name} to order`}
+                aria-label={`将 ${dish.name} 加入订单`}
               >
                 <ShoppingCart className="mr-2 h-5 w-5" />
-                Add to Order
+                加入订单
               </Button>
             </CardFooter>
           </Card>

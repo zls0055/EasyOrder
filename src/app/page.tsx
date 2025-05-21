@@ -25,8 +25,8 @@ export default function HomePage() {
   const handleSelectTable = (tableId: string) => {
     setSelectedTableId(tableId);
     toast({
-      title: "Table Selected",
-      description: `You are now ordering for Table ${tables.find(t => t.id === tableId)?.number}.`,
+      title: "已选择餐桌",
+      description: `您正在为 ${tables.find(t => t.id === tableId)?.number} 号桌点餐。`,
     });
   };
 
@@ -34,8 +34,8 @@ export default function HomePage() {
     if (!selectedTableId) {
       toast({
         variant: "destructive",
-        title: "No Table Selected",
-        description: "Please select a table before adding items to the order.",
+        title: "未选择餐桌",
+        description: "请先选择餐桌再添加菜品。",
       });
       return;
     }
@@ -59,8 +59,8 @@ export default function HomePage() {
       })
     );
     toast({
-      title: "Item Added",
-      description: `${dishToAdd.name} has been added to your order.`,
+      title: "菜品已添加",
+      description: `${dishToAdd.name} 已添加到您的订单。`,
     });
   };
 
@@ -99,8 +99,8 @@ export default function HomePage() {
       })
     );
     toast({
-      title: "Item Removed",
-      description: `Item has been removed from your order.`,
+      title: "菜品已移除",
+      description: `菜品已从您的订单中移除。`,
     });
   };
 
@@ -141,7 +141,7 @@ export default function HomePage() {
       </main>
 
       <footer className="text-center p-4 text-muted-foreground text-sm border-t">
-        © {new Date().getFullYear()} EasyOrder. Simple Food Ordering.
+        © {new Date().getFullYear()} EasyOrder。简单点餐。
       </footer>
       <Toaster />
     </div>

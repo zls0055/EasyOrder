@@ -17,7 +17,7 @@ export default function TableSelector({ tables, selectedTableId, onSelectTable }
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Armchair className="h-6 w-6 text-primary" />
-          Select a Table
+          选择餐桌
         </CardTitle>
       </CardHeader>
       <CardContent>

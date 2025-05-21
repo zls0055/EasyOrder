@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'EasyOrder - Restaurant Ordering System',
-  description: 'A simple and easy-to-use restaurant ordering system.',
+  title: 'EasyOrder - 餐厅点餐系统',
+  description: '一个简单易用的餐厅点餐系统。',
 };
 
 export default function RootLayout({
@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="zh-CN">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}>
         {children}
         {/* Toaster can also be placed here if preferred over page-specific placement */}
