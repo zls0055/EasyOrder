@@ -35,9 +35,11 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
                 <Image
                   src="https://placehold.co/400x300.png"
                   alt={dish.name}
-                  layout="fill"
-                  objectFit="cover"
-                  data-ai-hint="food cuisine"
+                  fill
+                  style={{ objectFit: 'cover' }}
+                  sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                  data-ai-hint={dish.imageHint}
+                  priority={dish.id === 'dish-1' || dish.id === 'dish-2' || dish.id === 'dish-3'} // Prioritize first few images
                 />
               </div>
               <CardTitle className="text-xl">{dish.name}</CardTitle>

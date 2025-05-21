@@ -2,6 +2,7 @@ export interface Dish {
   id: string;
   name: string;
   price: number;
+  imageHint: string; // 用于图片搜索的提示词
 }
 
 export interface OrderItem {
