@@ -3,6 +3,7 @@ export interface Dish {
   name: string;
   price: number;
   imageHint: string; // 用于图片搜索的提示词
+  imagePath: string; // 菜品图片路径
 }
 
 export interface OrderItem {

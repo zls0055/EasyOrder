@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { Dish } from '@/types';
@@ -33,7 +32,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
             <CardHeader>
               <div className="relative w-full h-40 mb-2 rounded-md overflow-hidden">
                 <Image
-                  src="https://placehold.co/400x300.png"
+                  src={dish.imagePath}
                   alt={dish.name}
                   fill
                   style={{ objectFit: 'cover' }}
