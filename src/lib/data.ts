@@ -1,3 +1,4 @@
+
 import type { Dish, Table } from '@/types';
 
 export const initialDishes: Dish[] = [
@@ -29,6 +30,49 @@ export const initialDishes: Dish[] = [
   { id: 'dish-24', name: '平菇肉片汤', price: 15.00, imageHint: 'mushroom pork', imagePath: 'https://placehold.co/300x200.png' },
   { id: 'dish-25', name: '金针菇肉丝汤', price: 15.00, imageHint: 'enoki pork', imagePath: 'https://placehold.co/300x200.png' },
   { id: 'dish-26', name: '鱼头豆腐汤', price: 28.00, imageHint: 'fishhead soup', imagePath: 'https://placehold.co/300x200.png' },
+  // Added from "精美小炒" OCR
+  { id: 'dish-27', name: '蒜蓉菠菜', price: 13.00, imageHint: 'garlic spinach', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-28', name: '蚝油生菜', price: 12.00, imageHint: 'oyster lettuce', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-29', name: '手撕包菜', price: 12.00, imageHint: 'torn cabbage', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-30', name: '蒜蓉菜心', price: 13.00, imageHint: 'garlic choysum', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-31', name: '虎皮尖椒', price: 15.00, imageHint: 'tiger pepper', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-32', name: '蒜蓉油麦菜', price: 12.00, imageHint: 'garlic achoy', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-33', name: '蒜蓉空心菜', price: 12.00, imageHint: 'garlic waterspinach', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-34', name: '麻婆豆腐', price: 13.00, imageHint: 'mapo tofu', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-35', name: '家常豆腐', price: 15.00, imageHint: 'homestyle tofu', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-36', name: '蚂蚁上树', price: 18.00, imageHint: 'ants tree', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-37', name: '干煸四季豆', price: 15.00, imageHint: 'dryfried greenbeans', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-38', name: '回锅肉', price: 25.00, imageHint: 'twicecooked pork', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-39', name: '青椒炒鸡', price: 30.00, imageHint: 'pepper chicken', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-40', name: '泡椒脆肚', price: 38.00, imageHint: 'pickled tripe', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-41', name: '酸甜排骨', price: 45.00, imageHint: 'sweetour ribs', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-42', name: '爆炒排骨', price: 38.00, imageHint: 'stirfried ribs', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-43', name: '爆炒猪肚', price: 38.00, imageHint: 'stirfried stomach', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-44', name: '蒜苗回锅肉', price: 28.00, imageHint: 'garlicsprout pork', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-45', name: '粉蒸肉', price: 45.00, imageHint: 'steamed porkrice', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-46', name: '粉蒸排骨', price: 55.00, imageHint: 'steamed ribsrice', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-47', name: '红烧排骨', price: 45.00, imageHint: 'braised ribs', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-48', name: '小炒猪肝', price: 25.00, imageHint: 'stirfry liver', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-49', name: '千页豆腐回锅肉', price: 25.00, imageHint: 'tofu pork', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-50', name: '泡椒猪肝', price: 28.00, imageHint: 'pickled liver', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-51', name: '爆炒猪肝', price: 25.00, imageHint: 'fried liver', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-52', name: '鱼香肉丝', price: 30.00, imageHint: 'fishfragrant pork', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-53', name: '青椒炒排骨', price: 35.00, imageHint: 'pepper ribs', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-54', name: '农家小炒肉', price: 25.00, imageHint: 'farmhouse pork', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-55', name: '烟笋炒腊肉', price: 35.00, imageHint: 'bamboo curedpork', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-56', name: '干豆角炒腊肉', price: 40.00, imageHint: 'beancurd curedpork', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-57', name: '盐煎肉', price: 30.00, imageHint: 'saltfried pork', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-58', name: '扣肉', price: 35.00, imageHint: 'braised belly', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-59', name: '辣子鸡', price: 30.00, imageHint: 'spicy chicken', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-60', name: '土匪猪肝', price: 30.00, imageHint: 'bandit liver', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-61', name: '椒盐虾', price: 38.00, imageHint: 'saltpepper shrimp', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-62', name: '香辣虾', price: 38.00, imageHint: 'spicy shrimp', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-63', name: '剁椒蒸黄骨鱼', price: 48.00, imageHint: 'chili fish', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-64', name: '大盘鸡', price: 38.00, imageHint: 'bigplate chicken', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-65', name: '红烧猪脚', price: 40.00, imageHint: 'braised trotter', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-66', name: '蒜香骨', price: 48.00, imageHint: 'garlic ribs', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-67', name: '红烧甲鱼', price: 168.00, imageHint: 'braised turtle', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-68', name: '土豆烧排骨', price: 48.00, imageHint: 'potato ribs', imagePath: 'https://placehold.co/300x200.png' },
 ];
 
 export const initialTables: Table[] = [
@@ -40,3 +84,4 @@ export const initialTables: Table[] = [
   { id: 'table-6', number: '6', order: [] },
 ];
 
+    
