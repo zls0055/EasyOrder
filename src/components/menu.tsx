@@ -128,3 +128,5 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
     </Card>
   );
 }
+
+    
