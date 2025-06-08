@@ -2,7 +2,7 @@
 import type { Dish, Table } from '@/types';
 
 export const initialDishes: Dish[] = [
-  // 煲类
+  // 煲类 (Claypot)
   { id: 'dish-9', name: '肉沫茄子煲', price: 22.00, category: '煲类', imageHint: 'pork eggplant', imagePath: 'https://placehold.co/300x200.png' },
   { id: 'dish-10', name: '咸鱼茄子煲', price: 22.00, category: '煲类', imageHint: 'saltedfish eggplant', imagePath: 'https://placehold.co/300x200.png' },
   { id: 'dish-11', name: '鱼香茄子煲', price: 22.00, category: '煲类', imageHint: 'spicy eggplant', imagePath: 'https://placehold.co/300x200.png' },
@@ -65,6 +65,34 @@ export const initialDishes: Dish[] = [
   { id: 'dish-66', name: '蒜香骨', price: 48.00, category: '精美小炒', imageHint: 'garlic ribs', imagePath: 'https://placehold.co/300x200.png' },
   { id: 'dish-67', name: '红烧甲鱼', price: 168.00, category: '精美小炒', imageHint: 'braised turtle', imagePath: 'https://placehold.co/300x200.png' },
   { id: 'dish-68', name: '土豆烧排骨', price: 48.00, category: '精美小炒', imageHint: 'potato ribs', imagePath: 'https://placehold.co/300x200.png' },
+  // 铁板类 (Teppanyaki / Iron Plate)
+  { id: 'dish-69', name: '铁板水晶粉', price: 25.00, category: '铁板类', imageHint: 'teppanyaki crystalnoodles', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-70', name: '铁板肥肠', price: 40.00, category: '铁板类', imageHint: 'teppanyaki porkintestine', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-71', name: '铁板鸡块', price: 32.00, category: '铁板类', imageHint: 'teppanyaki chicken', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-72', name: '铁板田鸡', price: 40.00, category: '铁板类', imageHint: 'teppanyaki frog', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-73', name: '铁板牛肉', price: 45.00, category: '铁板类', imageHint: 'teppanyaki beef', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-74', name: '铁板猪肚', price: 38.00, category: '铁板类', imageHint: 'teppanyaki porkstomach', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-75', name: '铁板腰花', price: 42.00, category: '铁板类', imageHint: 'teppanyaki porkkidney', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-76', name: '铁板黑胡椒牛肉', price: 45.00, category: '铁板类', imageHint: 'teppanyaki blackpepperbeef', imagePath: 'https://placehold.co/300x200.png' },
+  // 火锅/鸡煲 (Hot Pot / Chicken Pot)
+  { id: 'dish-77', name: '鱼头火锅', price: 68.00, category: '火锅/鸡煲', imageHint: 'fishhead hotpot', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-78', name: '鱼火锅', price: 60.00, category: '火锅/鸡煲', imageHint: 'fish hotpot', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-79', name: '啤酒鸭火锅', price: 75.00, category: '火锅/鸡煲', imageHint: 'beerduck hotpot', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-80', name: '排骨火锅', price: 98.00, category: '火锅/鸡煲', imageHint: 'ribs hotpot', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-81', name: '猪脚火锅', price: 88.00, category: '火锅/鸡煲', imageHint: 'trotter hotpot', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-82', name: '腊猪脚汤锅', price: 108.00, category: '火锅/鸡煲', imageHint: 'curedtrotter soup', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-83', name: '腊鸭汤锅', price: 75.00, category: '火锅/鸡煲', imageHint: 'curedduck soup', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-84', name: '腊排骨汤锅', price: 108.00, category: '火锅/鸡煲', imageHint: 'curedribs soup', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-85', name: '牛杂火锅', price: 98.00, category: '火锅/鸡煲', imageHint: 'beefoffal hotpot', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-86', name: '牛肚火锅', price: 108.00, category: '火锅/鸡煲', imageHint: 'beeftripe hotpot', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-87', name: '烧鸡公火锅', price: 75.00, category: '火锅/鸡煲', imageHint: 'roastchicken hotpot', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-88', name: '牛腩火锅', price: 98.00, category: '火锅/鸡煲', imageHint: 'beefbrisket hotpot', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-89', name: '狗肉火锅', price: 148.00, category: '火锅/鸡煲', imageHint: 'dogmeat hotpot', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-90', name: '羊肉火锅', price: 138.00, category: '火锅/鸡煲', imageHint: 'mutton hotpot', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-91', name: '麻辣烤鱼', price: 58.00, category: '火锅/鸡煲', imageHint: 'spicy grilledfish', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-92', name: '香辣烤鱼', price: 58.00, category: '火锅/鸡煲', imageHint: 'fragrantspicy grilledfish', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-93', name: '泡椒烤鱼', price: 65.00, category: '火锅/鸡煲', imageHint: 'pickledchili grilledfish', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-94', name: '甲鱼煲', price: 148.00, category: '火锅/鸡煲', imageHint: 'turtle pot', imagePath: 'https://placehold.co/300x200.png' },
 ];
 
 export const initialTables: Table[] = [

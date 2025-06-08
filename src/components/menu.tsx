@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Dish } from '@/types';
@@ -20,8 +21,13 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
   const availableCategories = useMemo(() => {
     const allCats = dishes.map(d => d.category);
     const uniqueCats = Array.from(new Set(allCats));
-    const predefinedOrder = ['煲类', '汤类', '精美小炒'];
-    return predefinedOrder.filter(cat => uniqueCats.includes(cat));
+    // Define the desired order of categories
+    const predefinedOrder = ['煲类', '汤类', '精美小炒', '铁板类', '火锅/鸡煲'];
+    // Filter uniqueCats to include only those in predefinedOrder and maintain that order
+    // Also include any other categories from uniqueCats that are not in predefinedOrder, adding them at the end.
+    const orderedCats = predefinedOrder.filter(cat => uniqueCats.includes(cat));
+    const otherCats = uniqueCats.filter(cat => !predefinedOrder.includes(cat));
+    return [...orderedCats, ...otherCats];
   }, [dishes]);
 
   useEffect(() => {
@@ -47,6 +53,9 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
     );
   }
   
+  // Determine number of columns for TabsList based on number of categories
+  const gridColsClass = availableCategories.length <= 5 ? `grid-cols-${availableCategories.length}` : 'grid-cols-5';
+
   return (
     <Card className="shadow-lg">
       <CardHeader>
@@ -63,7 +72,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
       <CardContent>
         {availableCategories.length > 0 && selectedCategory ? (
           <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-4">
+            <TabsList className={`grid w-full ${gridColsClass} mb-4`}>
               {availableCategories.map((category) => (
                 <TabsTrigger key={category} value={category}>
                   {category}
@@ -86,7 +95,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
                               style={{ objectFit: 'cover' }}
                               sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
                               data-ai-hint={dish.imageHint}
-                              priority={dish.id === 'dish-9' || dish.id === 'dish-10' || dish.id === 'dish-11'} // Prioritize first few images in the new list
+                              priority={['dish-9', 'dish-10', 'dish-11', 'dish-69', 'dish-77'].includes(dish.id)} // Prioritize first few images in important categories
                             />
                           </div>
                           <CardTitle className="text-xl">{dish.name}</CardTitle>
