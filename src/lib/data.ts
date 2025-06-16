@@ -70,8 +70,8 @@ export const initialDishes: Dish[] = [
   { id: 'dish-159', name: '香辣四季豆', price: 15.00, category: '经济快餐', imageHint: 'spicy greenbeans', imagePath: 'https://placehold.co/300x200.png' },
   { id: 'dish-160', name: '蒜蓉空心菜', price: 12.00, category: '经济快餐', imageHint: 'garlic waterspinach', imagePath: 'https://placehold.co/300x200.png' },
   { id: 'dish-161', name: '火腿玉米粒', price: 13.00, category: '经济快餐', imageHint: 'ham corn', imagePath: 'https://placehold.co/300x200.png' },
-  { id: 'dish-162', name: '火腿玉米粒', price: 15.00, category: '经济快餐', imageHint: 'ham corn', imagePath: 'https://placehold.co/300x200.png' },
-  { id: 'dish-163', name: '干煸土豆丝', price: 15.00, category: '经济快餐', imageHint: 'potato shreds', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-162', name: '火腿玉米粒 (重复)', price: 15.00, category: '经济快餐', imageHint: 'ham corn', imagePath: 'https://placehold.co/300x200.png' }, // Note: Added (重复) for clarity as it's a duplicate name with different price. You might want to differentiate them.
+  { id: 'dish-163', name: '干煸土豆丝 (重复)', price: 15.00, category: '经济快餐', imageHint: 'potato shreds', imagePath: 'https://placehold.co/300x200.png' }, // Note: Added (重复)
   { id: 'dish-164', name: '红萝卜炒肉丝', price: 15.00, category: '经济快餐', imageHint: 'carrot pork', imagePath: 'https://placehold.co/300x200.png' },
   { id: 'dish-165', name: '红烧日本豆腐', price: 13.00, category: '经济快餐', imageHint: 'japan tofu', imagePath: 'https://placehold.co/300x200.png' },
   { id: 'dish-166', name: '尖椒肉沫炒豆腐', price: 15.00, category: '经济快餐', imageHint: 'chili tofu', imagePath: 'https://placehold.co/300x200.png' },
@@ -180,5 +180,7 @@ export const initialTables: Table[] = [
   { id: 'table-5', number: '5', order: [] },
   { id: 'table-6', number: '6', order: [] },
 ];
+
+    
 
     
