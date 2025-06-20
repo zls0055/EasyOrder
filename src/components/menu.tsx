@@ -5,7 +5,7 @@ import type { Dish } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShoppingCart, Utensils } from 'lucide-react';
+import { ShoppingCart, Utensils, Menu as MenuIcon, X as XIcon } from 'lucide-react';
 import Image from 'next/image';
 import React, { useState, useEffect, useMemo } from 'react';
 
@@ -22,6 +22,7 @@ interface CategoryInfo {
 
 export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) {
   const [selectedCategoryName, setSelectedCategoryName] = useState<string>('');
+  const [isCategoryListVisible, setIsCategoryListVisible] = useState(true); // Default to visible
 
   const availableCategories: CategoryInfo[] = useMemo(() => {
     const allCats = dishes.map(d => d.category);
@@ -76,40 +77,52 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
   return (
     <Card className="shadow-lg">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Utensils className="h-6 w-6 text-primary" />
-          菜单
-        </CardTitle>
+        <div className="flex flex-row items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Utensils className="h-6 w-6 text-primary" />
+            <CardTitle>菜单</CardTitle>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsCategoryListVisible(!isCategoryListVisible)}
+            aria-label={isCategoryListVisible ? "隐藏分类" : "显示分类"}
+          >
+            {isCategoryListVisible ? <XIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
+          </Button>
+        </div>
         {!isTableSelected && (
-          <CardDescription className="text-destructive">
+          <CardDescription className="text-destructive pt-2">
             请选择一个餐桌开始点餐。
           </CardDescription>
         )}
       </CardHeader>
       <CardContent className="p-0">
-        {availableCategories.length > 0 && selectedCategoryName ? (
+        {availableCategories.length > 0 ? (
           <Tabs
             value={selectedCategoryName}
             onValueChange={setSelectedCategoryName}
             className="flex flex-row w-full min-h-[60vh]"
           >
-            <TabsList className="flex flex-col items-stretch justify-start h-auto p-2 space-y-1 border-r border-border w-1/4 min-w-[200px] max-w-[280px] overflow-y-auto bg-transparent">
-              {availableCategories.map((category) => (
-                <TabsTrigger
-                  key={category.name}
-                  value={category.name}
-                  className="w-full justify-start px-3 py-2 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50 whitespace-nowrap"
-                >
-                  {category.name} ({category.count})
-                </TabsTrigger>
-              ))}
-            </TabsList>
-            <div className="flex-1 p-4 overflow-y-auto">
-              {availableCategories.map((category) => (
-                <TabsContent key={category.name} value={category.name} className="mt-0 w-full h-full">
+            {isCategoryListVisible && (
+              <TabsList className="flex flex-col items-stretch justify-start h-auto p-2 space-y-1 border-r border-border w-1/4 min-w-[200px] max-w-[280px] overflow-y-auto bg-transparent">
+                {availableCategories.map((category) => (
+                  <TabsTrigger
+                    key={category.name}
+                    value={category.name}
+                    className="w-full justify-start px-3 py-2 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50 whitespace-nowrap"
+                  >
+                    {category.name} ({category.count})
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            )}
+            <div className={`p-4 overflow-y-auto ${isCategoryListVisible ? 'flex-1' : 'w-full'}`}>
+              {selectedCategoryName ? (
+                <TabsContent value={selectedCategoryName} className="mt-0 w-full h-full">
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {dishes
-                      .filter((dish) => dish.category === category.name)
+                      .filter((dish) => dish.category === selectedCategoryName)
                       .map((dish) => (
                         <Card key={dish.id} className="flex flex-col justify-between shadow-md hover:shadow-xl transition-shadow duration-300">
                           <CardHeader>
@@ -145,7 +158,9 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
                       ))}
                   </div>
                 </TabsContent>
-              ))}
+              ) : (
+                <p className="text-muted-foreground">请选择一个分类查看菜品。</p>
+              )}
             </div>
           </Tabs>
         ) : (
