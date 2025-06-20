@@ -98,7 +98,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
               className="flex flex-row w-full min-h-[60vh]"
             >
               {isCategoryListVisible && ( 
-                <TabsList className="flex flex-col items-stretch justify-start p-2 space-y-1 border-r border-border bg-card w-[240px] overflow-y-auto">
+                <TabsList className="flex flex-col h-full items-stretch justify-start p-2 space-y-1 border-r border-border bg-card w-[240px] overflow-y-auto">
                   {availableCategories.map((category) => (
                     <TabsTrigger
                       key={category.name}
