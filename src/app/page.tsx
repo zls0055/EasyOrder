@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Dish, Table, OrderItem } from '@/types';
@@ -8,7 +9,6 @@ import OrderSummary from '@/components/order-summary';
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from 'react';
-import { Utensils } from 'lucide-react';
 
 export default function HomePage() {
   const [dishes, setDishes] = useState<Dish[]>([]);
@@ -24,10 +24,12 @@ export default function HomePage() {
 
   const handleSelectTable = (tableId: string) => {
     setSelectedTableId(tableId);
-    toast({
-      title: "已选择餐桌",
-      description: `您正在为 ${tables.find(t => t.id === tableId)?.number} 号桌点餐。`,
-    });
+    // Toast notifications for table selection can be a bit noisy if the order summary updates immediately.
+    // Consider removing if the floating summary provides enough feedback.
+    // toast({
+    //   title: "已选择餐桌",
+    //   description: `您正在为 ${tables.find(t => t.id === tableId)?.number} 号桌点餐。`,
+    // });
   };
 
   const handleAddDishToOrder = (dishToAdd: Dish) => {
@@ -58,10 +60,11 @@ export default function HomePage() {
         return table;
       })
     );
-    toast({
-      title: "菜品已添加",
-      description: `${dishToAdd.name} 已添加到您的订单。`,
-    });
+    // Toast for adding dish can also be optional if order summary updates clearly.
+    // toast({
+    //   title: "菜品已添加",
+    //   description: `${dishToAdd.name} 已添加到您的订单。`,
+    // });
   };
 
   const handleUpdateOrderItemQuantity = (dishId: string, change: number) => {
@@ -78,7 +81,7 @@ export default function HomePage() {
               }
               return item;
             })
-            .filter(Boolean) as OrderItem[]; // Filter out nulls (items with quantity <= 0)
+            .filter(Boolean) as OrderItem[];
           return { ...table, order: updatedOrder };
         }
         return table;
@@ -98,42 +101,38 @@ export default function HomePage() {
         return table;
       })
     );
-    toast({
-      title: "菜品已移除",
-      description: `菜品已从您的订单中移除。`,
-    });
+    // toast({
+    //   title: "菜品已移除",
+    //   description: `菜品已从您的订单中移除。`,
+    // });
   };
 
   const selectedTableDetails = tables.find(table => table.id === selectedTableId);
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <main className="flex-grow container mx-auto p-4 md:p-6 lg:p-8 mt-4"> {/* Added mt-4 for some spacing after header removal */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <TableSelector
-              tables={tables}
-              selectedTableId={selectedTableId}
-              onSelectTable={handleSelectTable}
-            />
-            <Menu
-              dishes={dishes}
-              onAddDish={handleAddDishToOrder}
-              isTableSelected={!!selectedTableId}
-            />
-          </div>
-
-          <div className="lg:col-span-1">
-            <OrderSummary
-              table={selectedTableDetails}
-              onUpdateQuantity={handleUpdateOrderItemQuantity}
-              onRemoveItem={handleRemoveOrderItem}
-            />
-          </div>
+      <main className="flex-grow container mx-auto p-4 md:p-6 lg:p-8">
+        <div className="space-y-6"> {/* Simplified main content wrapper */}
+          <TableSelector
+            tables={tables}
+            selectedTableId={selectedTableId}
+            onSelectTable={handleSelectTable}
+          />
+          <Menu
+            dishes={dishes}
+            onAddDish={handleAddDishToOrder}
+            isTableSelected={!!selectedTableId}
+          />
         </div>
       </main>
 
-      <footer className="text-center p-4 text-muted-foreground text-sm border-t">
+      <OrderSummary
+        table={selectedTableDetails}
+        onUpdateQuantity={handleUpdateOrderItemQuantity}
+        onRemoveItem={handleRemoveOrderItem}
+      />
+
+      <footer className="text-center p-4 text-muted-foreground text-sm border-t mt-8">
         © {new Date().getFullYear()} EasyOrder。简单点餐。
       </footer>
       <Toaster />

@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Table, OrderItem, Dish } from '@/types';
@@ -17,40 +18,27 @@ export default function OrderSummary({ table, onUpdateQuantity, onRemoveItem }: 
     return order.reduce((sum, item) => sum + item.dish.price * item.quantity, 0);
   };
 
-  if (!table) {
-    return (
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ShoppingBag className="h-6 w-6 text-primary" />
-            订单概要
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
-            <Info className="h-10 w-10 mb-2" />
-            <p>请选择一个餐桌以查看订单。</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const total = calculateTotal(table.order);
-
   return (
-    <Card className="shadow-lg sticky top-8">
+    <Card className="fixed bottom-6 right-6 z-50 w-full max-w-sm shadow-xl rounded-lg bg-card flex flex-col max-h-[70vh]">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <ShoppingBag className="h-6 w-6 text-primary" />
-          {table.number} 号桌订单
+          {table ? `${table.number} 号桌订单` : "订单概要"}
         </CardTitle>
-        {table.order.length === 0 && (
+        {table && table.order.length === 0 && (
           <CardDescription>您的订单是空的。请从菜单添加菜品。</CardDescription>
         )}
+        {!table && (
+           <CardDescription>请选择一个餐桌以查看订单。</CardDescription>
+        )}
       </CardHeader>
-      <CardContent>
-        {table.order.length > 0 ? (
+      <CardContent className="flex-1 overflow-y-auto">
+        {!table ? (
+          <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-10">
+            <Info className="h-10 w-10 mb-2" />
+            <p>请选择一个餐桌以查看订单。</p>
+          </div>
+        ) : table.order.length > 0 ? (
           <div className="space-y-4">
             {table.order.map((item) => (
               <div key={item.dish.id} className="flex items-center justify-between">
@@ -77,17 +65,17 @@ export default function OrderSummary({ table, onUpdateQuantity, onRemoveItem }: 
             <Separator className="my-4" />
             <div className="flex justify-between items-center text-xl font-bold">
               <span>总计：</span>
-              <span>￥{total.toFixed(2)}</span>
+              <span>￥{calculateTotal(table.order).toFixed(2)}</span>
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
+          <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-10">
              <Info className="h-10 w-10 mb-2" />
             <p>订单中还没有菜品。</p>
           </div>
         )}
       </CardContent>
-      {table.order.length > 0 && (
+      {table && table.order.length > 0 && (
         <CardFooter>
           <Button size="lg" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
             下单 (未实现)
