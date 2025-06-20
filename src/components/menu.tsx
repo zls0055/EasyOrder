@@ -22,7 +22,7 @@ interface CategoryInfo {
 
 export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) {
   const [selectedCategoryName, setSelectedCategoryName] = useState<string>('');
-  const [isCategoryListVisible, setIsCategoryListVisible] = useState(true); // Default to visible
+  const [isCategoryListVisible, setIsCategoryListVisible] = useState(true);
 
   const availableCategories: CategoryInfo[] = useMemo(() => {
     const allCats = dishes.map(d => d.category);
@@ -75,99 +75,105 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
   }
 
   return (
-    <Card className="shadow-lg">
-      <CardHeader>
-        <div className="flex flex-row items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Utensils className="h-6 w-6 text-primary" />
-            <CardTitle>菜单</CardTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsCategoryListVisible(!isCategoryListVisible)}
-              aria-label={isCategoryListVisible ? "隐藏分类" : "显示分类"}
-              className="ml-2"
-            >
-              {isCategoryListVisible ? <XIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
-            </Button>
-          </div>
-        </div>
-        {!isTableSelected && (
-          <CardDescription className="text-destructive pt-2">
-            请选择一个餐桌开始点餐。
-          </CardDescription>
-        )}
-      </CardHeader>
-      <CardContent className="p-0">
-        {availableCategories.length > 0 ? (
-          <Tabs
-            value={selectedCategoryName}
-            onValueChange={setSelectedCategoryName}
-            className="flex flex-row w-full min-h-[60vh]"
-          >
-            {isCategoryListVisible && (
-              <TabsList className="flex flex-col items-stretch justify-start h-auto p-2 space-y-1 border-r border-border w-1/4 min-w-[200px] max-w-[280px] overflow-y-auto bg-transparent">
-                {availableCategories.map((category) => (
-                  <TabsTrigger
-                    key={category.name}
-                    value={category.name}
-                    className="w-full justify-start px-3 py-2 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50 whitespace-nowrap"
-                  >
-                    {category.name} ({category.count})
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            )}
-            <div className={`p-4 overflow-y-auto ${isCategoryListVisible ? 'flex-1' : 'w-full'}`}>
-              {selectedCategoryName ? (
-                <TabsContent value={selectedCategoryName} className="mt-0 w-full h-full">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {dishes
-                      .filter((dish) => dish.category === selectedCategoryName)
-                      .map((dish) => (
-                        <Card key={dish.id} className="flex flex-col justify-between shadow-md hover:shadow-xl transition-shadow duration-300">
-                          <CardHeader>
-                            <div className="relative w-full h-40 mb-2 rounded-md overflow-hidden">
-                              <Image
-                                src={dish.imagePath}
-                                alt={dish.name}
-                                fill
-                                style={{ objectFit: 'cover' }}
-                                sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 100vw"
-                                data-ai-hint={dish.imageHint}
-                                priority={['dish-9', 'dish-10', 'dish-11', 'dish-69', 'dish-77', 'dish-95', 'dish-112'].includes(dish.id)}
-                              />
-                            </div>
-                            <CardTitle className="text-xl">{dish.name}</CardTitle>
-                            <CardDescription className="text-lg font-semibold text-primary">
-                              ￥{dish.price.toFixed(2)}
-                            </CardDescription>
-                          </CardHeader>
-                          <CardFooter>
-                            <Button
-                              variant="default"
-                              className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
-                              onClick={() => onAddDish(dish)}
-                              disabled={!isTableSelected}
-                              aria-label={`将 ${dish.name} 加入订单`}
-                            >
-                              <ShoppingCart className="mr-2 h-5 w-5" />
-                              加入订单
-                            </Button>
-                          </CardFooter>
-                        </Card>
-                      ))}
-                  </div>
-                </TabsContent>
-              ) : (
-                <p className="text-muted-foreground">请选择一个分类查看菜品。</p>
-              )}
+    <>
+      <Card className="shadow-lg">
+        <CardHeader>
+          <div className="flex flex-row items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Utensils className="h-6 w-6 text-primary" />
+              <CardTitle>菜单</CardTitle>
+              {/* Toggle button is removed from here */}
             </div>
-          </Tabs>
-        ) : (
-           <p className="text-muted-foreground p-6">当前没有菜品可供选择。</p>
-        )}
-      </CardContent>
-    </Card>
+          </div>
+          {!isTableSelected && (
+            <CardDescription className="text-destructive pt-2">
+              请选择一个餐桌开始点餐。
+            </CardDescription>
+          )}
+        </CardHeader>
+        <CardContent className="p-0">
+          {availableCategories.length > 0 ? (
+            <Tabs
+              value={selectedCategoryName}
+              onValueChange={setSelectedCategoryName}
+              className="flex flex-row w-full min-h-[60vh]"
+            >
+              {isCategoryListVisible && (
+                <TabsList className="flex flex-col items-stretch justify-start h-auto p-2 space-y-1 border-r border-border w-1/4 min-w-[200px] max-w-[280px] overflow-y-auto bg-transparent">
+                  {availableCategories.map((category) => (
+                    <TabsTrigger
+                      key={category.name}
+                      value={category.name}
+                      className="w-full justify-start px-3 py-2 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50 whitespace-nowrap"
+                    >
+                      {category.name} ({category.count})
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              )}
+              <div className={`p-4 overflow-y-auto ${isCategoryListVisible ? 'flex-1' : 'w-full'}`}>
+                {selectedCategoryName ? (
+                  <TabsContent value={selectedCategoryName} className="mt-0 w-full h-full">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {dishes
+                        .filter((dish) => dish.category === selectedCategoryName)
+                        .map((dish) => (
+                          <Card key={dish.id} className="flex flex-col justify-between shadow-md hover:shadow-xl transition-shadow duration-300">
+                            <CardHeader>
+                              <div className="relative w-full h-40 mb-2 rounded-md overflow-hidden">
+                                <Image
+                                  src={dish.imagePath}
+                                  alt={dish.name}
+                                  fill
+                                  style={{ objectFit: 'cover' }}
+                                  sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 100vw"
+                                  data-ai-hint={dish.imageHint}
+                                  priority={['dish-9', 'dish-10', 'dish-11', 'dish-69', 'dish-77', 'dish-95', 'dish-112'].includes(dish.id)}
+                                />
+                              </div>
+                              <CardTitle className="text-xl">{dish.name}</CardTitle>
+                              <CardDescription className="text-lg font-semibold text-primary">
+                                ￥{dish.price.toFixed(2)}
+                              </CardDescription>
+                            </CardHeader>
+                            <CardFooter>
+                              <Button
+                                variant="default"
+                                className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
+                                onClick={() => onAddDish(dish)}
+                                disabled={!isTableSelected}
+                                aria-label={`将 ${dish.name} 加入订单`}
+                              >
+                                <ShoppingCart className="mr-2 h-5 w-5" />
+                                加入订单
+                              </Button>
+                            </CardFooter>
+                          </Card>
+                        ))}
+                    </div>
+                  </TabsContent>
+                ) : (
+                  <p className="text-muted-foreground">请选择一个分类查看菜品。</p>
+                )}
+              </div>
+            </Tabs>
+          ) : (
+             <p className="text-muted-foreground p-6">当前没有菜品可供选择。</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Floating Toggle Button for Category List */}
+      <Button
+        variant="default"
+        size="lg"
+        className="fixed bottom-6 left-6 z-40 shadow-xl rounded-lg bg-accent hover:bg-accent/90 text-accent-foreground flex items-center space-x-2"
+        onClick={() => setIsCategoryListVisible(!isCategoryListVisible)}
+        aria-label={isCategoryListVisible ? "隐藏菜单分类" : "显示菜单分类"}
+      >
+        {isCategoryListVisible ? <XIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
+        <span>{isCategoryListVisible ? "隐藏分类" : "显示分类"}</span>
+      </Button>
+    </>
   );
 }
