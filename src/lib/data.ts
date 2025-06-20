@@ -1,4 +1,3 @@
-
 import type { Dish, Table } from '@/types';
 
 export const initialDishes: Dish[] = [
@@ -174,6 +173,17 @@ export const initialDishes: Dish[] = [
   { id: 'dish-92', name: '香辣烤鱼', price: 58.00, category: '火锅/鸡煲', imageHint: 'fragrantspicy grilledfish', imagePath: 'https://placehold.co/300x200.png' },
   { id: 'dish-93', name: '泡椒烤鱼', price: 65.00, category: '火锅/鸡煲', imageHint: 'pickledchili grilledfish', imagePath: 'https://placehold.co/300x200.png' },
   { id: 'dish-94', name: '甲鱼煲', price: 148.00, category: '火锅/鸡煲', imageHint: 'turtle pot', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-2001', name: '拍黄瓜', price: 12.00, category: '凉拌类', imageHint: 'smashed cucumber', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-2002', name: '凉拌皮蛋', price: 15.00, category: '凉拌类', imageHint: 'preserved egg salad', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-2003', name: '凉拌金针菇', price: 18.00, category: '凉拌类', imageHint: 'enoki mushroom salad', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-2004', name: '凉拌猪耳', price: 28.00, category: '凉拌类', imageHint: 'pig ear salad', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-2005', name: '夫妻肺片', price: 28.00, category: '凉拌类', imageHint: 'fuqi feipian', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-2006', name: '无骨鸡爪', price: 25.00, category: '凉拌类', imageHint: 'boneless chicken feet salad', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-2007', name: '凉拌毛肚', price: 38.00, category: '凉拌类', imageHint: 'beef tripe salad', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-2008', name: '凉拌千张', price: 12.00, category: '凉拌类', imageHint: 'tofu skin salad', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-2009', name: '凉拌猪肚', price: 38.00, category: '凉拌类', imageHint: 'pork tripe salad', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-2010', name: '凉拌猪舌', price: 38.00, category: '凉拌类', imageHint: 'pork tongue salad', imagePath: 'https://placehold.co/300x200.png' },
+  { id: 'dish-2011', name: '凉拌牛肉', price: 45.00, category: '凉拌类', imageHint: 'beef salad', imagePath: 'https://placehold.co/300x200.png' },
 ];
 
 // 干锅类 (Dry Pot)
@@ -203,6 +213,8 @@ export const dryPotDishes: Dish[] = [
   { id: 'dish-196', name: '干锅花菜', price: 20.00, category: '干锅类', imageHint: 'drypot cauliflower', imagePath: 'https://placehold.co/300x200.png' },
   { id: 'dish-197', name: '干锅鱼肚', price: 38.00, category: '干锅类', imageHint: 'drypot fishmaw', imagePath: 'https://placehold.co/300x200.png' },
 ];
+
+initialDishes.push(...dryPotDishes)
 
 export const initialTables: Table[] = [
   { id: 'table-1', number: '1', order: [] },

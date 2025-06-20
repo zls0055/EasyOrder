@@ -108,14 +108,7 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <header className="bg-primary text-primary-foreground p-4 shadow-md sticky top-0 z-50">
-        <div className="container mx-auto flex items-center gap-3">
-          <Utensils className="h-8 w-8" />
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">EasyOrder</h1>
-        </div>
-      </header>
-
-      <main className="flex-grow container mx-auto p-4 md:p-6 lg:p-8">
+      <main className="flex-grow container mx-auto p-4 md:p-6 lg:p-8 mt-4"> {/* Added mt-4 for some spacing after header removal */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <TableSelector
