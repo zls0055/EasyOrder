@@ -86,19 +86,19 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
           </CardDescription>
         )}
       </CardHeader>
-      <CardContent className="p-0 sm:p-6 sm:pt-0">
+      <CardContent className="p-0">
         {availableCategories.length > 0 && selectedCategoryName ? (
           <Tabs
             value={selectedCategoryName}
             onValueChange={setSelectedCategoryName}
-            className="flex flex-col sm:flex-row w-full sm:min-h-[60vh]"
+            className="flex flex-row w-full min-h-[60vh]"
           >
-            <TabsList className="flex flex-row sm:flex-col sm:items-stretch sm:justify-start h-auto p-2 space-x-1 sm:space-x-0 sm:space-y-1 border-b sm:border-b-0 sm:border-r border-border sm:w-1/5 sm:min-w-[200px] sm:max-w-[280px] overflow-x-auto sm:overflow-y-auto sm:bg-transparent">
+            <TabsList className="flex flex-col items-stretch justify-start h-auto p-2 space-y-1 border-r border-border w-1/4 min-w-[200px] max-w-[280px] overflow-y-auto bg-transparent">
               {availableCategories.map((category) => (
                 <TabsTrigger
                   key={category.name}
                   value={category.name}
-                  className="w-auto sm:w-full justify-center sm:justify-start px-3 py-2 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50 whitespace-nowrap"
+                  className="w-full justify-start px-3 py-2 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50 whitespace-nowrap"
                 >
                   {category.name} ({category.count})
                 </TabsTrigger>
@@ -155,3 +155,4 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
     </Card>
   );
 }
+
