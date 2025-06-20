@@ -103,7 +103,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
                     <TabsTrigger
                       key={category.name}
                       value={category.name}
-                      className="w-full justify-start px-3 py-3 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50 whitespace-nowrap"
+                      className="w-full justify-start px-3 py-3 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50"
                     >
                       {category.name} ({category.count})
                     </TabsTrigger>
