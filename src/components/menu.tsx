@@ -22,7 +22,7 @@ interface CategoryInfo {
 
 export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) {
   const [selectedCategoryName, setSelectedCategoryName] = useState<string>('');
-  const [isCategoryListVisible, setIsCategoryListVisible] = useState(true); // Default to visible
+  const [isCategoryListVisible, setIsCategoryListVisible] = useState(true); 
 
   const availableCategories: CategoryInfo[] = useMemo(() => {
     const allCats = dishes.map(d => d.category);
@@ -95,10 +95,10 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
             <Tabs
               value={selectedCategoryName}
               onValueChange={setSelectedCategoryName}
-              className="flex flex-row w-full min-h-[60vh]"
+              className="relative flex flex-row w-full min-h-[60vh]"
             >
               {isCategoryListVisible && ( 
-                <TabsList className="flex flex-col h-full items-stretch justify-start p-2 space-y-1 border-r border-border bg-card w-[240px] overflow-y-auto">
+                <TabsList className="absolute top-0 left-0 h-full flex flex-col items-stretch justify-start p-2 space-y-1 border-r border-border bg-card shadow-xl z-30 w-[240px] overflow-y-auto">
                   {availableCategories.map((category) => (
                     <TabsTrigger
                       key={category.name}
@@ -110,7 +110,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
                   ))}
                 </TabsList>
               )}
-              <div className={`p-4 overflow-y-auto ${isCategoryListVisible ? 'flex-1' : 'w-full'}`}>
+              <div className="p-4 overflow-y-auto w-full h-full">
                 {selectedCategoryName ? (
                   <TabsContent value={selectedCategoryName} className="mt-0 w-full h-full">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
