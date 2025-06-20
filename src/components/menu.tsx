@@ -95,16 +95,15 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
             <Tabs
               value={selectedCategoryName}
               onValueChange={setSelectedCategoryName}
-              className="flex flex-row w-full min-h-[60vh]" // Removed relative positioning
+              className="flex flex-row w-full min-h-[60vh]"
             >
               {isCategoryListVisible && ( 
                 <TabsList className="flex flex-col items-stretch justify-start p-2 space-y-1 border-r border-border bg-card w-[240px] overflow-y-auto">
-                  {/* Restored styles for pushing content, removed absolute positioning */}
                   {availableCategories.map((category) => (
                     <TabsTrigger
                       key={category.name}
                       value={category.name}
-                      className="w-full justify-start px-3 py-2 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50 whitespace-nowrap"
+                      className="w-full justify-start px-3 py-3 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50 whitespace-nowrap"
                     >
                       {category.name} ({category.count})
                     </TabsTrigger>
@@ -112,7 +111,6 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
                 </TabsList>
               )}
               <div className={`p-4 overflow-y-auto ${isCategoryListVisible ? 'flex-1' : 'w-full'}`}>
-                {/* Content area takes flex-1 if category list is visible, or w-full if not */}
                 {selectedCategoryName ? (
                   <TabsContent value={selectedCategoryName} className="mt-0 w-full h-full">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -176,3 +174,4 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
     </>
   );
 }
+
