@@ -21,10 +21,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
   const availableCategories = useMemo(() => {
     const allCats = dishes.map(d => d.category);
     const uniqueCats = Array.from(new Set(allCats));
-    // Define the desired order of categories
-    const predefinedOrder = ['经济快餐', '煲类', '汤类', '精美小炒', '铁板类', '火锅/鸡煲'];
-    // Filter uniqueCats to include only those in predefinedOrder and maintain that order
-    // Also include any other categories from uniqueCats that are not in predefinedOrder, adding them at the end.
+    const predefinedOrder = ['经济快餐', '凉拌类', '煲类', '汤类', '精美小炒', '干锅类', '铁板类', '火锅/鸡煲'];
     const orderedCats = predefinedOrder.filter(cat => uniqueCats.includes(cat));
     const otherCats = uniqueCats.filter(cat => !predefinedOrder.includes(cat));
     return [...orderedCats, ...otherCats];
@@ -52,7 +49,6 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
       </Card>
     );
   }
-  
 
   return (
     <Card className="shadow-lg">
@@ -67,64 +63,72 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
           </CardDescription>
         )}
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0 sm:p-6 sm:pt-0">
         {availableCategories.length > 0 && selectedCategory ? (
-          <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full">
-            <TabsList className="flex flex-wrap gap-2 mb-4 h-auto justify-start">
+          <Tabs
+            value={selectedCategory}
+            onValueChange={setSelectedCategory}
+            className="flex flex-col sm:flex-row w-full sm:min-h-[60vh]"
+          >
+            <TabsList className="flex flex-row sm:flex-col sm:items-stretch sm:justify-start h-auto p-2 space-x-1 sm:space-x-0 sm:space-y-1 border-b sm:border-b-0 sm:border-r border-border sm:w-1/5 sm:min-w-[160px] sm:max-w-[220px] overflow-x-auto sm:overflow-y-auto sm:bg-transparent">
               {availableCategories.map((category) => (
-                <TabsTrigger key={category} value={category}>
+                <TabsTrigger
+                  key={category}
+                  value={category}
+                  className="w-auto sm:w-full justify-center sm:justify-start px-3 py-2 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50 whitespace-nowrap"
+                >
                   {category}
                 </TabsTrigger>
               ))}
             </TabsList>
-            {availableCategories.map((category) => (
-              <TabsContent key={category} value={category}>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {dishes
-                    .filter((dish) => dish.category === category)
-                    .map((dish) => (
-                      <Card key={dish.id} className="flex flex-col justify-between shadow-md hover:shadow-xl transition-shadow duration-300">
-                        <CardHeader>
-                          <div className="relative w-full h-40 mb-2 rounded-md overflow-hidden">
-                            <Image
-                              src={dish.imagePath}
-                              alt={dish.name}
-                              fill
-                              style={{ objectFit: 'cover' }}
-                              sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-                              data-ai-hint={dish.imageHint}
-                              priority={['dish-9', 'dish-10', 'dish-11', 'dish-69', 'dish-77', 'dish-95', 'dish-112'].includes(dish.id)} 
-                            />
-                          </div>
-                          <CardTitle className="text-xl">{dish.name}</CardTitle>
-                          <CardDescription className="text-lg font-semibold text-primary">
-                            ￥{dish.price.toFixed(2)}
-                          </CardDescription>
-                        </CardHeader>
-                        <CardFooter>
-                          <Button
-                            variant="default"
-                            className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
-                            onClick={() => onAddDish(dish)}
-                            disabled={!isTableSelected}
-                            aria-label={`将 ${dish.name} 加入订单`}
-                          >
-                            <ShoppingCart className="mr-2 h-5 w-5" />
-                            加入订单
-                          </Button>
-                        </CardFooter>
-                      </Card>
-                    ))}
-                </div>
-              </TabsContent>
-            ))}
+            <div className="flex-1 p-4 overflow-y-auto">
+              {availableCategories.map((category) => (
+                <TabsContent key={category} value={category} className="mt-0 w-full h-full">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {dishes
+                      .filter((dish) => dish.category === category)
+                      .map((dish) => (
+                        <Card key={dish.id} className="flex flex-col justify-between shadow-md hover:shadow-xl transition-shadow duration-300">
+                          <CardHeader>
+                            <div className="relative w-full h-40 mb-2 rounded-md overflow-hidden">
+                              <Image
+                                src={dish.imagePath}
+                                alt={dish.name}
+                                fill
+                                style={{ objectFit: 'cover' }}
+                                sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 100vw"
+                                data-ai-hint={dish.imageHint}
+                                priority={['dish-9', 'dish-10', 'dish-11', 'dish-69', 'dish-77', 'dish-95', 'dish-112'].includes(dish.id)}
+                              />
+                            </div>
+                            <CardTitle className="text-xl">{dish.name}</CardTitle>
+                            <CardDescription className="text-lg font-semibold text-primary">
+                              ￥{dish.price.toFixed(2)}
+                            </CardDescription>
+                          </CardHeader>
+                          <CardFooter>
+                            <Button
+                              variant="default"
+                              className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
+                              onClick={() => onAddDish(dish)}
+                              disabled={!isTableSelected}
+                              aria-label={`将 ${dish.name} 加入订单`}
+                            >
+                              <ShoppingCart className="mr-2 h-5 w-5" />
+                              加入订单
+                            </Button>
+                          </CardFooter>
+                        </Card>
+                      ))}
+                  </div>
+                </TabsContent>
+              ))}
+            </div>
           </Tabs>
         ) : (
-           <p className="text-muted-foreground">当前没有菜品可供选择。</p>
+           <p className="text-muted-foreground p-6">当前没有菜品可供选择。</p>
         )}
       </CardContent>
     </Card>
   );
 }
-
-    
