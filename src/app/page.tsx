@@ -17,19 +17,12 @@ export default function HomePage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // In a real app, this data would be fetched from an API
     setDishes(initialDishes);
     setTables(initialTables);
   }, []);
 
   const handleSelectTable = (tableId: string) => {
     setSelectedTableId(tableId);
-    // Toast notifications for table selection can be a bit noisy if the order summary updates immediately.
-    // Consider removing if the floating summary provides enough feedback.
-    // toast({
-    //   title: "已选择餐桌",
-    //   description: `您正在为 ${tables.find(t => t.id === tableId)?.number} 号桌点餐。`,
-    // });
   };
 
   const handleAddDishToOrder = (dishToAdd: Dish) => {
@@ -60,11 +53,6 @@ export default function HomePage() {
         return table;
       })
     );
-    // Toast for adding dish can also be optional if order summary updates clearly.
-    // toast({
-    //   title: "菜品已添加",
-    //   description: `${dishToAdd.name} 已添加到您的订单。`,
-    // });
   };
 
   const handleUpdateOrderItemQuantity = (dishId: string, change: number) => {
@@ -101,23 +89,20 @@ export default function HomePage() {
         return table;
       })
     );
-    // toast({
-    //   title: "菜品已移除",
-    //   description: `菜品已从您的订单中移除。`,
-    // });
   };
 
   const selectedTableDetails = tables.find(table => table.id === selectedTableId);
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
+      <TableSelector
+        tables={tables}
+        selectedTableId={selectedTableId}
+        onSelectTable={handleSelectTable}
+      />
+
       <main className="flex-grow container mx-auto p-4 md:p-6 lg:p-8">
-        <div className="space-y-6"> {/* Simplified main content wrapper */}
-          <TableSelector
-            tables={tables}
-            selectedTableId={selectedTableId}
-            onSelectTable={handleSelectTable}
-          />
+        <div className="space-y-6 mt-16 md:mt-0"> {/* Added margin top for smaller screens to avoid overlap with fixed TableSelector button */}
           <Menu
             dishes={dishes}
             onAddDish={handleAddDishToOrder}
