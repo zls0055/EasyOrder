@@ -81,15 +81,16 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
           <div className="flex items-center gap-2">
             <Utensils className="h-6 w-6 text-primary" />
             <CardTitle>菜单</CardTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsCategoryListVisible(!isCategoryListVisible)}
+              aria-label={isCategoryListVisible ? "隐藏分类" : "显示分类"}
+              className="ml-2"
+            >
+              {isCategoryListVisible ? <XIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
+            </Button>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsCategoryListVisible(!isCategoryListVisible)}
-            aria-label={isCategoryListVisible ? "隐藏分类" : "显示分类"}
-          >
-            {isCategoryListVisible ? <XIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
-          </Button>
         </div>
         {!isTableSelected && (
           <CardDescription className="text-destructive pt-2">
@@ -170,4 +171,3 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
     </Card>
   );
 }
-
