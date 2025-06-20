@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShoppingCart, Utensils, Menu as MenuIcon, X as XIcon } from 'lucide-react';
 import Image from 'next/image';
 import React, { useState, useEffect, useMemo } from 'react';
+import { cn } from '@/lib/utils';
 
 interface MenuProps {
   dishes: Dish[];
@@ -102,19 +103,26 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
               onValueChange={handleCategorySelect}
               className="relative flex flex-row w-full min-h-[60vh]"
             >
-              {isCategoryListVisible && ( 
-                <TabsList className="absolute top-0 left-0 h-full flex flex-col items-stretch justify-start p-2 space-y-1 border-r border-border bg-card shadow-xl z-30 w-[240px] overflow-y-auto">
-                  {availableCategories.map((category) => (
-                    <TabsTrigger
-                      key={category.name}
-                      value={category.name}
-                      className="inline-flex items-center text-sm ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm w-full justify-start px-3 py-4 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50"
-                    >
-                      {category.name} ({category.count})
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              )}
+              <TabsList
+                className={cn(
+                  "absolute top-0 left-0 h-full flex flex-col items-stretch justify-start p-2 space-y-1 border-r border-border bg-card shadow-xl z-30 w-[240px] overflow-y-auto",
+                  "transition-all duration-300 ease-in-out",
+                  isCategoryListVisible
+                    ? "translate-x-0 opacity-100"
+                    : "-translate-x-full opacity-0 pointer-events-none"
+                )}
+              >
+                {availableCategories.map((category) => (
+                  <TabsTrigger
+                    key={category.name}
+                    value={category.name}
+                    className="inline-flex items-center text-sm ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm w-full justify-start px-3 py-4 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50"
+                  >
+                    {category.name} ({category.count})
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+              
               <div className="p-4 overflow-y-auto w-full h-full">
                 {selectedCategoryName ? (
                   <TabsContent value={selectedCategoryName} className="mt-0 w-full h-full">
