@@ -22,7 +22,7 @@ interface CategoryInfo {
 
 export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) {
   const [selectedCategoryName, setSelectedCategoryName] = useState<string>('');
-  const [isCategoryListVisible, setIsCategoryListVisible] = useState(true); 
+  const [isCategoryListVisible, setIsCategoryListVisible] = useState(true);
 
   const availableCategories: CategoryInfo[] = useMemo(() => {
     const allCats = dishes.map(d => d.category);
@@ -56,6 +56,11 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
       setSelectedCategoryName('');
     }
   }, [availableCategories, selectedCategoryName]);
+
+  const handleCategorySelect = (categoryName: string) => {
+    setSelectedCategoryName(categoryName);
+    setIsCategoryListVisible(false); // Hide the list after selection
+  };
 
   if (dishes.length === 0) {
     return (
@@ -94,7 +99,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
           {availableCategories.length > 0 ? (
             <Tabs
               value={selectedCategoryName}
-              onValueChange={setSelectedCategoryName}
+              onValueChange={handleCategorySelect}
               className="relative flex flex-row w-full min-h-[60vh]"
             >
               {isCategoryListVisible && ( 
