@@ -15,23 +15,46 @@ interface MenuProps {
   isTableSelected: boolean;
 }
 
-export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) {
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+interface CategoryInfo {
+  name: string;
+  count: number;
+}
 
-  const availableCategories = useMemo(() => {
+export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) {
+  const [selectedCategoryName, setSelectedCategoryName] = useState<string>('');
+
+  const availableCategories: CategoryInfo[] = useMemo(() => {
     const allCats = dishes.map(d => d.category);
     const uniqueCats = Array.from(new Set(allCats));
+    
+    const categoryCounts: Record<string, number> = {};
+    dishes.forEach(dish => {
+      categoryCounts[dish.category] = (categoryCounts[dish.category] || 0) + 1;
+    });
+
     const predefinedOrder = ['经济快餐', '凉拌类', '煲类', '汤类', '精美小炒', '干锅类', '铁板类', '火锅/鸡煲'];
-    const orderedCats = predefinedOrder.filter(cat => uniqueCats.includes(cat));
-    const otherCats = uniqueCats.filter(cat => !predefinedOrder.includes(cat));
-    return [...orderedCats, ...otherCats];
+    
+    const orderedCatsInfo: CategoryInfo[] = predefinedOrder
+      .filter(catName => uniqueCats.includes(catName))
+      .map(catName => ({ name: catName, count: categoryCounts[catName] || 0 }));
+
+    const otherCatsInfo: CategoryInfo[] = uniqueCats
+      .filter(catName => !predefinedOrder.includes(catName))
+      .map(catName => ({ name: catName, count: categoryCounts[catName] || 0 }));
+      
+    return [...orderedCatsInfo, ...otherCatsInfo];
   }, [dishes]);
 
   useEffect(() => {
-    if (availableCategories.length > 0 && (!selectedCategory || !availableCategories.includes(selectedCategory))) {
-      setSelectedCategory(availableCategories[0]);
+    if (availableCategories.length > 0) {
+      const currentCategoryExists = availableCategories.some(cat => cat.name === selectedCategoryName);
+      if (!selectedCategoryName || !currentCategoryExists) {
+        setSelectedCategoryName(availableCategories[0].name);
+      }
+    } else {
+      setSelectedCategoryName('');
     }
-  }, [availableCategories, selectedCategory]);
+  }, [availableCategories, selectedCategoryName]);
 
   if (dishes.length === 0) {
     return (
@@ -64,29 +87,29 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
         )}
       </CardHeader>
       <CardContent className="p-0 sm:p-6 sm:pt-0">
-        {availableCategories.length > 0 && selectedCategory ? (
+        {availableCategories.length > 0 && selectedCategoryName ? (
           <Tabs
-            value={selectedCategory}
-            onValueChange={setSelectedCategory}
+            value={selectedCategoryName}
+            onValueChange={setSelectedCategoryName}
             className="flex flex-col sm:flex-row w-full sm:min-h-[60vh]"
           >
-            <TabsList className="flex flex-row sm:flex-col sm:items-stretch sm:justify-start h-auto p-2 space-x-1 sm:space-x-0 sm:space-y-1 border-b sm:border-b-0 sm:border-r border-border sm:w-1/5 sm:min-w-[160px] sm:max-w-[220px] overflow-x-auto sm:overflow-y-auto sm:bg-transparent">
+            <TabsList className="flex flex-row sm:flex-col sm:items-stretch sm:justify-start h-auto p-2 space-x-1 sm:space-x-0 sm:space-y-1 border-b sm:border-b-0 sm:border-r border-border sm:w-1/5 sm:min-w-[200px] sm:max-w-[280px] overflow-x-auto sm:overflow-y-auto sm:bg-transparent">
               {availableCategories.map((category) => (
                 <TabsTrigger
-                  key={category}
-                  value={category}
+                  key={category.name}
+                  value={category.name}
                   className="w-auto sm:w-full justify-center sm:justify-start px-3 py-2 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50 whitespace-nowrap"
                 >
-                  {category}
+                  {category.name} ({category.count})
                 </TabsTrigger>
               ))}
             </TabsList>
             <div className="flex-1 p-4 overflow-y-auto">
               {availableCategories.map((category) => (
-                <TabsContent key={category} value={category} className="mt-0 w-full h-full">
+                <TabsContent key={category.name} value={category.name} className="mt-0 w-full h-full">
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {dishes
-                      .filter((dish) => dish.category === category)
+                      .filter((dish) => dish.category === category.name)
                       .map((dish) => (
                         <Card key={dish.id} className="flex flex-col justify-between shadow-md hover:shadow-xl transition-shadow duration-300">
                           <CardHeader>
