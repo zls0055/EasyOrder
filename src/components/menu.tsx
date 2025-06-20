@@ -103,7 +103,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
                     <TabsTrigger
                       key={category.name}
                       value={category.name}
-                      className="w-full justify-start px-3 py-3 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50"
+                      className="inline-flex items-center text-sm ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm w-full justify-start px-3 py-4 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50"
                     >
                       {category.name} ({category.count})
                     </TabsTrigger>
@@ -174,4 +174,3 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
     </>
   );
 }
-
