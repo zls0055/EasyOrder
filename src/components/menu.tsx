@@ -82,7 +82,6 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
             <div className="flex items-center gap-2">
               <Utensils className="h-6 w-6 text-primary" />
               <CardTitle>菜单</CardTitle>
-              {/* Toggle button is removed from here */}
             </div>
           </div>
           {!isTableSelected && (
@@ -166,13 +165,12 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
       {/* Floating Toggle Button for Category List */}
       <Button
         variant="default"
-        size="lg"
-        className="fixed bottom-6 left-6 z-40 shadow-xl rounded-lg bg-accent hover:bg-accent/90 text-accent-foreground flex items-center space-x-2"
+        size="icon"
+        className="fixed bottom-6 left-6 z-40 shadow-xl rounded-lg bg-accent hover:bg-accent/90 text-accent-foreground flex items-center"
         onClick={() => setIsCategoryListVisible(!isCategoryListVisible)}
         aria-label={isCategoryListVisible ? "隐藏菜单分类" : "显示菜单分类"}
       >
         {isCategoryListVisible ? <XIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
-        <span>{isCategoryListVisible ? "隐藏分类" : "显示分类"}</span>
       </Button>
     </>
   );
