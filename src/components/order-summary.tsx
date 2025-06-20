@@ -1,11 +1,12 @@
 
 "use client";
 
-import type { Table, OrderItem, Dish } from '@/types';
+import type { Table, OrderItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { PlusCircle, MinusCircle, Trash2, ShoppingBag, Info } from 'lucide-react';
+import { PlusCircle, MinusCircle, Trash2, ShoppingBag, Info, ChevronDown, ChevronUp } from 'lucide-react';
+import React, { useState } from 'react';
 
 interface OrderSummaryProps {
   table: Table | undefined;
@@ -14,24 +15,57 @@ interface OrderSummaryProps {
 }
 
 export default function OrderSummary({ table, onUpdateQuantity, onRemoveItem }: OrderSummaryProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const calculateTotal = (order: OrderItem[]): number => {
     return order.reduce((sum, item) => sum + item.dish.price * item.quantity, 0);
   };
 
+  const orderTotal = table && table.order.length > 0 ? calculateTotal(table.order) : 0;
+  const itemCount = table ? table.order.reduce((sum, item) => sum + item.quantity, 0) : 0;
+
+  if (!isExpanded) {
+    return (
+      <Button
+        variant="default"
+        size="lg"
+        className="fixed bottom-6 right-6 z-50 shadow-xl rounded-lg bg-accent hover:bg-accent/90 text-accent-foreground flex items-center space-x-2"
+        onClick={() => setIsExpanded(true)}
+        aria-label="查看订单详情"
+      >
+        <ShoppingBag className="h-5 w-5" />
+        {table ? (
+          <span>
+            {table.number}号桌: {itemCount > 0 ? `${itemCount}项 - ￥${orderTotal.toFixed(2)}` : "空订单"}
+          </span>
+        ) : (
+          <span>查看订单</span>
+        )}
+        <ChevronUp className="h-5 w-5" />
+      </Button>
+    );
+  }
+
   return (
     <Card className="fixed bottom-6 right-6 z-50 w-full max-w-sm shadow-xl rounded-lg bg-card flex flex-col max-h-[70vh]">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div className="flex items-center gap-2">
           <ShoppingBag className="h-6 w-6 text-primary" />
-          {table ? `${table.number} 号桌订单` : "订单概要"}
-        </CardTitle>
-        {table && table.order.length === 0 && (
-          <CardDescription>您的订单是空的。请从菜单添加菜品。</CardDescription>
-        )}
-        {!table && (
-           <CardDescription>请选择一个餐桌以查看订单。</CardDescription>
-        )}
+          <CardTitle>
+            {table ? `${table.number} 号桌订单` : "订单概要"}
+          </CardTitle>
+        </div>
+        <Button variant="ghost" size="icon" onClick={() => setIsExpanded(false)} aria-label="收起订单概要">
+          <ChevronDown className="h-5 w-5" />
+        </Button>
       </CardHeader>
+      {table && table.order.length === 0 && !isExpanded && (
+         <CardDescription className="px-6 pb-2">您的订单是空的。请从菜单添加菜品。</CardDescription>
+      )}
+      {!table && !isExpanded && (
+          <CardDescription className="px-6 pb-2">请选择一个餐桌以查看订单。</CardDescription>
+      )}
+      
       <CardContent className="flex-1 overflow-y-auto">
         {!table ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-10">
@@ -65,13 +99,14 @@ export default function OrderSummary({ table, onUpdateQuantity, onRemoveItem }: 
             <Separator className="my-4" />
             <div className="flex justify-between items-center text-xl font-bold">
               <span>总计：</span>
-              <span>￥{calculateTotal(table.order).toFixed(2)}</span>
+              <span>￥{orderTotal.toFixed(2)}</span>
             </div>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-10">
              <Info className="h-10 w-10 mb-2" />
             <p>订单中还没有菜品。</p>
+            <p className="text-xs mt-1">请从菜单添加菜品。</p>
           </div>
         )}
       </CardContent>
@@ -85,3 +120,4 @@ export default function OrderSummary({ table, onUpdateQuantity, onRemoveItem }: 
     </Card>
   );
 }
+
