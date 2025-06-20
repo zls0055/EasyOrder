@@ -23,7 +23,7 @@ interface CategoryInfo {
 
 export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) {
   const [selectedCategoryName, setSelectedCategoryName] = useState<string>('');
-  const [isCategoryListVisible, setIsCategoryListVisible] = useState(true);
+  const [isCategoryListVisible, setIsCategoryListVisible] = useState(false);
 
   const availableCategories: CategoryInfo[] = useMemo(() => {
     const allCats = dishes.map(d => d.category);
@@ -60,7 +60,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
 
   const handleCategorySelect = (categoryName: string) => {
     setSelectedCategoryName(categoryName);
-    setIsCategoryListVisible(false); // Hide the list after selection
+    setIsCategoryListVisible(false); 
   };
 
   if (dishes.length === 0) {
@@ -87,7 +87,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
           <div className="flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
               <Utensils className="h-6 w-6 text-primary" />
-              <CardTitle>菜单</CardTitle>
+              <CardTitle>菜单{selectedCategoryName && ` - ${selectedCategoryName}`}</CardTitle>
             </div>
           </div>
           {!isTableSelected && (
@@ -116,7 +116,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
                   <TabsTrigger
                     key={category.name}
                     value={category.name}
-                    className="inline-flex items-center text-sm ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm w-full justify-start px-3 py-4 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50"
+                    className="whitespace-nowrap inline-flex items-center text-sm ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm w-full justify-start px-3 py-4 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50"
                   >
                     {category.name} ({category.count})
                   </TabsTrigger>
@@ -187,3 +187,4 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
     </>
   );
 }
+
