@@ -22,21 +22,7 @@ interface CategoryInfo {
 
 export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) {
   const [selectedCategoryName, setSelectedCategoryName] = useState<string>('');
-  const [isCategoryListVisible, setIsCategoryListVisible] = useState(true);
-  const [isScrolledToTop, setIsScrolledToTop] = useState(true);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolledToTop(window.scrollY < 5); // Use a small threshold for robustness
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Initial check
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
+  const [isCategoryListVisible, setIsCategoryListVisible] = useState(true); // Default to visible
 
   const availableCategories: CategoryInfo[] = useMemo(() => {
     const allCats = dishes.map(d => d.category);
@@ -88,8 +74,6 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
     );
   }
 
-  const showCategoryList = isCategoryListVisible && isScrolledToTop;
-
   return (
     <>
       <Card className="shadow-lg">
@@ -111,9 +95,9 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
             <Tabs
               value={selectedCategoryName}
               onValueChange={setSelectedCategoryName}
-              className="flex flex-row w-full min-h-[60vh] relative"
+              className="flex flex-row w-full min-h-[60vh] relative" // Added relative positioning
             >
-              {showCategoryList && (
+              {isCategoryListVisible && ( // Conditionally render based on isCategoryListVisible
                 <TabsList className="absolute top-0 left-0 h-full flex flex-col items-stretch justify-start p-2 space-y-1 border-r border-border bg-card shadow-xl z-30 w-[240px] overflow-y-auto">
                   {availableCategories.map((category) => (
                     <TabsTrigger
