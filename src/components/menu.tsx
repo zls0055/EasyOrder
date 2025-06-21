@@ -66,9 +66,9 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
   if (dishes.length === 0) {
     return (
       <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Utensils className="h-6 w-6 text-primary" />
+        <CardHeader className="p-4">
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <Utensils className="h-5 w-5 text-primary" />
             菜单
           </CardTitle>
           <CardDescription>当前菜单为空。</CardDescription>
@@ -83,11 +83,11 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
   return (
     <>
       <Card className="shadow-lg">
-        <CardHeader>
+        <CardHeader className="p-4">
           <div className="flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
-              <Utensils className="h-6 w-6 text-primary" />
-              <CardTitle>菜单{selectedCategoryName && ` - ${selectedCategoryName}`}</CardTitle>
+              <Utensils className="h-5 w-5 text-primary" />
+              <CardTitle className="text-xl">菜单{selectedCategoryName && ` - ${selectedCategoryName}`}</CardTitle>
             </div>
           </div>
         </CardHeader>
