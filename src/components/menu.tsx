@@ -105,7 +105,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
             >
               <TabsList
                 className={cn(
-                  "h-auto fixed top-20 left-0 bottom-20 flex flex-col items-stretch justify-start p-2 space-y-1 border-y border-r rounded-r-lg border-border bg-card shadow-xl z-40 w-[240px] overflow-y-auto",
+                  "h-auto fixed top-20 left-0 bottom-20 flex flex-col items-stretch justify-start p-2 space-y-1 border-y border-r rounded-r-lg border-border bg-card shadow-xl z-40 w-48 overflow-y-auto",
                   "transition-all duration-300 ease-in-out",
                   isCategoryListVisible
                     ? "translate-x-0 opacity-100"
@@ -116,7 +116,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
                   <TabsTrigger
                     key={category.name}
                     value={category.name}
-                    className="whitespace-nowrap inline-flex items-center text-sm ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm w-full justify-start px-3 py-4 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50"
+                    className="inline-flex items-center text-sm ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm w-full justify-start px-3 py-4 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50"
                   >
                     {category.name} ({category.count})
                   </TabsTrigger>
