@@ -90,11 +90,6 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
               <CardTitle>菜单{selectedCategoryName && ` - ${selectedCategoryName}`}</CardTitle>
             </div>
           </div>
-          {!isTableSelected && (
-            <CardDescription className="text-destructive pt-2">
-              请选择一个餐桌开始点餐。
-            </CardDescription>
-          )}
         </CardHeader>
         <CardContent className="p-0">
           {availableCategories.length > 0 ? (
