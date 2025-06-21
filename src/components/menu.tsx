@@ -126,38 +126,39 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
               <div className="p-4 overflow-y-auto w-full h-full">
                 {selectedCategoryName ? (
                   <TabsContent value={selectedCategoryName} className="mt-0 w-full h-full">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                       {dishes
                         .filter((dish) => dish.category === selectedCategoryName)
                         .map((dish) => (
                           <Card key={dish.id} className="flex flex-col justify-between shadow-md hover:shadow-xl transition-shadow duration-300">
-                            <CardHeader>
-                              <div className="relative w-full h-40 mb-2 rounded-md overflow-hidden">
+                            <CardHeader className="p-3">
+                              <div className="relative w-full h-24 mb-2 rounded-md overflow-hidden">
                                 <Image
                                   src={dish.imagePath}
                                   alt={dish.name}
                                   fill
                                   style={{ objectFit: 'cover' }}
-                                  sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 100vw"
+                                  sizes="(min-width: 1024px) 20vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw"
                                   data-ai-hint={dish.imageHint}
                                   priority={['dish-9', 'dish-10', 'dish-11', 'dish-69', 'dish-77', 'dish-95', 'dish-112'].includes(dish.id)}
                                 />
                               </div>
-                              <CardTitle className="text-xl">{dish.name}</CardTitle>
-                              <CardDescription className="text-lg font-semibold text-primary">
+                              <CardTitle className="text-base font-semibold line-clamp-1">{dish.name}</CardTitle>
+                              <CardDescription className="text-sm font-medium text-primary">
                                 ￥{dish.price.toFixed(2)}
                               </CardDescription>
                             </CardHeader>
-                            <CardFooter>
+                            <CardFooter className="p-3 pt-0">
                               <Button
+                                size="sm"
                                 variant="default"
                                 className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
                                 onClick={() => onAddDish(dish)}
                                 disabled={!isTableSelected}
                                 aria-label={`将 ${dish.name} 加入订单`}
                               >
-                                <ShoppingCart className="mr-2 h-5 w-5" />
-                                加入订单
+                                <ShoppingCart className="mr-1 h-4 w-4" />
+                                <span>加入订单</span>
                               </Button>
                             </CardFooter>
                           </Card>
@@ -183,7 +184,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
         aria-label={isCategoryListVisible ? "隐藏菜单分类" : "显示菜单分类"}
       >
         {isCategoryListVisible ? <XIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
-        <span>
+        <span className="ml-2">
           {isCategoryListVisible
             ? '收起分类'
             : selectedCategoryName || '查看分类'}
