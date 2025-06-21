@@ -105,7 +105,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
             >
               <TabsList
                 className={cn(
-                  "fixed top-20 left-0 bottom-20 flex flex-col items-stretch justify-start p-2 space-y-1 border-y border-r rounded-r-lg border-border bg-card shadow-xl z-40 w-[240px] overflow-y-auto",
+                  "h-auto fixed top-20 left-0 bottom-20 flex flex-col items-stretch justify-start p-2 space-y-1 border-y border-r rounded-r-lg border-border bg-card shadow-xl z-40 w-[240px] overflow-y-auto",
                   "transition-all duration-300 ease-in-out",
                   isCategoryListVisible
                     ? "translate-x-0 opacity-100"
