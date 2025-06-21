@@ -177,9 +177,9 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
       </Card>
 
       <Button
-        variant="default"
+        variant="secondary"
         size="lg"
-        className="fixed bottom-6 left-6 z-40 shadow-xl rounded-lg bg-accent hover:bg-accent/90 text-accent-foreground flex items-center"
+        className="fixed bottom-6 left-6 z-40 shadow-xl rounded-lg flex items-center"
         onClick={() => setIsCategoryListVisible(!isCategoryListVisible)}
         aria-label={isCategoryListVisible ? "隐藏菜单分类" : "显示菜单分类"}
       >
