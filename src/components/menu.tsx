@@ -177,12 +177,17 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
 
       <Button
         variant="default"
-        size="icon"
+        size="lg"
         className="fixed bottom-6 left-6 z-40 shadow-xl rounded-lg bg-accent hover:bg-accent/90 text-accent-foreground flex items-center"
         onClick={() => setIsCategoryListVisible(!isCategoryListVisible)}
         aria-label={isCategoryListVisible ? "隐藏菜单分类" : "显示菜单分类"}
       >
         {isCategoryListVisible ? <XIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
+        <span>
+          {isCategoryListVisible
+            ? '收起分类'
+            : selectedCategoryName || '查看分类'}
+        </span>
       </Button>
     </>
   );
