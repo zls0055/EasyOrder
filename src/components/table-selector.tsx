@@ -28,7 +28,7 @@ export default function TableSelector({ tables, selectedTableId, onSelectTable }
     return (
       <Button
         variant="default"
-        size="lg"
+        size="default"
         className="fixed top-6 left-6 z-50 shadow-xl rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center space-x-2"
         onClick={() => setIsExpanded(true)}
         aria-label="选择餐桌"
