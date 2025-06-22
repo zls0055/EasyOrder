@@ -8,6 +8,7 @@ import { ShoppingCart, Utensils, Menu as MenuIcon, X as XIcon } from 'lucide-rea
 import React, { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 
+
 interface MenuProps {
   dishes: Dish[];
   onAddDish: (dish: Dish) => void;
@@ -134,7 +135,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
                               <Button
                                 size="sm"
                                 variant="default"
-                                className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
+                                className="w-full"
                                 onClick={() => onAddDish(dish)}
                                 disabled={!isTableSelected}
                                 aria-label={`将 ${dish.name} 加入订单`}
