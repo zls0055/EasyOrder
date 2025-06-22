@@ -102,7 +102,7 @@ export default function HomePage() {
       />
 
       <main className="flex-grow container mx-auto p-4 md:p-6 lg:p-8">
-        <div className="space-y-6 mt-16 md:mt-0"> {/* Added margin top for smaller screens to avoid overlap with fixed TableSelector button */}
+        <div className="space-y-6">
           <Menu
             dishes={dishes}
             onAddDish={handleAddDishToOrder}
