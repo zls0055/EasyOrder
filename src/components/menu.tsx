@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { Dish } from '@/types';
@@ -6,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShoppingCart, Utensils, Menu as MenuIcon, X as XIcon } from 'lucide-react';
-import Image from 'next/image';
 import React, { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -127,17 +125,6 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
                         .map((dish) => (
                           <Card key={dish.id} className="flex flex-col justify-between shadow-md hover:shadow-xl transition-shadow duration-300">
                             <CardHeader className="p-3">
-                              <div className="relative w-full h-24 mb-2 rounded-md overflow-hidden">
-                                <Image
-                                  src={dish.imagePath}
-                                  alt={dish.name}
-                                  fill
-                                  style={{ objectFit: 'cover' }}
-                                  sizes="(min-width: 1024px) 20vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw"
-                                  data-ai-hint={dish.imageHint}
-                                  priority={['dish-9', 'dish-10', 'dish-11', 'dish-69', 'dish-77', 'dish-95', 'dish-112'].includes(dish.id)}
-                                />
-                              </div>
                               <CardTitle className="text-base font-semibold line-clamp-1">{dish.name}</CardTitle>
                               <CardDescription className="text-sm font-medium text-primary">
                                 ￥{dish.price.toFixed(2)}
