@@ -223,7 +223,13 @@ export const initialTables: Table[] = [
   { id: 'table-4', number: '4', order: [] },
   { id: 'table-5', number: '5', order: [] },
   { id: 'table-6', number: '6', order: [] },
+  { id: 'table-7', number: '7', order: [] },
+  { id: 'table-8', number: '8', order: [] },
+  { id: 'table-9', number: '9', order: [] },
+  { id: 'table-10', number: '10', order: [] },
 ];
+
+    
 
     
 
