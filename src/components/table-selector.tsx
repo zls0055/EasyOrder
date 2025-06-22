@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { Table } from '@/types';
@@ -29,7 +28,7 @@ export default function TableSelector({ tables, selectedTableId, onSelectTable }
       <Button
         variant="default"
         size="default"
-        className="fixed top-6 left-6 z-50 shadow-xl rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center space-x-2"
+        className="fixed top-6 right-6 z-50 shadow-xl rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground flex items-center space-x-2"
         onClick={() => setIsExpanded(true)}
         aria-label="选择餐桌"
       >
@@ -43,7 +42,7 @@ export default function TableSelector({ tables, selectedTableId, onSelectTable }
   }
 
   return (
-    <Card className="fixed top-6 left-6 z-50 w-full max-w-xs shadow-xl rounded-lg bg-card flex flex-col">
+    <Card className="fixed top-6 right-6 z-50 w-full max-w-xs shadow-xl rounded-lg bg-card flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="flex items-center gap-2">
           <Armchair className="h-6 w-6 text-primary" />
