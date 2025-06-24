@@ -135,7 +135,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
                               <Button
                                 size="sm"
                                 variant="default"
-                                className="w-full"
+                                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                                 onClick={() => onAddDish(dish)}
                                 disabled={!isTableSelected}
                                 aria-label={`将 ${dish.name} 加入订单`}
@@ -161,7 +161,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
 
       <Button
         variant="secondary"
-        size="default"
+        size="sm"
         className="fixed bottom-6 left-6 z-40 shadow-xl rounded-lg flex items-center"
         onClick={() => setIsCategoryListVisible(!isCategoryListVisible)}
         aria-label={isCategoryListVisible ? "隐藏菜单分类" : "显示菜单分类"}
