@@ -1,18 +1,23 @@
+
 "use client";
 
-import type { Dish } from '@/types';
+import type { Dish, Table } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShoppingCart, Utensils, Menu as MenuIcon, X as XIcon } from 'lucide-react';
 import React, { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import TableSelector from '@/components/table-selector';
 
 
 interface MenuProps {
   dishes: Dish[];
   onAddDish: (dish: Dish) => void;
   isTableSelected: boolean;
+  tables: Table[];
+  selectedTableId: string | null;
+  onSelectTable: (tableId: string) => void;
 }
 
 interface CategoryInfo {
@@ -20,7 +25,7 @@ interface CategoryInfo {
   count: number;
 }
 
-export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) {
+export default function Menu({ dishes, onAddDish, isTableSelected, tables, selectedTableId, onSelectTable }: MenuProps) {
   const [selectedCategoryName, setSelectedCategoryName] = useState<string>('');
   const [isCategoryListVisible, setIsCategoryListVisible] = useState(false);
 
@@ -87,6 +92,11 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
               <Utensils className="h-5 w-5 text-primary" />
               <CardTitle className="text-xl">菜单{selectedCategoryName && ` - ${selectedCategoryName}`}</CardTitle>
             </div>
+            <TableSelector
+              tables={tables}
+              selectedTableId={selectedTableId}
+              onSelectTable={onSelectTable}
+            />
         </CardHeader>
         <CardContent className="p-0">
           {availableCategories.length > 0 ? (

@@ -3,7 +3,6 @@
 
 import type { Dish, Table, OrderItem } from '@/types';
 import { initialDishes, initialTables } from '@/lib/data';
-import TableSelector from '@/components/table-selector';
 import Menu from '@/components/menu';
 import OrderSummary from '@/components/order-summary';
 import { Toaster } from "@/components/ui/toaster";
@@ -95,18 +94,15 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <TableSelector
-        tables={tables}
-        selectedTableId={selectedTableId}
-        onSelectTable={handleSelectTable}
-      />
-
       <main className="flex-grow container mx-auto p-4 md:p-6 lg:p-8">
         <div className="space-y-6">
           <Menu
             dishes={dishes}
             onAddDish={handleAddDishToOrder}
             isTableSelected={!!selectedTableId}
+            tables={tables}
+            selectedTableId={selectedTableId}
+            onSelectTable={handleSelectTable}
           />
         </div>
       </main>
