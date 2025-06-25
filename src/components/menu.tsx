@@ -82,7 +82,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
   return (
     <>
       <Card className="shadow-lg">
-        <CardHeader className="p-4 flex flex-row items-center justify-between">
+        <CardHeader className="p-4 flex flex-row items-center justify-between sticky top-0 z-10 bg-card border-b">
             <div className="flex items-center gap-2">
               <Utensils className="h-5 w-5 text-primary" />
               <CardTitle className="text-xl">菜单{selectedCategoryName && ` - ${selectedCategoryName}`}</CardTitle>
