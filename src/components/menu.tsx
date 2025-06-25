@@ -82,13 +82,11 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
   return (
     <>
       <Card className="shadow-lg">
-        <CardHeader className="p-4">
-          <div className="flex flex-row items-center justify-between">
+        <CardHeader className="p-4 flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
               <Utensils className="h-5 w-5 text-primary" />
               <CardTitle className="text-xl">菜单{selectedCategoryName && ` - ${selectedCategoryName}`}</CardTitle>
             </div>
-          </div>
         </CardHeader>
         <CardContent className="p-0">
           {availableCategories.length > 0 ? (
@@ -124,27 +122,27 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
                       {dishes
                         .filter((dish) => dish.category === selectedCategoryName)
                         .map((dish) => (
-                          <Card key={dish.id} className="flex flex-col justify-between shadow-md hover:shadow-xl transition-shadow duration-300">
+                           <Card key={dish.id} className="flex flex-col justify-between shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden">
                             <CardHeader className="p-3">
-                              <CardTitle className="text-base font-semibold line-clamp-1">{dish.name}</CardTitle>
-                              <CardDescription className="text-sm font-medium text-primary">
-                                ￥{dish.price.toFixed(2)}
-                              </CardDescription>
+                                <CardTitle className="text-base font-semibold line-clamp-1">{dish.name}</CardTitle>
+                                <CardDescription className="text-sm font-medium text-primary">
+                                    ￥{dish.price.toFixed(2)}
+                                </CardDescription>
                             </CardHeader>
                             <CardFooter className="p-3 pt-0">
-                              <Button
-                                size="sm"
-                                variant="default"
-                                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-                                onClick={() => onAddDish(dish)}
-                                disabled={!isTableSelected}
-                                aria-label={`将 ${dish.name} 加入订单`}
-                              >
-                                <ShoppingCart className="mr-1 h-4 w-4" />
-                                <span>加入订单</span>
-                              </Button>
+                                <Button
+                                    size="sm"
+                                    variant="default"
+                                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                                    onClick={() => onAddDish(dish)}
+                                    disabled={!isTableSelected}
+                                    aria-label={`将 ${dish.name} 加入订单`}
+                                >
+                                    <ShoppingCart className="mr-1 h-4 w-4" />
+                                    <span>加入订单</span>
+                                </Button>
                             </CardFooter>
-                          </Card>
+                        </Card>
                         ))}
                     </div>
                   </TabsContent>
@@ -161,7 +159,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected }: MenuProps) 
 
       <Button
         variant="secondary"
-        size="icon"
+        size="default"
         className="fixed bottom-6 left-6 z-40 shadow-xl rounded-lg"
         onClick={() => setIsCategoryListVisible(!isCategoryListVisible)}
         aria-label={isCategoryListVisible ? "隐藏菜单分类" : "显示菜单分类"}
