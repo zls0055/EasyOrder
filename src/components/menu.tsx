@@ -187,7 +187,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
             <div className="flex items-center gap-2 w-full md:w-auto">
               <Utensils className="h-5 w-5 text-primary" />
               <CardTitle className="text-xl whitespace-nowrap">
-                {isSearching ? '搜索结果' : (selectedCategoryName ? `菜单 - ${selectedCategoryName}` : '菜单')}
+                {isSearching ? '搜索结果' : '菜单'}
               </CardTitle>
             </div>
             <div className="flex items-center gap-2 w-full md:ml-auto md:w-auto">
