@@ -22,6 +22,13 @@ export default function OrderSummary({ table, onUpdateQuantity, onRemoveItem, on
     return order.reduce((sum, item) => sum + item.dish.price * item.quantity, 0);
   };
 
+  const handlePlaceOrderClick = () => {
+    if (table) {
+      onPlaceOrder(table.id);
+      setIsExpanded(false);
+    }
+  };
+
   const orderTotal = table && table.order.length > 0 ? calculateTotal(table.order) : 0;
   const itemCount = table ? table.order.reduce((sum, item) => sum + item.quantity, 0) : 0;
 
@@ -116,7 +123,7 @@ export default function OrderSummary({ table, onUpdateQuantity, onRemoveItem, on
           <Button
             size="lg"
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-            onClick={() => table && onPlaceOrder(table.id)}
+            onClick={handlePlaceOrderClick}
           >
             下单
           </Button>
