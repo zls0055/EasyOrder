@@ -160,7 +160,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
   if (dishes.length === 0) {
     return (
       <Card className="shadow-lg rounded-none md:rounded-lg">
-        <CardHeader className="p-4">
+        <CardHeader className="p-2">
           <CardTitle className="flex items-center gap-2 text-xl">
             <Utensils className="h-5 w-5 text-primary" />
             菜单
@@ -214,7 +214,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
   return (
     <>
       <Card className="shadow-lg rounded-none md:rounded-lg">
-        <CardHeader className="p-4 flex flex-row items-center justify-between gap-4 sticky top-0 z-10 bg-card border-b">
+        <CardHeader className="p-2 flex flex-row items-center justify-between gap-4 sticky top-0 z-10 bg-card border-b">
             <div className="flex items-center gap-2">
               <Utensils className="h-5 w-5 text-primary" />
               <CardTitle className="text-xl whitespace-nowrap">
