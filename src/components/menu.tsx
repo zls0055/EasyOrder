@@ -183,16 +183,16 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
   return (
     <>
       <Card className="shadow-lg rounded-none md:rounded-lg">
-        <CardHeader className="p-4 flex flex-col md:flex-row items-center gap-4 sticky top-0 z-10 bg-card border-b">
-            <div className="flex items-center gap-2 w-full md:w-auto">
+        <CardHeader className="p-4 flex flex-row items-center justify-between gap-4 sticky top-0 z-10 bg-card border-b">
+            <div className="flex items-center gap-2">
               <Utensils className="h-5 w-5 text-primary" />
               <CardTitle className="text-xl whitespace-nowrap">
                 {isSearching ? '搜索结果' : '菜单'}
               </CardTitle>
             </div>
-            <div className="flex items-center gap-2 w-full md:ml-auto md:w-auto">
+            <div className="flex items-center gap-2">
               {isSearchVisible ? (
-                  <div className="relative w-full md:w-64">
+                  <div className="relative w-48 md:w-64">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                           ref={searchInputRef}
