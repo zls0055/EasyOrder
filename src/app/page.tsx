@@ -94,17 +94,15 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <main className="flex-grow container mx-auto p-4 md:p-6 lg:p-8">
-        <div className="space-y-6">
-          <Menu
-            dishes={dishes}
-            onAddDish={handleAddDishToOrder}
-            isTableSelected={!!selectedTableId}
-            tables={tables}
-            selectedTableId={selectedTableId}
-            onSelectTable={handleSelectTable}
-          />
-        </div>
+      <main className="flex-grow">
+        <Menu
+          dishes={dishes}
+          onAddDish={handleAddDishToOrder}
+          isTableSelected={!!selectedTableId}
+          tables={tables}
+          selectedTableId={selectedTableId}
+          onSelectTable={handleSelectTable}
+        />
       </main>
 
       <OrderSummary
