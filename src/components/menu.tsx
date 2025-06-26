@@ -10,6 +10,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import TableSelector from '@/components/table-selector';
 import { Input } from './ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 
 
 interface MenuProps {
@@ -30,10 +31,8 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
   const [selectedCategoryName, setSelectedCategoryName] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isCategoryListVisible, setIsCategoryListVisible] = useState(false);
-  const [isSearchVisible, setIsSearchVisible] = useState(false);
   const categoryListRef = useRef<HTMLDivElement>(null);
   const categoryButtonRef = useRef<HTMLButtonElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const availableCategories: CategoryInfo[] = useMemo(() => {
     const allCats = dishes.map(d => d.category);
@@ -93,12 +92,6 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isCategoryListVisible]);
-
-  useEffect(() => {
-    if (isSearchVisible) {
-      searchInputRef.current?.focus();
-    }
-  }, [isSearchVisible]);
 
   const handleCategorySelect = (categoryName: string) => {
     setSelectedCategoryName(categoryName);
@@ -191,41 +184,33 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
               </CardTitle>
             </div>
             <div className="flex items-center gap-2">
-              {isSearchVisible ? (
-                  <div className="relative w-48 md:w-64">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="icon" aria-label="打开搜索">
+                    <Search className="h-5 w-5" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80" align="end">
+                  <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
-                          ref={searchInputRef}
+                          autoFocus
                           type="search"
                           placeholder="搜索所有菜品..."
-                          className="w-full pl-9 pr-9"
+                          className="w-full pl-9"
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
                           aria-label="搜索菜品"
                       />
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-0 top-1/2 -translate-y-1/2 h-9 w-9"
-                        onClick={() => {
-                          setIsSearchVisible(false);
-                          setSearchQuery('');
-                        }}
-                        aria-label="关闭搜索"
-                      >
-                        <XIcon className="h-4 w-4" />
-                      </Button>
                   </div>
-              ) : (
-                  <Button variant="ghost" size="icon" onClick={() => setIsSearchVisible(true)} aria-label="打开搜索">
-                      <Search className="h-5 w-5" />
-                  </Button>
-              )}
-                <TableSelector
-                  tables={tables}
-                  selectedTableId={selectedTableId}
-                  onSelectTable={onSelectTable}
-                />
+                </PopoverContent>
+              </Popover>
+
+              <TableSelector
+                tables={tables}
+                selectedTableId={selectedTableId}
+                onSelectTable={onSelectTable}
+              />
             </div>
         </CardHeader>
         <CardContent className="p-0">
