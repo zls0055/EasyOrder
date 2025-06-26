@@ -36,7 +36,7 @@ export default function OrderSummary({ table, onUpdateQuantity, onRemoveItem, on
       <Button
         variant="accent"
         size="default"
-        className="fixed bottom-6 right-6 z-50 shadow-xl rounded-lg flex items-center space-x-2"
+        className="fixed bottom-6 right-4 z-50 shadow-xl rounded-lg flex items-center space-x-2"
         onClick={() => setIsExpanded(true)}
         aria-label="查看订单详情"
       >
@@ -54,7 +54,7 @@ export default function OrderSummary({ table, onUpdateQuantity, onRemoveItem, on
   }
 
   return (
-    <Card className="fixed bottom-6 right-6 z-50 w-full max-w-xs shadow-xl rounded-lg bg-card flex flex-col max-h-[70vh]">
+    <Card className="fixed bottom-6 right-4 z-50 w-full max-w-xs shadow-xl rounded-lg bg-card flex flex-col max-h-[70vh]">
       <CardHeader className="flex flex-row items-center justify-between p-3">
         <div className="flex items-center gap-2">
           <ShoppingBag className="h-5 w-5 text-primary" />
