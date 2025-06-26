@@ -169,7 +169,7 @@ export default function HomePage() {
       <Button
         variant="accent"
         size="icon"
-        className="fixed bottom-6 left-20 z-40 shadow-xl rounded-lg"
+        className="fixed bottom-6 left-16 z-40 shadow-xl rounded-lg"
         onClick={() => setIsHistoryVisible(true)}
         aria-label="查看历史订单"
       >

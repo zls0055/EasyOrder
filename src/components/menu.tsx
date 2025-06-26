@@ -307,7 +307,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
         ref={categoryButtonRef}
         variant="accent"
         size="icon"
-        className="fixed bottom-6 left-6 z-40 shadow-xl rounded-lg"
+        className="fixed bottom-6 left-4 z-40 shadow-xl rounded-lg"
         onClick={() => setIsCategoryListVisible(!isCategoryListVisible)}
         aria-label={isCategoryListVisible ? "隐藏菜单分类" : "显示菜单分类"}
       >
