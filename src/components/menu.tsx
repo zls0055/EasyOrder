@@ -4,7 +4,7 @@
 import type { Dish, Table } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ShoppingCart, Utensils, Menu as MenuIcon, X as XIcon, Search } from 'lucide-react';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { cn } from '@/lib/utils';
@@ -30,8 +30,10 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
   const [selectedCategoryName, setSelectedCategoryName] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isCategoryListVisible, setIsCategoryListVisible] = useState(false);
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
   const categoryListRef = useRef<HTMLDivElement>(null);
   const categoryButtonRef = useRef<HTMLButtonElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const availableCategories: CategoryInfo[] = useMemo(() => {
     const allCats = dishes.map(d => d.category);
@@ -91,6 +93,12 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isCategoryListVisible]);
+
+  useEffect(() => {
+    if (isSearchVisible) {
+      searchInputRef.current?.focus();
+    }
+  }, [isSearchVisible]);
 
   const handleCategorySelect = (categoryName: string) => {
     setSelectedCategoryName(categoryName);
@@ -183,17 +191,36 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
               </CardTitle>
             </div>
             <div className="flex items-center gap-2 w-full md:ml-auto md:w-auto">
-                <div className="relative w-full">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        type="search"
-                        placeholder="搜索所有菜品..."
-                        className="w-full pl-9"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        aria-label="搜索菜品"
-                    />
-                </div>
+              {isSearchVisible ? (
+                  <div className="relative w-full md:w-64">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                          ref={searchInputRef}
+                          type="search"
+                          placeholder="搜索所有菜品..."
+                          className="w-full pl-9 pr-9"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          aria-label="搜索菜品"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-1/2 -translate-y-1/2 h-9 w-9"
+                        onClick={() => {
+                          setIsSearchVisible(false);
+                          setSearchQuery('');
+                        }}
+                        aria-label="关闭搜索"
+                      >
+                        <XIcon className="h-4 w-4" />
+                      </Button>
+                  </div>
+              ) : (
+                  <Button variant="ghost" size="icon" onClick={() => setIsSearchVisible(true)} aria-label="打开搜索">
+                      <Search className="h-5 w-5" />
+                  </Button>
+              )}
                 <TableSelector
                   tables={tables}
                   selectedTableId={selectedTableId}
