@@ -12,9 +12,10 @@ interface OrderSummaryProps {
   table: Table | undefined;
   onUpdateQuantity: (dishId: string, change: number) => void;
   onRemoveItem: (dishId: string) => void;
+  onPlaceOrder: (tableId: string) => void;
 }
 
-export default function OrderSummary({ table, onUpdateQuantity, onRemoveItem }: OrderSummaryProps) {
+export default function OrderSummary({ table, onUpdateQuantity, onRemoveItem, onPlaceOrder }: OrderSummaryProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const calculateTotal = (order: OrderItem[]): number => {
@@ -112,8 +113,12 @@ export default function OrderSummary({ table, onUpdateQuantity, onRemoveItem }: 
       </CardContent>
       {table && table.order.length > 0 && (
         <CardFooter>
-          <Button size="lg" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-            下单 (未实现)
+          <Button
+            size="lg"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+            onClick={() => table && onPlaceOrder(table.id)}
+          >
+            下单
           </Button>
         </CardFooter>
       )}

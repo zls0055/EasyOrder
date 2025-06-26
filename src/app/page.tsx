@@ -1,18 +1,22 @@
 
 "use client";
 
-import type { Dish, Table, OrderItem } from '@/types';
+import type { Dish, Table, OrderItem, PlacedOrder } from '@/types';
 import { initialDishes, initialTables } from '@/lib/data';
 import Menu from '@/components/menu';
 import OrderSummary from '@/components/order-summary';
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from 'react';
+import PlacedOrdersSheet from '@/components/placed-orders-sheet';
+import { Button } from '@/components/ui/button';
+import { History } from 'lucide-react';
 
 export default function HomePage() {
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
+  const [isHistoryVisible, setIsHistoryVisible] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -90,6 +94,56 @@ export default function HomePage() {
     );
   };
 
+  const calculateTotal = (order: OrderItem[]): number => {
+    return order.reduce((sum, item) => sum + item.dish.price * item.quantity, 0);
+  };
+
+  const handlePlaceOrder = (tableId: string) => {
+    const tableToUpdate = tables.find(t => t.id === tableId);
+    if (!tableToUpdate || tableToUpdate.order.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "下单失败",
+        description: "订单为空，无法下单。",
+      });
+      return;
+    }
+
+    const newPlacedOrder: PlacedOrder = {
+      id: new Date().toISOString() + `-${tableId}`,
+      tableId: tableToUpdate.id,
+      tableNumber: tableToUpdate.number,
+      order: tableToUpdate.order,
+      total: calculateTotal(tableToUpdate.order),
+      placedAt: new Date().toISOString(),
+    };
+
+    try {
+      const existingOrdersRaw = localStorage.getItem('placedOrders');
+      const existingOrders: PlacedOrder[] = existingOrdersRaw ? JSON.parse(existingOrdersRaw) : [];
+      const updatedOrders = [...existingOrders, newPlacedOrder];
+      localStorage.setItem('placedOrders', JSON.stringify(updatedOrders));
+
+      setTables(prevTables =>
+        prevTables.map(table =>
+          table.id === tableId ? { ...table, order: [] } : table
+        )
+      );
+
+      toast({
+        title: "下单成功",
+        description: `${tableToUpdate.number}号桌的订单已提交。`,
+      });
+    } catch (error) {
+      console.error("Failed to save order to localStorage", error);
+      toast({
+        variant: "destructive",
+        title: "存储订单失败",
+        description: "无法将订单保存到本地存储。",
+      });
+    }
+  };
+
   const selectedTableDetails = tables.find(table => table.id === selectedTableId);
 
   return (
@@ -109,12 +163,18 @@ export default function HomePage() {
         table={selectedTableDetails}
         onUpdateQuantity={handleUpdateOrderItemQuantity}
         onRemoveItem={handleRemoveOrderItem}
+        onPlaceOrder={handlePlaceOrder}
       />
 
-      <footer className="text-center p-4 text-muted-foreground text-sm border-t mt-8">
-        © {new Date().getFullYear()} EasyOrder。简单点餐。
+      <footer className="text-center p-4 text-muted-foreground text-sm border-t mt-8 flex items-center justify-center gap-4">
+        <span>© {new Date().getFullYear()} EasyOrder。简单点餐。</span>
+        <Button variant="outline" size="sm" onClick={() => setIsHistoryVisible(true)}>
+          <History className="mr-2 h-4 w-4" />
+          查看历史订单
+        </Button>
       </footer>
       <Toaster />
+      <PlacedOrdersSheet open={isHistoryVisible} onOpenChange={setIsHistoryVisible} />
     </div>
   );
 }

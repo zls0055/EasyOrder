@@ -17,3 +17,12 @@ export interface Table {
   number: string;
   order: OrderItem[];
 }
+
+export interface PlacedOrder {
+  id: string;
+  tableId: string;
+  tableNumber: string;
+  order: OrderItem[];
+  total: number;
+  placedAt: string; // ISO string
+}
