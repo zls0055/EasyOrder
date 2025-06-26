@@ -167,7 +167,7 @@ export default function HomePage() {
       />
 
       <Button
-        variant="default"
+        variant="accent"
         size="icon"
         className="fixed bottom-6 left-20 z-40 shadow-xl rounded-lg"
         onClick={() => setIsHistoryVisible(true)}

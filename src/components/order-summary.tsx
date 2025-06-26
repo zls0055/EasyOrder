@@ -35,9 +35,9 @@ export default function OrderSummary({ table, onUpdateQuantity, onRemoveItem, on
   if (!isExpanded) {
     return (
       <Button
-        variant="default"
+        variant="accent"
         size="default"
-        className="fixed bottom-6 right-6 z-50 shadow-xl rounded-lg bg-accent hover:bg-accent/90 text-accent-foreground flex items-center space-x-2"
+        className="fixed bottom-6 right-6 z-50 shadow-xl rounded-lg flex items-center space-x-2"
         onClick={() => setIsExpanded(true)}
         aria-label="查看订单详情"
       >

@@ -305,7 +305,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
 
       <Button
         ref={categoryButtonRef}
-        variant="default"
+        variant="accent"
         size="icon"
         className="fixed bottom-6 left-6 z-40 shadow-xl rounded-lg"
         onClick={() => setIsCategoryListVisible(!isCategoryListVisible)}
