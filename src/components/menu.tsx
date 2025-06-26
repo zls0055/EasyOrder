@@ -5,10 +5,11 @@ import type { Dish, Table } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShoppingCart, Utensils, Menu as MenuIcon, X as XIcon } from 'lucide-react';
+import { ShoppingCart, Utensils, Menu as MenuIcon, X as XIcon, Search } from 'lucide-react';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import TableSelector from '@/components/table-selector';
+import { Input } from './ui/input';
 
 
 interface MenuProps {
@@ -27,6 +28,7 @@ interface CategoryInfo {
 
 export default function Menu({ dishes, onAddDish, isTableSelected, tables, selectedTableId, onSelectTable }: MenuProps) {
   const [selectedCategoryName, setSelectedCategoryName] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [isCategoryListVisible, setIsCategoryListVisible] = useState(false);
   const categoryListRef = useRef<HTMLDivElement>(null);
   const categoryButtonRef = useRef<HTMLButtonElement>(null);
@@ -89,8 +91,19 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
 
   const handleCategorySelect = (categoryName: string) => {
     setSelectedCategoryName(categoryName);
+    setSearchQuery(''); // Reset search on category change
     setIsCategoryListVisible(false); 
   };
+
+  const dishesToShow = useMemo(() => {
+    if (!selectedCategoryName) return [];
+    return dishes
+      .filter((dish) => dish.category === selectedCategoryName)
+      .filter((dish) =>
+        dish.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+  }, [dishes, selectedCategoryName, searchQuery]);
+
 
   if (dishes.length === 0) {
     return (
@@ -112,16 +125,29 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
   return (
     <>
       <Card className="shadow-lg rounded-none md:rounded-lg">
-        <CardHeader className="p-4 flex flex-row items-center justify-between sticky top-0 z-10 bg-card border-b">
-            <div className="flex items-center gap-2">
+        <CardHeader className="p-4 flex flex-col md:flex-row items-center gap-4 sticky top-0 z-10 bg-card border-b">
+            <div className="flex items-center gap-2 w-full md:w-auto">
               <Utensils className="h-5 w-5 text-primary" />
-              <CardTitle className="text-xl">菜单{selectedCategoryName && ` - ${selectedCategoryName}`}</CardTitle>
+              <CardTitle className="text-xl whitespace-nowrap">菜单{selectedCategoryName && ` - ${selectedCategoryName}`}</CardTitle>
             </div>
-            <TableSelector
-              tables={tables}
-              selectedTableId={selectedTableId}
-              onSelectTable={onSelectTable}
-            />
+            <div className="flex items-center gap-2 w-full md:ml-auto md:w-auto">
+                <div className="relative w-full">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="search"
+                        placeholder="在分类内搜索..."
+                        className="w-full pl-9"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        aria-label="搜索菜品"
+                    />
+                </div>
+                <TableSelector
+                  tables={tables}
+                  selectedTableId={selectedTableId}
+                  onSelectTable={onSelectTable}
+                />
+            </div>
         </CardHeader>
         <CardContent className="p-0">
           {availableCategories.length > 0 ? (
@@ -154,11 +180,10 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
               <div className="p-4 overflow-y-auto w-full h-full">
                 {selectedCategoryName ? (
                   <TabsContent value={selectedCategoryName} className="mt-0 w-full h-full">
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                      {dishes
-                        .filter((dish) => dish.category === selectedCategoryName)
-                        .map((dish) => (
-                           <Card key={dish.id} className="flex flex-col justify-between shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+                    {dishesToShow.length > 0 ? (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                        {dishesToShow.map((dish) => (
+                          <Card key={dish.id} className="flex flex-col justify-between shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden">
                             <CardHeader className="p-3">
                                 <CardTitle className="text-base font-semibold line-clamp-1">{dish.name}</CardTitle>
                                 <CardDescription className="text-sm font-medium text-primary">
@@ -180,7 +205,16 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
                             </CardFooter>
                         </Card>
                         ))}
-                    </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground">
+                        <Search className="h-10 w-10 mb-2" />
+                        <p className="font-semibold">未找到匹配的菜品</p>
+                        <p className="text-sm mt-1">
+                          请尝试其他搜索词，或切换菜品分类。
+                        </p>
+                      </div>
+                    )}
                   </TabsContent>
                 ) : (
                   <p className="text-muted-foreground">请选择一个分类查看菜品。</p>
