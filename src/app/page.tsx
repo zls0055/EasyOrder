@@ -147,7 +147,7 @@ export default function HomePage() {
   const selectedTableDetails = tables.find(table => table.id === selectedTableId);
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-background pb-20">
       <main className="flex-grow">
         <Menu
           dishes={dishes}
@@ -166,13 +166,16 @@ export default function HomePage() {
         onPlaceOrder={handlePlaceOrder}
       />
 
-      <footer className="text-center p-4 text-muted-foreground text-sm border-t mt-8 flex items-center justify-center gap-4">
-        <span>© {new Date().getFullYear()} EasyOrder。简单点餐。</span>
-        <Button variant="outline" size="sm" onClick={() => setIsHistoryVisible(true)}>
-          <History className="mr-2 h-4 w-4" />
-          查看历史订单
-        </Button>
-      </footer>
+      <Button
+        variant="default"
+        size="icon"
+        className="fixed bottom-6 left-20 z-40 shadow-xl rounded-lg"
+        onClick={() => setIsHistoryVisible(true)}
+        aria-label="查看历史订单"
+      >
+        <History className="h-5 w-5" />
+      </Button>
+
       <Toaster />
       <PlacedOrdersSheet open={isHistoryVisible} onOpenChange={setIsHistoryVisible} />
     </div>
