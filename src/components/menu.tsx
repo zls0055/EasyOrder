@@ -53,17 +53,21 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
       .filter(catName => !predefinedOrder.includes(catName))
       .map(catName => ({ name: catName, count: categoryCounts[catName] || 0 }));
       
-    return [...orderedCatsInfo, ...otherCatsInfo];
+    return [
+      { name: '全部菜品', count: dishes.length },
+      ...orderedCatsInfo, 
+      ...otherCatsInfo
+    ];
   }, [dishes]);
 
   const isSearching = !!searchQuery.trim();
 
   useEffect(() => {
-    if (isSearching) return; // Don't auto-select a category while searching
+    if (isSearching) return;
     if (availableCategories.length > 0) {
       const currentCategoryExists = availableCategories.some(cat => cat.name === selectedCategoryName);
       if (!selectedCategoryName || !currentCategoryExists) {
-        setSelectedCategoryName(availableCategories[0].name);
+        setSelectedCategoryName('全部菜品');
       }
     } else {
       setSelectedCategoryName('');
@@ -95,7 +99,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
 
   const handleCategorySelect = (categoryName: string) => {
     setSelectedCategoryName(categoryName);
-    setSearchQuery(''); // Reset search on category change
+    setSearchQuery('');
     setIsCategoryListVisible(false); 
   };
 
@@ -104,7 +108,6 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
     const lowerCaseQuery = searchQuery.toLowerCase().trim();
     const filteredDishes = dishes.filter((dish) => dish.name.toLowerCase().includes(lowerCaseQuery));
     
-    // Group results by category
     const grouped: Record<string, Dish[]> = {};
     const categoryOrder = availableCategories.map(c => c.name);
     const orderedGrouped: Record<string, Dish[]> = {};
@@ -116,7 +119,6 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
       grouped[dish.category].push(dish);
     }
     
-    // Order the categories in the search result
     categoryOrder.forEach(catName => {
         if (grouped[catName]) {
             orderedGrouped[catName] = grouped[catName];
@@ -126,8 +128,31 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
     return orderedGrouped;
   }, [dishes, searchQuery, isSearching, availableCategories]);
 
+  const allDishesGrouped = useMemo(() => {
+    const grouped: Record<string, Dish[]> = {};
+    const categoryOrder = availableCategories
+        .map(c => c.name)
+        .filter(name => name !== '全部菜品');
+
+    for (const dish of dishes) {
+      if (!grouped[dish.category]) {
+        grouped[dish.category] = [];
+      }
+      grouped[dish.category].push(dish);
+    }
+    
+    const orderedGrouped: Record<string, Dish[]> = {};
+    categoryOrder.forEach(catName => {
+        if (grouped[catName]) {
+            orderedGrouped[catName] = grouped[catName];
+        }
+    });
+
+    return orderedGrouped;
+  }, [dishes, availableCategories]);
+
   const dishesForCategory = useMemo(() => {
-    if (isSearching || !selectedCategoryName) return [];
+    if (isSearching || !selectedCategoryName || selectedCategoryName === '全部菜品') return [];
     return dishes.filter((dish) => dish.category === selectedCategoryName);
   }, [dishes, selectedCategoryName, isSearching]);
 
@@ -171,6 +196,19 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
           </Button>
       </CardFooter>
     </Card>
+  );
+  
+  const GroupedDishList = ({ groupedDishes }: { groupedDishes: Record<string, Dish[]> }) => (
+    <div className="space-y-6">
+      {Object.entries(groupedDishes).map(([category, dishesInCategory]) => (
+        <div key={category}>
+          <h2 className="text-lg font-semibold mb-3 pb-2 border-b">{category} ({dishesInCategory.length})</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            {dishesInCategory.map((dish) => <DishCard key={dish.id} dish={dish} />)}
+          </div>
+        </div>
+      ))}
+    </div>
   );
 
   return (
@@ -239,24 +277,17 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
                 
                 <div className="p-4 overflow-y-auto w-full h-full">
                   {isSearching ? (
-                    <div className="space-y-6">
-                      {searchResults && Object.keys(searchResults).length > 0 ? (
-                        Object.entries(searchResults).map(([category, dishesInCategory]) => (
-                          <div key={category}>
-                            <h2 className="text-lg font-semibold mb-3 pb-2 border-b">{category} ({dishesInCategory.length})</h2>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                              {dishesInCategory.map((dish) => <DishCard key={dish.id} dish={dish} />)}
-                            </div>
-                          </div>
-                        ))
-                      ) : (
+                    searchResults && Object.keys(searchResults).length > 0 ? (
+                        <GroupedDishList groupedDishes={searchResults} />
+                    ) : (
                         <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground">
                           <Search className="h-10 w-10 mb-2" />
                           <p className="font-semibold">未找到匹配的菜品</p>
                           <p className="text-sm mt-1">请尝试其他搜索词。</p>
                         </div>
-                      )}
-                    </div>
+                    )
+                  ) : selectedCategoryName === '全部菜品' ? (
+                      <GroupedDishList groupedDishes={allDishesGrouped} />
                   ) : (
                     dishesForCategory.length > 0 ? (
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
