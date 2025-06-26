@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Armchair, ChevronDown } from 'lucide-react';
+import { useState } from 'react';
 
 interface TableSelectorProps {
   tables: Table[];
@@ -17,10 +18,16 @@ interface TableSelectorProps {
 }
 
 export default function TableSelector({ tables, selectedTableId, onSelectTable }: TableSelectorProps) {
+  const [isOpen, setIsOpen] = useState(false);
   const selectedTableNumber = selectedTableId ? tables.find(t => t.id === selectedTableId)?.number : null;
 
+  const handleSelect = (tableId: string) => {
+    onSelectTable(tableId);
+    setIsOpen(false);
+  };
+
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="flex items-center gap-2">
           <Armchair className="h-5 w-5" />
@@ -37,7 +44,7 @@ export default function TableSelector({ tables, selectedTableId, onSelectTable }
               <Button
                 key={table.id}
                 variant={selectedTableId === table.id ? 'default' : 'outline'}
-                onClick={() => onSelectTable(table.id)}
+                onClick={() => handleSelect(table.id)}
                 className="text-lg font-semibold"
                 aria-pressed={selectedTableId === table.id}
               >
