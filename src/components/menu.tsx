@@ -4,7 +4,7 @@
 import type { Dish, Table } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShoppingCart, Utensils, Menu as MenuIcon, X as XIcon, Search } from 'lucide-react';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { cn } from '@/lib/utils';
@@ -202,61 +202,61 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
             </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="relative flex flex-row w-full min-h-[60vh]">
-              <TabsList
-                ref={categoryListRef}
-                className={cn(
-                  "h-auto fixed top-20 left-0 bottom-20 flex flex-col items-stretch justify-start p-2 space-y-1 border-y border-r rounded-r-lg border-border bg-card shadow-xl z-40 w-48 overflow-y-auto",
-                  "transition-all duration-300 ease-in-out",
-                  isCategoryListVisible
-                    ? "translate-x-0 opacity-100"
-                    : "-translate-x-full opacity-0 pointer-events-none"
-                )}
-              >
-                {availableCategories.map((category) => (
-                  <TabsTrigger
-                    key={category.name}
-                    value={category.name}
-                    onClick={() => handleCategorySelect(category.name)}
-                    data-state={!isSearching && selectedCategoryName === category.name ? 'active' : 'inactive'}
-                    className="inline-flex items-center text-sm ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm w-full justify-start px-3 py-4 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50"
-                  >
-                    {category.name} ({category.count})
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-              
-              <div className="p-4 overflow-y-auto w-full h-full">
-                {isSearching ? (
-                  <div className="space-y-6">
-                    {searchResults && Object.keys(searchResults).length > 0 ? (
-                      Object.entries(searchResults).map(([category, dishesInCategory]) => (
-                        <div key={category}>
-                          <h2 className="text-lg font-semibold mb-3 pb-2 border-b">{category} ({dishesInCategory.length})</h2>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                            {dishesInCategory.map((dish) => <DishCard key={dish.id} dish={dish} />)}
+          <Tabs value={isSearching ? '__search__' : selectedCategoryName || ''} onValueChange={handleCategorySelect} className="w-full">
+            <div className="relative flex flex-row w-full min-h-[60vh]">
+                <TabsList
+                  ref={categoryListRef}
+                  className={cn(
+                    "h-auto fixed top-20 left-0 bottom-20 flex flex-col items-stretch justify-start p-2 space-y-1 border-y border-r rounded-r-lg border-border bg-card shadow-xl z-40 w-48 overflow-y-auto",
+                    "transition-all duration-300 ease-in-out",
+                    isCategoryListVisible
+                      ? "translate-x-0 opacity-100"
+                      : "-translate-x-full opacity-0 pointer-events-none"
+                  )}
+                >
+                  {availableCategories.map((category) => (
+                    <TabsTrigger
+                      key={category.name}
+                      value={category.name}
+                      className="inline-flex items-center text-sm ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm w-full justify-start px-3 py-4 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50"
+                    >
+                      {category.name} ({category.count})
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+                
+                <div className="p-4 overflow-y-auto w-full h-full">
+                  {isSearching ? (
+                    <div className="space-y-6">
+                      {searchResults && Object.keys(searchResults).length > 0 ? (
+                        Object.entries(searchResults).map(([category, dishesInCategory]) => (
+                          <div key={category}>
+                            <h2 className="text-lg font-semibold mb-3 pb-2 border-b">{category} ({dishesInCategory.length})</h2>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                              {dishesInCategory.map((dish) => <DishCard key={dish.id} dish={dish} />)}
+                            </div>
                           </div>
+                        ))
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground">
+                          <Search className="h-10 w-10 mb-2" />
+                          <p className="font-semibold">未找到匹配的菜品</p>
+                          <p className="text-sm mt-1">请尝试其他搜索词。</p>
                         </div>
-                      ))
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground">
-                        <Search className="h-10 w-10 mb-2" />
-                        <p className="font-semibold">未找到匹配的菜品</p>
-                        <p className="text-sm mt-1">请尝试其他搜索词。</p>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  dishesForCategory.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                      {dishesForCategory.map((dish) => <DishCard key={dish.id} dish={dish} />)}
+                      )}
                     </div>
                   ) : (
-                    <p className="text-muted-foreground p-6">请选择一个分类查看菜品。</p>
-                  )
-                )}
-              </div>
-          </div>
+                    dishesForCategory.length > 0 ? (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                        {dishesForCategory.map((dish) => <DishCard key={dish.id} dish={dish} />)}
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground p-6">请选择一个分类查看菜品。</p>
+                    )
+                  )}
+                </div>
+            </div>
+          </Tabs>
         </CardContent>
       </Card>
 
