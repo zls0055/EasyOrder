@@ -56,10 +56,10 @@ export default function OrderSummary({ table, onUpdateQuantity, onRemoveItem, on
 
   return (
     <Card className="fixed bottom-6 right-6 z-50 w-full max-w-xs shadow-xl rounded-lg bg-card flex flex-col max-h-[70vh]">
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-row items-center justify-between p-4">
         <div className="flex items-center gap-2">
-          <ShoppingBag className="h-6 w-6 text-primary" />
-          <CardTitle>
+          <ShoppingBag className="h-5 w-5 text-primary" />
+          <CardTitle className="text-lg">
             {table ? `${table.number} 号桌订单` : "订单概要"}
           </CardTitle>
         </div>
@@ -74,14 +74,14 @@ export default function OrderSummary({ table, onUpdateQuantity, onRemoveItem, on
           <CardDescription className="px-6 pb-2">请选择一个餐桌以查看订单。</CardDescription>
       )}
       
-      <CardContent className="flex-1 overflow-y-auto">
+      <CardContent className="flex-1 overflow-y-auto p-4 pt-0">
         {!table ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-10">
             <Info className="h-10 w-10 mb-2" />
             <p>请选择一个餐桌以查看订单。</p>
           </div>
         ) : table.order.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {table.order.map((item) => (
               <div key={item.dish.id} className="flex items-center justify-between">
                 <div>
@@ -104,8 +104,8 @@ export default function OrderSummary({ table, onUpdateQuantity, onRemoveItem, on
                 </div>
               </div>
             ))}
-            <Separator className="my-4" />
-            <div className="flex justify-between items-center text-xl font-bold">
+            <Separator className="my-2" />
+            <div className="flex justify-between items-center text-lg font-bold">
               <span>总计：</span>
               <span>￥{orderTotal.toFixed(2)}</span>
             </div>
@@ -119,9 +119,9 @@ export default function OrderSummary({ table, onUpdateQuantity, onRemoveItem, on
         )}
       </CardContent>
       {table && table.order.length > 0 && (
-        <CardFooter>
+        <CardFooter className="p-4 pt-0">
           <Button
-            size="lg"
+            size="default"
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
             onClick={handlePlaceOrderClick}
           >
