@@ -4,7 +4,7 @@
 import type { Dish, Table } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShoppingCart, Utensils, Menu as MenuIcon, X as XIcon, Search } from 'lucide-react';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { cn } from '@/lib/utils';
@@ -55,7 +55,10 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
     return [...orderedCatsInfo, ...otherCatsInfo];
   }, [dishes]);
 
+  const isSearching = !!searchQuery.trim();
+
   useEffect(() => {
+    if (isSearching) return; // Don't auto-select a category while searching
     if (availableCategories.length > 0) {
       const currentCategoryExists = availableCategories.some(cat => cat.name === selectedCategoryName);
       if (!selectedCategoryName || !currentCategoryExists) {
@@ -64,7 +67,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
     } else {
       setSelectedCategoryName('');
     }
-  }, [availableCategories, selectedCategoryName]);
+  }, [availableCategories, selectedCategoryName, isSearching]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -95,14 +98,37 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
     setIsCategoryListVisible(false); 
   };
 
-  const dishesToShow = useMemo(() => {
-    if (!selectedCategoryName) return [];
-    return dishes
-      .filter((dish) => dish.category === selectedCategoryName)
-      .filter((dish) =>
-        dish.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-  }, [dishes, selectedCategoryName, searchQuery]);
+  const searchResults = useMemo(() => {
+    if (!isSearching) return null;
+    const lowerCaseQuery = searchQuery.toLowerCase().trim();
+    const filteredDishes = dishes.filter((dish) => dish.name.toLowerCase().includes(lowerCaseQuery));
+    
+    // Group results by category
+    const grouped: Record<string, Dish[]> = {};
+    const categoryOrder = availableCategories.map(c => c.name);
+    const orderedGrouped: Record<string, Dish[]> = {};
+
+    for (const dish of filteredDishes) {
+      if (!grouped[dish.category]) {
+        grouped[dish.category] = [];
+      }
+      grouped[dish.category].push(dish);
+    }
+    
+    // Order the categories in the search result
+    categoryOrder.forEach(catName => {
+        if (grouped[catName]) {
+            orderedGrouped[catName] = grouped[catName];
+        }
+    });
+
+    return orderedGrouped;
+  }, [dishes, searchQuery, isSearching, availableCategories]);
+
+  const dishesForCategory = useMemo(() => {
+    if (isSearching || !selectedCategoryName) return [];
+    return dishes.filter((dish) => dish.category === selectedCategoryName);
+  }, [dishes, selectedCategoryName, isSearching]);
 
 
   if (dishes.length === 0) {
@@ -122,20 +148,46 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
     );
   }
 
+  const DishCard = ({ dish }: { dish: Dish }) => (
+    <Card key={dish.id} className="flex flex-col justify-between shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+      <CardHeader className="p-3">
+          <CardTitle className="text-base font-semibold line-clamp-1">{dish.name}</CardTitle>
+          <CardDescription className="text-sm font-medium text-primary">
+              ￥{dish.price.toFixed(2)}
+          </CardDescription>
+      </CardHeader>
+      <CardFooter className="p-3 pt-0">
+          <Button
+              size="sm"
+              variant="default"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+              onClick={() => onAddDish(dish)}
+              disabled={!isTableSelected}
+              aria-label={`将 ${dish.name} 加入订单`}
+          >
+              <ShoppingCart className="mr-1 h-4 w-4" />
+              <span>加入订单</span>
+          </Button>
+      </CardFooter>
+    </Card>
+  );
+
   return (
     <>
       <Card className="shadow-lg rounded-none md:rounded-lg">
         <CardHeader className="p-4 flex flex-col md:flex-row items-center gap-4 sticky top-0 z-10 bg-card border-b">
             <div className="flex items-center gap-2 w-full md:w-auto">
               <Utensils className="h-5 w-5 text-primary" />
-              <CardTitle className="text-xl whitespace-nowrap">菜单{selectedCategoryName && ` - ${selectedCategoryName}`}</CardTitle>
+              <CardTitle className="text-xl whitespace-nowrap">
+                {isSearching ? '搜索结果' : (selectedCategoryName ? `菜单 - ${selectedCategoryName}` : '菜单')}
+              </CardTitle>
             </div>
             <div className="flex items-center gap-2 w-full md:ml-auto md:w-auto">
                 <div className="relative w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         type="search"
-                        placeholder="在分类内搜索..."
+                        placeholder="搜索所有菜品..."
                         className="w-full pl-9"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -150,12 +202,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
             </div>
         </CardHeader>
         <CardContent className="p-0">
-          {availableCategories.length > 0 ? (
-            <Tabs
-              value={selectedCategoryName}
-              onValueChange={handleCategorySelect}
-              className="relative flex flex-row w-full min-h-[60vh]"
-            >
+          <div className="relative flex flex-row w-full min-h-[60vh]">
               <TabsList
                 ref={categoryListRef}
                 className={cn(
@@ -170,6 +217,8 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
                   <TabsTrigger
                     key={category.name}
                     value={category.name}
+                    onClick={() => handleCategorySelect(category.name)}
+                    data-state={!isSearching && selectedCategoryName === category.name ? 'active' : 'inactive'}
                     className="inline-flex items-center text-sm ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm w-full justify-start px-3 py-4 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50"
                   >
                     {category.name} ({category.count})
@@ -178,52 +227,36 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
               </TabsList>
               
               <div className="p-4 overflow-y-auto w-full h-full">
-                {selectedCategoryName ? (
-                  <TabsContent value={selectedCategoryName} className="mt-0 w-full h-full">
-                    {dishesToShow.length > 0 ? (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                        {dishesToShow.map((dish) => (
-                          <Card key={dish.id} className="flex flex-col justify-between shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden">
-                            <CardHeader className="p-3">
-                                <CardTitle className="text-base font-semibold line-clamp-1">{dish.name}</CardTitle>
-                                <CardDescription className="text-sm font-medium text-primary">
-                                    ￥{dish.price.toFixed(2)}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardFooter className="p-3 pt-0">
-                                <Button
-                                    size="sm"
-                                    variant="default"
-                                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-                                    onClick={() => onAddDish(dish)}
-                                    disabled={!isTableSelected}
-                                    aria-label={`将 ${dish.name} 加入订单`}
-                                >
-                                    <ShoppingCart className="mr-1 h-4 w-4" />
-                                    <span>加入订单</span>
-                                </Button>
-                            </CardFooter>
-                        </Card>
-                        ))}
-                      </div>
+                {isSearching ? (
+                  <div className="space-y-6">
+                    {searchResults && Object.keys(searchResults).length > 0 ? (
+                      Object.entries(searchResults).map(([category, dishesInCategory]) => (
+                        <div key={category}>
+                          <h2 className="text-lg font-semibold mb-3 pb-2 border-b">{category} ({dishesInCategory.length})</h2>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                            {dishesInCategory.map((dish) => <DishCard key={dish.id} dish={dish} />)}
+                          </div>
+                        </div>
+                      ))
                     ) : (
                       <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground">
                         <Search className="h-10 w-10 mb-2" />
                         <p className="font-semibold">未找到匹配的菜品</p>
-                        <p className="text-sm mt-1">
-                          请尝试其他搜索词，或切换菜品分类。
-                        </p>
+                        <p className="text-sm mt-1">请尝试其他搜索词。</p>
                       </div>
                     )}
-                  </TabsContent>
+                  </div>
                 ) : (
-                  <p className="text-muted-foreground">请选择一个分类查看菜品。</p>
+                  dishesForCategory.length > 0 ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                      {dishesForCategory.map((dish) => <DishCard key={dish.id} dish={dish} />)}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground p-6">请选择一个分类查看菜品。</p>
+                  )
                 )}
               </div>
-            </Tabs>
-          ) : (
-             <p className="text-muted-foreground p-6">当前没有菜品可供选择。</p>
-          )}
+          </div>
         </CardContent>
       </Card>
 
