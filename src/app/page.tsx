@@ -11,6 +11,7 @@ import { useState, useEffect } from 'react';
 import PlacedOrdersSheet from '@/components/placed-orders-sheet';
 import { Button } from '@/components/ui/button';
 import { History } from 'lucide-react';
+import { placeOrder } from '@/ai/flows/order-flow';
 
 export default function HomePage() {
   const [dishes, setDishes] = useState<Dish[]>([]);
@@ -98,7 +99,7 @@ export default function HomePage() {
     return order.reduce((sum, item) => sum + item.dish.price * item.quantity, 0);
   };
 
-  const handlePlaceOrder = (tableId: string) => {
+  const handlePlaceOrder = async (tableId: string) => {
     const tableToUpdate = tables.find(t => t.id === tableId);
     if (!tableToUpdate || tableToUpdate.order.length === 0) {
       toast({
@@ -109,21 +110,30 @@ export default function HomePage() {
       return;
     }
 
-    const newPlacedOrder: PlacedOrder = {
-      id: new Date().toISOString() + `-${tableId}`,
+    const orderPayload = {
       tableId: tableToUpdate.id,
       tableNumber: tableToUpdate.number,
       order: tableToUpdate.order,
       total: calculateTotal(tableToUpdate.order),
-      placedAt: new Date().toISOString(),
     };
 
     try {
+      // Call the server-side flow
+      await placeOrder(orderPayload);
+
+      // Also save to localStorage for local history view
+      const newPlacedOrderForLocal: PlacedOrder = {
+        ...orderPayload,
+        id: new Date().toISOString() + `-${tableId}`, // local id
+        placedAt: new Date().toISOString(),
+      };
       const existingOrdersRaw = localStorage.getItem('placedOrders');
       const existingOrders: PlacedOrder[] = existingOrdersRaw ? JSON.parse(existingOrdersRaw) : [];
-      const updatedOrders = [...existingOrders, newPlacedOrder];
+      const updatedOrders = [...existingOrders, newPlacedOrderForLocal];
       localStorage.setItem('placedOrders', JSON.stringify(updatedOrders));
 
+
+      // Clear the table's order on the client
       setTables(prevTables =>
         prevTables.map(table =>
           table.id === tableId ? { ...table, order: [] } : table
@@ -132,14 +142,14 @@ export default function HomePage() {
 
       toast({
         title: "下单成功",
-        description: `${tableToUpdate.number}号桌的订单已提交。`,
+        description: `${tableToUpdate.number}号桌的订单已成功提交至服务器。`,
       });
     } catch (error) {
-      console.error("Failed to save order to localStorage", error);
+      console.error("Failed to place order on server", error);
       toast({
         variant: "destructive",
-        title: "存储订单失败",
-        description: "无法将订单保存到本地存储。",
+        title: "下单失败",
+        description: "无法将订单提交至服务器。",
       });
     }
   };
