@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShoppingCart, Utensils, Menu as MenuIcon, X as XIcon } from 'lucide-react';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import TableSelector from '@/components/table-selector';
 
@@ -28,6 +28,8 @@ interface CategoryInfo {
 export default function Menu({ dishes, onAddDish, isTableSelected, tables, selectedTableId, onSelectTable }: MenuProps) {
   const [selectedCategoryName, setSelectedCategoryName] = useState<string>('');
   const [isCategoryListVisible, setIsCategoryListVisible] = useState(false);
+  const categoryListRef = useRef<HTMLDivElement>(null);
+  const categoryButtonRef = useRef<HTMLButtonElement>(null);
 
   const availableCategories: CategoryInfo[] = useMemo(() => {
     const allCats = dishes.map(d => d.category);
@@ -61,6 +63,29 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
       setSelectedCategoryName('');
     }
   }, [availableCategories, selectedCategoryName]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        categoryListRef.current &&
+        !categoryListRef.current.contains(event.target as Node) &&
+        categoryButtonRef.current &&
+        !categoryButtonRef.current.contains(event.target as Node)
+      ) {
+        setIsCategoryListVisible(false);
+      }
+    }
+
+    if (isCategoryListVisible) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isCategoryListVisible]);
 
   const handleCategorySelect = (categoryName: string) => {
     setSelectedCategoryName(categoryName);
@@ -106,6 +131,7 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
               className="relative flex flex-row w-full min-h-[60vh]"
             >
               <TabsList
+                ref={categoryListRef}
                 className={cn(
                   "h-auto fixed top-20 left-0 bottom-20 flex flex-col items-stretch justify-start p-2 space-y-1 border-y border-r rounded-r-lg border-border bg-card shadow-xl z-40 w-48 overflow-y-auto",
                   "transition-all duration-300 ease-in-out",
@@ -168,8 +194,9 @@ export default function Menu({ dishes, onAddDish, isTableSelected, tables, selec
       </Card>
 
       <Button
-        variant="secondary"
-        size="default"
+        ref={categoryButtonRef}
+        variant="default"
+        size="icon"
         className="fixed bottom-6 left-6 z-40 shadow-xl rounded-lg"
         onClick={() => setIsCategoryListVisible(!isCategoryListVisible)}
         aria-label={isCategoryListVisible ? "隐藏菜单分类" : "显示菜单分类"}
