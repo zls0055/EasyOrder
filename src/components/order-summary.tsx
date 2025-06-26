@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { Table, OrderItem } from '@/types';
@@ -56,56 +55,56 @@ export default function OrderSummary({ table, onUpdateQuantity, onRemoveItem, on
 
   return (
     <Card className="fixed bottom-6 right-6 z-50 w-full max-w-xs shadow-xl rounded-lg bg-card flex flex-col max-h-[70vh]">
-      <CardHeader className="flex flex-row items-center justify-between p-4">
+      <CardHeader className="flex flex-row items-center justify-between p-3">
         <div className="flex items-center gap-2">
           <ShoppingBag className="h-5 w-5 text-primary" />
-          <CardTitle className="text-lg">
+          <CardTitle className="text-base font-semibold">
             {table ? `${table.number} 号桌订单` : "订单概要"}
           </CardTitle>
         </div>
-        <Button variant="ghost" size="icon" onClick={() => setIsExpanded(false)} aria-label="收起订单概要">
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsExpanded(false)} aria-label="收起订单概要">
           <ChevronDown className="h-5 w-5" />
         </Button>
       </CardHeader>
       {table && table.order.length === 0 && !isExpanded && (
-         <CardDescription className="px-6 pb-2">您的订单是空的。请从菜单添加菜品。</CardDescription>
+         <CardDescription className="px-3 pb-2 text-sm">您的订单是空的。请从菜单添加菜品。</CardDescription>
       )}
       {!table && !isExpanded && (
-          <CardDescription className="px-6 pb-2">请选择一个餐桌以查看订单。</CardDescription>
+          <CardDescription className="px-3 pb-2 text-sm">请选择一个餐桌以查看订单。</CardDescription>
       )}
       
-      <CardContent className="flex-1 overflow-y-auto p-4 pt-0">
+      <CardContent className="flex-1 overflow-y-auto p-3 pt-0">
         {!table ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-10">
             <Info className="h-10 w-10 mb-2" />
             <p>请选择一个餐桌以查看订单。</p>
           </div>
         ) : table.order.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {table.order.map((item) => (
               <div key={item.dish.id} className="flex items-center justify-between">
                 <div>
-                  <p className="font-semibold">{item.dish.name}</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="font-semibold text-sm">{item.dish.name}</p>
+                  <p className="text-xs text-muted-foreground">
                     ￥{item.dish.price.toFixed(2)} x {item.quantity} = ￥{(item.dish.price * item.quantity).toFixed(2)}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon" onClick={() => onUpdateQuantity(item.dish.id, -1)} aria-label={`减少 ${item.dish.name} 的数量`}>
-                    <MinusCircle className="h-5 w-5" />
+                <div className="flex items-center gap-1">
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onUpdateQuantity(item.dish.id, -1)} aria-label={`减少 ${item.dish.name} 的数量`}>
+                    <MinusCircle className="h-4 w-4" />
                   </Button>
-                  <span className="w-6 text-center">{item.quantity}</span>
-                  <Button variant="ghost" size="icon" onClick={() => onUpdateQuantity(item.dish.id, 1)} aria-label={`增加 ${item.dish.name} 的数量`}>
-                    <PlusCircle className="h-5 w-5" />
+                  <span className="w-6 text-center text-sm">{item.quantity}</span>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onUpdateQuantity(item.dish.id, 1)} aria-label={`增加 ${item.dish.name} 的数量`}>
+                    <PlusCircle className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80" onClick={() => onRemoveItem(item.dish.id)} aria-label={`从订单中移除 ${item.dish.name}`}>
-                    <Trash2 className="h-5 w-5" />
+                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80 h-7 w-7" onClick={() => onRemoveItem(item.dish.id)} aria-label={`从订单中移除 ${item.dish.name}`}>
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
             ))}
             <Separator className="my-2" />
-            <div className="flex justify-between items-center text-lg font-bold">
+            <div className="flex justify-between items-center text-base font-bold">
               <span>总计：</span>
               <span>￥{orderTotal.toFixed(2)}</span>
             </div>
@@ -119,7 +118,7 @@ export default function OrderSummary({ table, onUpdateQuantity, onRemoveItem, on
         )}
       </CardContent>
       {table && table.order.length > 0 && (
-        <CardFooter className="p-4 pt-0">
+        <CardFooter className="p-3 pt-0">
           <Button
             size="default"
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
