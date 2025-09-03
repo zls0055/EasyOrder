@@ -332,7 +332,7 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
 
   return (
     <>
-      <div className="flex items-center justify-between gap-4 mb-4">
+      <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <div className="relative">
             <DropdownMenu>
@@ -441,7 +441,7 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
       </div>
       
       {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-4">
+        <div className="flex items-center justify-between">
           <div className="text-xs text-muted-foreground">总共 {filteredDishes.length} 个菜品. 第 {currentPage} 页 / {totalPages} 页</div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}><ChevronLeft className="mr-2 h-4 w-4" />上一页</Button>
