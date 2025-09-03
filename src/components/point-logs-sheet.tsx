@@ -52,10 +52,14 @@ export default function PointLogsSheet({ restaurant, open, onOpenChange }: Point
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="flex flex-col w-full sm:max-w-md p-0">
         <SheetHeader className="p-4 border-b">
-          <SheetTitle className="truncate">点数消耗日志</SheetTitle>
-          <SheetDescription className="truncate">
-            {restaurant?.name || '...'}
-          </SheetDescription>
+          <SheetTitle>
+            <div className="flex items-baseline gap-2">
+              <span className="truncate">点数消耗日志</span>
+              <span className="text-sm font-normal text-muted-foreground truncate">
+                {restaurant?.name || '...'}
+              </span>
+            </div>
+          </SheetTitle>
           <SheetClose asChild>
             <Button variant="ghost" size="icon" className="absolute top-3 right-3 h-8 w-8 rounded-full z-50">
               <X className="h-4 w-4" />
