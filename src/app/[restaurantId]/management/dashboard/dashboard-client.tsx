@@ -439,7 +439,7 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
             </div>
         </div>
         {totalPages > 1 && (
-          <div className="flex items-center justify-between py-4 border-t">
+          <div className="flex items-center justify-between py-4">
             <div className="text-xs text-muted-foreground">总共 {filteredDishes.length} 个菜品. 第 {currentPage} 页 / {totalPages} 页</div>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}><ChevronLeft className="mr-2 h-4 w-4" />上一页</Button>
@@ -895,7 +895,7 @@ export default function DashboardClient({ initialRestaurant, initialSettings, in
         </nav>
         <div className="grid gap-2">
             <fieldset disabled={isLogoutPending} className={cn(isLogoutPending && "opacity-50")}>
-                <div className="grid gap-6">
+                <div className="grid gap-2">
                     <ActiveComponent {...componentProps[activeView]} />
                 </div>
             </fieldset>
