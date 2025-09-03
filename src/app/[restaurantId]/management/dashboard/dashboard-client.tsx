@@ -893,7 +893,7 @@ export default function DashboardClient({ initialRestaurant, initialSettings, in
                 )
             })}
         </nav>
-        <div className="grid gap-6">
+        <div className="grid gap-2">
             <fieldset disabled={isLogoutPending} className={cn(isLogoutPending && "opacity-50")}>
                 <div className="grid gap-6">
                     <ActiveComponent {...componentProps[activeView]} />
