@@ -105,7 +105,7 @@ const RestaurantRow = ({ restaurant, onAction, onRefresh, onImport, onExport, on
 
     return (
         <TableRow className={cn(index % 2 !== 0 && 'bg-muted/50')}>
-            <TableCell className="font-medium py-2 px-4">
+            <TableCell className="font-medium py-2 px-2">
                 <div className="flex items-center gap-2">
                     <span>{restaurant.name}</span>
                     <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onCopy(restaurant.id)}>
@@ -113,7 +113,7 @@ const RestaurantRow = ({ restaurant, onAction, onRefresh, onImport, onExport, on
                     </Button>
                 </div>
             </TableCell>
-            <TableCell className="py-2 px-4">
+            <TableCell className="py-2 px-2">
                 <div className="flex items-center gap-2">
                     <Button variant="link" onClick={() => onViewLogs(restaurant)} className="p-0 h-auto font-semibold">
                         {restaurant.points}
@@ -123,7 +123,7 @@ const RestaurantRow = ({ restaurant, onAction, onRefresh, onImport, onExport, on
                     </Button>
                 </div>
             </TableCell>
-            <TableCell className="text-right py-2 px-4">
+            <TableCell className="text-right py-2 px-2">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
@@ -775,9 +775,9 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
             <Table>
             <TableHeader>
                 <TableRow>
-                <TableHead className="py-3 px-4">名称</TableHead>
-                <TableHead className="py-3 px-4">剩余点数</TableHead>
-                <TableHead className="text-right py-3 px-4">操作</TableHead>
+                <TableHead className="py-3 px-2">名称</TableHead>
+                <TableHead className="py-3 px-2">剩余点数</TableHead>
+                <TableHead className="text-right py-3 px-2">操作</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -834,3 +834,4 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
     </div>
   );
 }
+
