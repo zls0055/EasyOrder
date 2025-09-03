@@ -727,7 +727,7 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
 
 
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-2">
         <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".csv" className="hidden" />
         
         <div className="flex items-center justify-between gap-4">
@@ -771,7 +771,7 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
             </Sheet>
         </div>
         
-        <div className="border overflow-hidden">
+        <div className="border overflow-hidden rounded-lg">
             <Table>
             <TableHeader>
                 <TableRow>
