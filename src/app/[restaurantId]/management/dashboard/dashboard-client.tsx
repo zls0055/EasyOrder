@@ -362,7 +362,7 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
           </Button>
         </div>
         
-        <div>
+        <div className="mt-4">
             <div className="flex flex-col md:flex-row">
                 <div className="hidden md:flex flex-col w-48 border-r pr-4">
                     {categoriesWithCount.map((category, index) => (
@@ -404,7 +404,7 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
                         </Table>
                     </div>
 
-                    <div className="block sm:hidden space-y-4">
+                    <div className="block sm:hidden space-y-2">
                         {paginatedDishes.map((dish) => (
                             <Card key={dish.id} className="p-4">
                                 <div className="flex justify-between items-start">
