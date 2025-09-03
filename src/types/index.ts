@@ -78,7 +78,7 @@ export const AppSettingsSchema = z.object({
   id: z.string().default('app-config'), // a singleton document
   adminUsername: z.string().default('admin'),
   adminPassword: z.string().default('admin123456'),
-  placeOrderOpCode: z.string().default('88888'),
+  placeOrderOpCode: z.string().default('8888'),
   isRestaurantClosed: z.boolean().default(false),
   isOnlineOrderingDisabled: z.boolean().default(false),
   autoCloseStartTime: timeFormat.default('01:00'),
@@ -89,6 +89,7 @@ export const AppSettingsSchema = z.object({
   orderFetchMode: z.enum(['push', 'pull']).default('push'),
   orderPullIntervalSeconds: z.coerce.number().int().min(2, "拉取间隔不能少于2秒").default(5),
   kitchenDisplayPassword: z.string().default('123456'),
+  showKitchenLayoutSwitch: z.boolean().default(true),
   featureVisibility: FeatureVisibilitySchema.default({}),
 });
 export type AppSettings = z.infer<typeof AppSettingsSchema>;

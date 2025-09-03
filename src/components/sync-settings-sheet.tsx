@@ -41,6 +41,7 @@ export default function SyncSettingsSheet({
   const [interval, setInterval] = useState(currentSettings.orderPullIntervalSeconds);
   const [syncCount, setSyncCount] = useState(currentSettings.syncOrderCount);
   const [kitchenPassword, setKitchenPassword] = useState(currentSettings.kitchenDisplayPassword);
+  const [showKitchenLayoutSwitch, setShowKitchenLayoutSwitch] = useState(currentSettings.showKitchenLayoutSwitch);
   const [features, setFeatures] = useState(currentSettings.featureVisibility);
   const [isPending, startTransition] = useTransition();
 
@@ -49,6 +50,7 @@ export default function SyncSettingsSheet({
     setInterval(currentSettings.orderPullIntervalSeconds);
     setSyncCount(currentSettings.syncOrderCount);
     setKitchenPassword(currentSettings.kitchenDisplayPassword);
+    setShowKitchenLayoutSwitch(currentSettings.showKitchenLayoutSwitch);
     setFeatures(currentSettings.featureVisibility);
   }, [currentSettings]);
 
@@ -89,7 +91,38 @@ export default function SyncSettingsSheet({
             </SheetHeader>
             <div className="py-6 space-y-8 flex-1 overflow-y-auto">
                 <div className="space-y-4">
-                     <Label className="text-base font-semibold">同步模式</Label>
+                     <Label className="text-base font-semibold">厨房看板设置</Label>
+                    <div className="space-y-4 rounded-lg border p-4">
+                       <div className="space-y-2">
+                          <Label htmlFor="kitchenDisplayPassword">访问密码</Label>
+                          <Input
+                              id="kitchenDisplayPassword"
+                              name="kitchenDisplayPassword"
+                              type="text"
+                              value={kitchenPassword}
+                              onChange={(e) => setKitchenPassword(e.target.value)}
+                              required
+                              disabled={isPending}
+                          />
+                           <p className="text-xs text-muted-foreground">访问厨房看板页面需要输入的密码。</p>
+                      </div>
+                      <div className="flex items-center justify-between">
+                          <Label htmlFor="showKitchenLayoutSwitch">显示布局切换按钮</Label>
+                          <Switch
+                              id="showKitchenLayoutSwitch"
+                              name="showKitchenLayoutSwitch"
+                              checked={showKitchenLayoutSwitch}
+                              onCheckedChange={setShowKitchenLayoutSwitch}
+                              disabled={isPending}
+                          />
+                      </div>
+                    </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-4">
+                     <Label className="text-base font-semibold">订单同步模式</Label>
                     <RadioGroup name="orderFetchMode" value={mode} onValueChange={(value) => setMode(value as 'push' | 'pull')} className="space-y-2">
                         <div>
                             <div className="flex items-center space-x-2">
@@ -130,7 +163,7 @@ export default function SyncSettingsSheet({
                 )}
 
                 <div className="space-y-2">
-                    <Label htmlFor="syncOrderCount" className="text-base font-semibold">同步订单数量</Label>
+                    <Label htmlFor="syncOrderCount">同步订单数量</Label>
                      <Input
                         id="syncOrderCount"
                         name="syncOrderCount"
@@ -144,24 +177,10 @@ export default function SyncSettingsSheet({
                     <p className="text-xs text-muted-foreground">厨房看板一次性加载的最新订单数量。建议设置为 10-50。</p>
                 </div>
 
-                 <div className="space-y-2">
-                    <Label htmlFor="kitchenDisplayPassword" className="text-base font-semibold">厨房看板访问密码</Label>
-                     <Input
-                        id="kitchenDisplayPassword"
-                        name="kitchenDisplayPassword"
-                        type="text"
-                        value={kitchenPassword}
-                        onChange={(e) => setKitchenPassword(e.target.value)}
-                        required
-                        disabled={isPending}
-                    />
-                    <p className="text-xs text-muted-foreground">访问 `/[餐馆ID]/orders` 页面需要输入的密码。</p>
-                </div>
-
                 <Separator />
 
                 <div className="space-y-4">
-                    <Label className="text-base font-semibold">功能模块可见性</Label>
+                    <Label className="text-base font-semibold">后台功能模块可见性</Label>
                     <p className="text-sm text-muted-foreground">控制此餐馆后台管理界面中可见的功能模块。</p>
                     <div className="space-y-4 rounded-lg border p-4">
                         {(Object.keys(features) as Array<keyof typeof features>).map((key) => (

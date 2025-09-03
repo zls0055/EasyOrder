@@ -47,6 +47,7 @@ const settingsUpdateSchema = AppSettingsSchema.partial().omit({
     orderPullIntervalSeconds: true,
     syncOrderCount: true,
     kitchenDisplayPassword: true,
+    showKitchenLayoutSwitch: true,
     featureVisibility: true, // This will be handled by the sync settings action
 }).merge(formWithRestaurantId);
 
@@ -183,6 +184,7 @@ const syncSettingsSchema = z.object({
   orderPullIntervalSeconds: z.coerce.number().int().min(2, "拉取间隔不能少于2秒"),
   syncOrderCount: z.coerce.number().int().min(1, "数量必须大于0"),
   kitchenDisplayPassword: z.string().min(1, '密码不能为空'),
+  showKitchenLayoutSwitch: z.boolean(),
   // Feature Visibility
   'featureVisibility.menuManagement': z.boolean(),
   'featureVisibility.categorySort': z.boolean(),
@@ -195,6 +197,7 @@ export async function updateSyncSettingsAction(prevState: any, formData: FormDat
     const rawData = Object.fromEntries(formData.entries());
     const dataToValidate = {
         ...rawData,
+        showKitchenLayoutSwitch: rawData.showKitchenLayoutSwitch === 'on',
         'featureVisibility.menuManagement': rawData['featureVisibility.menuManagement'] === 'on',
         'featureVisibility.categorySort': rawData['featureVisibility.categorySort'] === 'on',
         'featureVisibility.generalSettings': rawData['featureVisibility.generalSettings'] === 'on',
@@ -215,6 +218,7 @@ export async function updateSyncSettingsAction(prevState: any, formData: FormDat
         orderPullIntervalSeconds: data.orderPullIntervalSeconds,
         syncOrderCount: data.syncOrderCount,
         kitchenDisplayPassword: data.kitchenDisplayPassword,
+        showKitchenLayoutSwitch: data.showKitchenLayoutSwitch,
         featureVisibility: {
             menuManagement: data['featureVisibility.menuManagement'],
             categorySort: data['featureVisibility.categorySort'],
@@ -229,7 +233,7 @@ export async function updateSyncSettingsAction(prevState: any, formData: FormDat
         await updateDoc(docRef, settingsToUpdate);
         revalidateTag(`settings-${restaurantId}`);
         const updatedSettings = await getSettings(restaurantId);
-        return { success: "订单同步和功能可见性设置已更新。", error: null, updatedSettings };
+        return { success: "高级设置已更新。", error: null, updatedSettings };
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
         return { success: null, error: `更新设置时发生错误: ${errorMessage}` };

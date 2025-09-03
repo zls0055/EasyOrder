@@ -193,20 +193,22 @@ export default function KitchenDisplay({ allDishes, settings, restaurantId }: Ki
     <div className="flex flex-col h-full bg-muted/40">
         <header className="p-4 flex justify-center items-center gap-2 sticky top-0 bg-background/95 backdrop-blur-sm z-10 border-b">
             <h1 className="text-xl font-bold">厨房看板</h1>
-            <div className="absolute right-4">
-                 <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" onClick={() => setLayoutMode(prev => prev === 'grid' ? 'columns' : 'grid')}>
-                                {layoutMode === 'grid' ? <Columns className="h-5 w-5" /> : <LayoutGrid className="h-5 w-5" />}
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                           <p>切换到{layoutMode === 'grid' ? '瀑布流' : '网格'}布局</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-            </div>
+            {settings.showKitchenLayoutSwitch && (
+              <div className="absolute right-4">
+                  <TooltipProvider>
+                      <Tooltip>
+                          <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" onClick={() => setLayoutMode(prev => prev === 'grid' ? 'columns' : 'grid')}>
+                                  {layoutMode === 'grid' ? <Columns className="h-5 w-5" /> : <LayoutGrid className="h-5 w-5" />}
+                              </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>切换到{layoutMode === 'grid' ? '瀑布流' : '网格'}布局</p>
+                          </TooltipContent>
+                      </Tooltip>
+                  </TooltipProvider>
+              </div>
+            )}
         </header>
         <ScrollArea className="flex-1">
             <div className="p-4">
