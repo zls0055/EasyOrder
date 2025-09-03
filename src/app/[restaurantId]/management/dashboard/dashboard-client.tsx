@@ -166,7 +166,7 @@ function EditDishForm({ dish, onActionSuccess, restaurantId }: { dish: Dish; onA
             <Label htmlFor="category-edit">分类</Label>
             <Input id="category-edit" name="category" defaultValue={dish.category} required disabled={isPending} />
           </div>
-          <div className="space-y-2">
+          <div className="space_y-2">
             <Label htmlFor="sortOrder-edit">排序 (数字越小越靠前)</Label>
             <Input id="sortOrder-edit" name="sortOrder" type="number" defaultValue={dish.sortOrder} required disabled={isPending} />
           </div>
@@ -332,8 +332,8 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
 
   return (
     <>
-      <div className="space-y-4">
-        <div className="flex items-center justify-between gap-4">
+      <div>
+        <div className="flex items-center justify-between gap-4 mb-4">
           <div className="flex items-center gap-2">
             <div className="relative">
               <Button ref={categoryButtonRef} variant="ghost" size="icon" onClick={() => setIsCategoryListVisible(!isCategoryListVisible)} aria-label={isCategoryListVisible ? "隐藏菜单分类" : "显示菜单分类"} className="md:hidden">
@@ -909,3 +909,5 @@ export default function DashboardClient({ initialRestaurant, initialSettings, in
     </div>
   );
 }
+
+    
