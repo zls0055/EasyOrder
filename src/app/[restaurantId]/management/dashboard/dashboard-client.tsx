@@ -383,23 +383,34 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
                                 <TableHead>分类</TableHead>
                                 <TableHead className="text-right">价格</TableHead>
                                 <TableHead className="text-right w-[80px]">排序</TableHead>
-                                <TableHead className="w-[120px] text-right">操作</TableHead>
+                                <TableHead className="w-[80px] text-right">操作</TableHead>
                             </TableRow>
                             </TableHeader>
                             <TableBody>
                             {paginatedDishes.map((dish) => (
                                 <TableRow key={dish.id}>
-                                <TableCell className="py-2">
-                                    <div className="font-medium">{dish.name}</div>
-                                </TableCell>
-                                <TableCell className="py-2">
-                                    <div className="text-sm text-muted-foreground">{dish.category}</div>
-                                </TableCell>
+                                <TableCell className="py-2 font-medium">{dish.name}</TableCell>
+                                <TableCell className="py-2 text-muted-foreground">{dish.category}</TableCell>
                                 <TableCell className="text-right py-2">￥{dish.price.toFixed(2)}</TableCell>
                                 <TableCell className="text-right py-2">{dish.sortOrder}</TableCell>
-                                <TableCell className="flex items-center justify-end gap-2 py-2">
-                                    <Button variant="outline" size="icon" onClick={() => setEditingDish(dish)}><Pencil className="h-4 w-4" /></Button>
-                                    <Button variant="destructive" size="icon" onClick={() => setDeletingDish(dish)}><Trash2 className="h-4 w-4" /></Button>
+                                <TableCell className="text-right py-2">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon">
+                                                <MoreVertical className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onSelect={() => setEditingDish(dish)}>
+                                                <Pencil className="mr-2 h-4 w-4" />
+                                                <span>编辑</span>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => setDeletingDish(dish)} className="text-destructive">
+                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                <span>删除</span>
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </TableCell>
                                 </TableRow>
                             ))}
