@@ -88,7 +88,7 @@ export const AppSettingsSchema = z.object({
   categoryOrder: z.array(z.string()).default([]),
   orderFetchMode: z.enum(['push', 'pull']).default('push'),
   orderPullIntervalSeconds: z.coerce.number().int().min(2, "拉取间隔不能少于2秒").default(5),
-  kitchenDisplayPassword: z.string().default('123456'),
+  kitchenDisplayPassword: z.string().default(''),
   showKitchenLayoutSwitch: z.boolean().default(true),
   featureVisibility: FeatureVisibilitySchema.default({}),
 });

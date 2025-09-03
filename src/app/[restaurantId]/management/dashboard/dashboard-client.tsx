@@ -363,7 +363,7 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
         </Button>
       </div>
 
-      <div>
+      <div className="grid gap-2">
           <div className="hidden sm:block border rounded-lg overflow-x-auto">
               <Table>
                   <TableHeader>
@@ -607,7 +607,7 @@ function SettingsCard({ settings, onActionSuccess, restaurantId }: { settings: A
           </div>
           <div className="space-y-2">
             <Label htmlFor="kitchenDisplayPassword">厨房看板访问密码</Label>
-            <Input id="kitchenDisplayPassword" name="kitchenDisplayPassword" defaultValue={settings.kitchenDisplayPassword} disabled={isPending} />
+            <Input id="kitchenDisplayPassword" name="kitchenDisplayPassword" defaultValue={settings.kitchenDisplayPassword} disabled={isPending} placeholder="留空则无需密码"/>
           </div>
           <div className="space-y-2">
             <Label>自动打烊时间段</Label>

@@ -47,7 +47,9 @@ const settingsUpdateSchema = AppSettingsSchema.partial().omit({
     syncOrderCount: true,
     showKitchenLayoutSwitch: true,
     featureVisibility: true, // This will be handled by the sync settings action
-}).merge(formWithRestaurantId);
+}).merge(formWithRestaurantId).extend({
+    kitchenDisplayPassword: z.string().optional() // Allow it to be optional or empty
+});
 
 const categoryOrderSchema = z.object({
   categoryOrder: z.string().transform(str => str ? str.split(',') : [])
@@ -181,7 +183,7 @@ const syncSettingsSchema = z.object({
   orderFetchMode: z.enum(['push', 'pull']),
   orderPullIntervalSeconds: z.coerce.number().int().min(2, "拉取间隔不能少于2秒"),
   syncOrderCount: z.coerce.number().int().min(1, "数量必须大于0"),
-  kitchenDisplayPassword: z.string().min(1, '密码不能为空'),
+  kitchenDisplayPassword: z.string(),
   showKitchenLayoutSwitch: z.boolean(),
   // Feature Visibility
   'featureVisibility.menuManagement': z.boolean(),

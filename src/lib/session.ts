@@ -56,9 +56,14 @@ export async function logout(restaurantId: string) {
 // --- Kitchen Display Session ---
 const KITCHEN_COOKIE_PREFIX = 'kitchen-session-';
 
-export async function verifyKitchenPassword(restaurantId: string, passwordAttempt: string): Promise<{ success: boolean; error?: string }> {
+export async function verifyKitchenPassword(restaurantId: string, passwordAttempt?: string): Promise<{ success: boolean; error?: string }> {
   try {
     const settings = await getSettings(restaurantId);
+    // If password is not required (empty string), verification is successful.
+    if (!settings.kitchenDisplayPassword) {
+        return { success: false, error: '此看板无需密码，请直接访问。' };
+    }
+
     if (passwordAttempt === settings.kitchenDisplayPassword) {
       const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
       const session = await encrypt({ restaurantId, expires });

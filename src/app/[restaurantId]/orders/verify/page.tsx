@@ -1,8 +1,8 @@
 
 import type { Metadata } from 'next';
-import { getCachedRestaurant } from '@/lib/settings';
+import { getCachedRestaurant, getCachedSettings } from '@/lib/settings';
 import VerifyKitchenForm from '@/components/verify-kitchen-form';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 
 export async function generateMetadata({ params }: { params: Promise<{ restaurantId: string }> }): Promise<Metadata> {
   const { restaurantId } = await params;
@@ -23,6 +23,12 @@ export default async function VerifyKitchenPage({ params }: { params: Promise<{ 
   const restaurant = await getCachedRestaurant(restaurantId);
   if (!restaurant) {
     notFound();
+  }
+  
+  // If password is not required, redirect to the kitchen display directly
+  const settings = await getCachedSettings(restaurantId);
+  if (!settings.kitchenDisplayPassword) {
+      redirect(`/${restaurantId}/orders`);
   }
 
   return <VerifyKitchenForm restaurantId={restaurantId} />;

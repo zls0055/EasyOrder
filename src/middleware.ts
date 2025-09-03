@@ -4,6 +4,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getSession, getSuperAdminSession, getKitchenSession } from '@/lib/session';
+import { getSettings } from './lib/settings';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -47,12 +48,23 @@ export async function middleware(request: NextRequest) {
 
   // Kitchen display routes
   if (pathname.startsWith(`/${restaurantId}/orders`)) {
-    const kitchenSession = await getKitchenSession(restaurantId);
-    if (!kitchenSession && !pathname.endsWith('/verify')) {
-      return NextResponse.redirect(new URL(`/${restaurantId}/orders/verify`, request.url));
-    }
-     if (kitchenSession && pathname.endsWith('/verify')) {
-      return NextResponse.redirect(new URL(`/${restaurantId}/orders`, request.url));
+    // Fetch settings to check if password is required
+    const settings = await getSettings(restaurantId);
+    const passwordRequired = !!settings.kitchenDisplayPassword;
+
+    if (passwordRequired) {
+        const kitchenSession = await getKitchenSession(restaurantId);
+        if (!kitchenSession && !pathname.endsWith('/verify')) {
+            return NextResponse.redirect(new URL(`/${restaurantId}/orders/verify`, request.url));
+        }
+        if (kitchenSession && pathname.endsWith('/verify')) {
+            return NextResponse.redirect(new URL(`/${restaurantId}/orders`, request.url));
+        }
+    } else {
+        // If password is not required, and user tries to access verify page, redirect them to orders.
+        if (pathname.endsWith('/verify')) {
+            return NextResponse.redirect(new URL(`/${restaurantId}/orders`, request.url));
+        }
     }
   }
 

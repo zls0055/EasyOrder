@@ -54,12 +54,16 @@ export default async function OrdersPage({ params }: { params: Promise<{ restaur
     notFound();
   }
 
-  const session = await getKitchenSession(restaurantId);
-  if (!session) {
-    redirect(`/${restaurantId}/orders/verify`);
+  const settings = await getCachedSettings(restaurantId);
+  const passwordRequired = !!settings.kitchenDisplayPassword;
+
+  if (passwordRequired) {
+      const session = await getKitchenSession(restaurantId);
+      if (!session) {
+        redirect(`/${restaurantId}/orders/verify`);
+      }
   }
 
-  const settings = await getCachedSettings(restaurantId);
   const allDishes = await getCachedDishes(restaurantId);
   
   return (

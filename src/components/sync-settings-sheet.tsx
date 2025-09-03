@@ -101,7 +101,7 @@ export default function SyncSettingsSheet({
                               type="text"
                               value={kitchenPassword}
                               onChange={(e) => setKitchenPassword(e.target.value)}
-                              required
+                              placeholder="留空则无需密码"
                               disabled={isPending}
                           />
                            <p className="text-xs text-muted-foreground">访问厨房看板页面需要输入的密码。</p>
