@@ -32,6 +32,7 @@ const passwordSchema = z.object({
     currentPassword: z.string().min(1, '请输入当前密码。'),
     newPassword: z.string().min(6, '新密码长度不能少于6位。'),
     confirmPassword: z.string(),
+    adminUsername: z.string().optional(),
 }).merge(formWithRestaurantId).refine(data => data.newPassword === data.confirmPassword, {
     message: "两次输入的新密码不匹配。",
     path: ["confirmPassword"],
@@ -183,7 +184,7 @@ const syncSettingsSchema = z.object({
   orderFetchMode: z.enum(['push', 'pull']),
   orderPullIntervalSeconds: z.coerce.number().int().min(2, "拉取间隔不能少于2秒"),
   syncOrderCount: z.coerce.number().int().min(1, "数量必须大于0"),
-  kitchenDisplayPassword: z.string(),
+  kitchenDisplayPassword: z.string().optional(),
   showKitchenLayoutSwitch: z.boolean(),
   // Feature Visibility
   'featureVisibility.menuManagement': z.boolean(),
@@ -213,11 +214,10 @@ export async function updateSyncSettingsAction(prevState: any, formData: FormDat
     }
     
     const { restaurantId, ...data } = validatedFields.data;
-    const settingsToUpdate = {
+    const settingsToUpdate: Record<string, any> = {
         orderFetchMode: data.orderFetchMode,
         orderPullIntervalSeconds: data.orderPullIntervalSeconds,
         syncOrderCount: data.syncOrderCount,
-        kitchenDisplayPassword: data.kitchenDisplayPassword,
         showKitchenLayoutSwitch: data.showKitchenLayoutSwitch,
         featureVisibility: {
             menuManagement: data['featureVisibility.menuManagement'],
@@ -227,6 +227,10 @@ export async function updateSyncSettingsAction(prevState: any, formData: FormDat
             securitySettings: data['featureVisibility.securitySettings'],
         }
     };
+    
+    if (data.kitchenDisplayPassword !== undefined) {
+        settingsToUpdate.kitchenDisplayPassword = data.kitchenDisplayPassword;
+    }
 
     try {
         const docRef = doc(db, RESTAURANTS_COLLECTION, restaurantId, SETTINGS_COLLECTION, CONFIG_DOC_ID);
@@ -269,16 +273,21 @@ export async function updatePassword(prevState: any, formData: FormData): Promis
         return { success: null, error: `表单验证失败: ${errorSummary}` };
     }
     
-    const { restaurantId, currentPassword, newPassword } = validatedFields.data;
+    const { restaurantId, currentPassword, newPassword, adminUsername } = validatedFields.data;
 
     try {
         const settings = await getSettings(restaurantId);
         if (settings.adminPassword !== currentPassword) {
             return { success: null, error: '当前密码不正确。' };
         }
+        
+        const settingsToUpdate: Record<string, any> = { adminPassword: newPassword };
+        if(adminUsername) {
+            settingsToUpdate.adminUsername = adminUsername;
+        }
 
         const docRef = doc(db, RESTAURANTS_COLLECTION, restaurantId, SETTINGS_COLLECTION, CONFIG_DOC_ID);
-        await updateDoc(docRef, { adminPassword: newPassword });
+        await updateDoc(docRef, settingsToUpdate);
         revalidateTag(`settings-${restaurantId}`);
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';

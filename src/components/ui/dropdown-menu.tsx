@@ -62,10 +62,16 @@ const DropdownMenuContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
 >(({ className, sideOffset = 4, ...props }, ref) => {
   const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => setMounted(true), []);
+  React.useEffect(() => {
+    setMounted(true)
+  }, []);
 
+  if (!mounted) {
+    return null;
+  }
+  
   return (
-    <DropdownMenuPrimitive.Portal container={mounted ? document.body : undefined}>
+    <DropdownMenuPrimitive.Portal>
       <DropdownMenuPrimitive.Content
         ref={ref}
         sideOffset={sideOffset}
