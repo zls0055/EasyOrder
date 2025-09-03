@@ -54,15 +54,10 @@ export default async function OrdersPage({ params }: { params: Promise<{ restaur
     notFound();
   }
 
-  const settings = await getCachedSettings(restaurantId);
+  // The middleware now handles all the redirection logic based on session and password requirements.
+  // This page component can now simply fetch data and render.
   
-  if (settings.kitchenDisplayPassword) {
-      const session = await getKitchenSession(restaurantId);
-      if (!session) {
-        redirect(`/${restaurantId}/orders/verify`);
-      }
-  }
-
+  const settings = await getCachedSettings(restaurantId);
   const allDishes = await getCachedDishes(restaurantId);
   
   return (

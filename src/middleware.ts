@@ -51,19 +51,21 @@ export async function middleware(request: NextRequest) {
     // Fetch settings to check if password is required
     const settings = await getSettings(restaurantId);
     const passwordRequired = !!settings.kitchenDisplayPassword;
-
-    // If password is NOT required, and user tries to access verify page, redirect them to orders.
-    // This MUST come first to prevent redirect loops.
-    if (!passwordRequired && pathname.endsWith('/verify')) {
-        return NextResponse.redirect(new URL(`/${restaurantId}/orders`, request.url));
-    }
-
+    const isVerifyPage = pathname.endsWith('/verify');
+    
     if (passwordRequired) {
         const kitchenSession = await getKitchenSession(restaurantId);
-        if (!kitchenSession && !pathname.endsWith('/verify')) {
+        // If password is required but no session, and user is NOT on verify page, redirect to verify
+        if (!kitchenSession && !isVerifyPage) {
             return NextResponse.redirect(new URL(`/${restaurantId}/orders/verify`, request.url));
         }
-        if (kitchenSession && pathname.endsWith('/verify')) {
+        // If password is required and session EXISTS, but user is ON verify page, redirect to orders
+        if (kitchenSession && isVerifyPage) {
+            return NextResponse.redirect(new URL(`/${restaurantId}/orders`, request.url));
+        }
+    } else {
+        // If password is NOT required and user is ON verify page, redirect to orders
+        if (isVerifyPage) {
             return NextResponse.redirect(new URL(`/${restaurantId}/orders`, request.url));
         }
     }
