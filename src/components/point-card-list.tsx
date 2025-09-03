@@ -194,8 +194,8 @@ export default function PointCardList({
         
         <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsContent value="new" className="mt-0">
-                <div className="border rounded-lg overflow-hidden">
-                    <div className="hidden sm:block overflow-x-auto">
+                <div className="hidden sm:block border rounded-lg overflow-hidden">
+                    <div className="overflow-x-auto">
                         <Table>
                         <TableHeader>
                             <TableRow>
@@ -236,50 +236,50 @@ export default function PointCardList({
                         </TableBody>
                         </Table>
                     </div>
-                    <div className="block sm:hidden space-y-4 p-4">
-                        {isNewCardsLoading ? (
-                            <div className="text-center h-24 flex items-center justify-center"><Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" /></div>
-                        ) : paginatedNewCards.length > 0 ? (
-                            paginatedNewCards.map((card) => (
-                                <Card key={card.id} className="p-4">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <p className="font-medium text-lg text-primary">{card.points} 点</p>
-                                            <p className="text-xs text-muted-foreground mt-1">
-                                                创建于: {new Date(card.createdAt).toLocaleString('zh-CN')}
-                                            </p>
-                                        </div>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onSelect={() => handleCopyToClipboard(card.id)}>
-                                                    {copiedId === card.id ? <ClipboardCheck className="mr-2 h-4 w-4 text-green-500" /> : <Clipboard className="mr-2 h-4 w-4" />}
-                                                    <span>{copiedId === card.id ? '已复制' : '复制卡密'}</span>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onSelect={() => setDeletingCard(card)} className="text-destructive">
-                                                  <Trash2 className="mr-2 h-4 w-4" />
-                                                  <span>删除</span>
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                </div>
+                <div className="block sm:hidden space-y-4">
+                    {isNewCardsLoading ? (
+                        <div className="text-center h-24 flex items-center justify-center"><Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" /></div>
+                    ) : paginatedNewCards.length > 0 ? (
+                        paginatedNewCards.map((card) => (
+                            <Card key={card.id} className="p-4">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <p className="font-medium text-lg text-primary">{card.points} 点</p>
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            创建于: {new Date(card.createdAt).toLocaleString('zh-CN')}
+                                        </p>
                                     </div>
-                                    <div className="text-sm text-muted-foreground mt-2">
-                                        <div className="flex items-center">
-                                            <span className="shrink-0">卡密:</span>
-                                            <p className="font-mono text-xs ml-2 truncate">{card.id}</p>
-                                        </div>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onSelect={() => handleCopyToClipboard(card.id)}>
+                                                {copiedId === card.id ? <ClipboardCheck className="mr-2 h-4 w-4 text-green-500" /> : <Clipboard className="mr-2 h-4 w-4" />}
+                                                <span>{copiedId === card.id ? '已复制' : '复制卡密'}</span>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => setDeletingCard(card)} className="text-destructive">
+                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                <span>删除</span>
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                                <div className="text-sm text-muted-foreground mt-2">
+                                    <div className="flex items-center">
+                                        <span className="shrink-0">卡密:</span>
+                                        <p className="font-mono text-xs ml-2 truncate">{card.id}</p>
                                     </div>
-                                </Card>
-                            ))
-                        ) : (
-                            <p className="h-24 text-center text-muted-foreground flex items-center justify-center">没有可用的新点卡。</p>
-                        )}
-                    </div>
+                                </div>
+                            </Card>
+                        ))
+                    ) : (
+                        <p className="h-24 text-center text-muted-foreground flex items-center justify-center">没有可用的新点卡。</p>
+                    )}
                 </div>
                  {totalNewPages > 1 && (
-                    <div className="flex items-center justify-between py-4 px-4 border-t">
+                    <div className="flex items-center justify-between py-4 border-t">
                         <div className="text-xs text-muted-foreground">总共 {newCards.length} 条. 第 {newCardsPage} 页 / {totalNewPages} 页</div>
                         <div className="flex items-center gap-2">
                             <Button variant="outline" size="sm" onClick={() => setNewCardsPage(p => Math.max(1, p - 1))} disabled={newCardsPage === 1}><ChevronLeft className="mr-2 h-4 w-4" />上一页</Button>
@@ -289,8 +289,8 @@ export default function PointCardList({
                 )}
             </TabsContent>
             <TabsContent value="used" className="mt-0">
-                 <div className="border rounded-lg overflow-hidden">
-                    <div className="hidden sm:block overflow-x-auto">
+                 <div className="hidden sm:block border rounded-lg overflow-hidden">
+                    <div className="overflow-x-auto">
                         <Table>
                         <TableHeader>
                             <TableRow>
@@ -322,7 +322,8 @@ export default function PointCardList({
                         </TableBody>
                         </Table>
                     </div>
-                    <div className="block sm:hidden space-y-4 p-4">
+                 </div>
+                 <div className="block sm:hidden space-y-4">
                          {isUsedCardsLoading ? (
                             <div className="text-center h-24 flex items-center justify-center"><Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" /></div>
                         ) : paginatedUsedCards.length > 0 ? (
@@ -343,9 +344,8 @@ export default function PointCardList({
                              <p className="h-24 text-center text-muted-foreground flex items-center justify-center">没有已使用的点卡记录。</p>
                         )}
                     </div>
-                 </div>
                  {totalUsedPages > 1 && (
-                    <div className="flex items-center justify-between py-4 px-4 border-t">
+                    <div className="flex items-center justify-between py-4 border-t">
                         <div className="text-xs text-muted-foreground">总共 {usedCards.length} 条. 第 {usedCardsPage} 页 / {totalUsedPages} 页</div>
                         <div className="flex items-center gap-2">
                             <Button variant="outline" size="sm" onClick={() => setUsedCardsPage(p => Math.max(1, p - 1))} disabled={usedCardsPage === 1}><ChevronLeft className="mr-2 h-4 w-4" />上一页</Button>
