@@ -55,9 +55,8 @@ export default async function OrdersPage({ params }: { params: Promise<{ restaur
   }
 
   const settings = await getCachedSettings(restaurantId);
-  const passwordRequired = !!settings.kitchenDisplayPassword;
-
-  if (passwordRequired) {
+  
+  if (settings.kitchenDisplayPassword) {
       const session = await getKitchenSession(restaurantId);
       if (!session) {
         redirect(`/${restaurantId}/orders/verify`);
