@@ -332,7 +332,7 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
 
   return (
     <>
-      <div>
+      
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="relative">
@@ -362,7 +362,7 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
           </Button>
         </div>
         
-        <div className="mt-4">
+        <div>
             <div className="flex flex-col md:flex-row">
                 <div className="hidden md:flex flex-col w-48 border-r pr-4">
                     {categoriesWithCount.map((category, index) => (
@@ -447,7 +447,7 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
             </div>
           </div>
         )}
-      </div>
+      
       
       <Sheet open={isAddOpen} onOpenChange={setIsAddOpen}>
         <AddDishForm onActionSuccess={handleAddSuccess} restaurantId={restaurantId} />
