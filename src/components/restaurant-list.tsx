@@ -126,7 +126,7 @@ const RestaurantRow = ({ restaurant, onAction, onRefresh, onImport, onExport, on
             <TableCell className="text-right py-2 px-2">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
                     </DropdownMenuTrigger>
                      <DropdownMenuContent align="end">
                         <DropdownMenuSub>
@@ -834,4 +834,3 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
     </div>
   );
 }
-
