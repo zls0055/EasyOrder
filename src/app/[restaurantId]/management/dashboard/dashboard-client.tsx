@@ -362,7 +362,7 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
           </Button>
         </div>
         
-        <div>
+        <div className="mt-4">
             <div className="flex flex-col md:flex-row">
                 <div className="hidden md:flex flex-col w-48 border-r pr-4">
                     {categoriesWithCount.map((category, index) => (
@@ -379,7 +379,8 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
                         <Table>
                             <TableHeader>
                             <TableRow>
-                                <TableHead>名称/分类</TableHead>
+                                <TableHead>名称</TableHead>
+                                <TableHead>分类</TableHead>
                                 <TableHead className="text-right">价格</TableHead>
                                 <TableHead className="text-right w-[80px]">排序</TableHead>
                                 <TableHead className="w-[120px] text-right">操作</TableHead>
@@ -390,6 +391,8 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
                                 <TableRow key={dish.id}>
                                 <TableCell>
                                     <div className="font-medium">{dish.name}</div>
+                                </TableCell>
+                                <TableCell>
                                     <div className="text-sm text-muted-foreground">{dish.category}</div>
                                 </TableCell>
                                 <TableCell className="text-right">￥{dish.price.toFixed(2)}</TableCell>
@@ -439,7 +442,7 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
             </div>
         </div>
         {totalPages > 1 && (
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between pt-4">
             <div className="text-xs text-muted-foreground">总共 {filteredDishes.length} 个菜品. 第 {currentPage} 页 / {totalPages} 页</div>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}><ChevronLeft className="mr-2 h-4 w-4" />上一页</Button>
