@@ -389,15 +389,15 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
                             <TableBody>
                             {paginatedDishes.map((dish) => (
                                 <TableRow key={dish.id}>
-                                <TableCell>
+                                <TableCell className="py-2">
                                     <div className="font-medium">{dish.name}</div>
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="py-2">
                                     <div className="text-sm text-muted-foreground">{dish.category}</div>
                                 </TableCell>
-                                <TableCell className="text-right">￥{dish.price.toFixed(2)}</TableCell>
-                                <TableCell className="text-right">{dish.sortOrder}</TableCell>
-                                <TableCell className="flex items-center justify-end gap-2">
+                                <TableCell className="text-right py-2">￥{dish.price.toFixed(2)}</TableCell>
+                                <TableCell className="text-right py-2">{dish.sortOrder}</TableCell>
+                                <TableCell className="flex items-center justify-end gap-2 py-2">
                                     <Button variant="outline" size="icon" onClick={() => setEditingDish(dish)}><Pencil className="h-4 w-4" /></Button>
                                     <Button variant="destructive" size="icon" onClick={() => setDeletingDish(dish)}><Trash2 className="h-4 w-4" /></Button>
                                 </TableCell>
