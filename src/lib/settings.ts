@@ -361,6 +361,30 @@ export async function getUsedPointCards(): Promise<PointCard[]> {
     return cards;
 }
 
+export async function deletePointCard(cardId: string): Promise<{ success: boolean; error?: string }> {
+    try {
+        const cardRef = doc(db, POINT_CARDS_COLLECTION, cardId);
+        const cardDoc = await getDoc(cardRef);
+
+        if (!cardDoc.exists()) {
+            return { success: false, error: "点卡不存在。" };
+        }
+
+        const card = PointCardSchema.parse(cardDoc.data());
+        if (card.status === 'used') {
+            return { success: false, error: "不能删除已使用的点卡。" };
+        }
+
+        await deleteDoc(cardRef);
+        revalidateTag('pointCards');
+        return { success: true };
+    } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred';
+        console.error(`Failed to delete point card ${cardId}:`, e);
+        return { success: false, error: errorMessage };
+    }
+}
+
 export async function redeemPointCard(cardId: string, restaurantId: string): Promise<void> {
     const cardRef = doc(db, POINT_CARDS_COLLECTION, cardId);
     const restaurantRef = doc(db, RESTAURANTS_COLLECTION, restaurantId);

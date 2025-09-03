@@ -6,8 +6,8 @@ import type { PointCard, Restaurant } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Loader2, PlusCircle, Clipboard, ClipboardCheck, History, X, RotateCcw, ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react';
-import { createPointCards } from '@/lib/settings';
+import { Loader2, PlusCircle, Clipboard, ClipboardCheck, History, X, RotateCcw, ChevronLeft, ChevronRight, MoreVertical, Trash2 } from 'lucide-react';
+import { createPointCards, deletePointCard } from '@/lib/settings';
 import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetClose, SheetTrigger } from '@/components/ui/sheet';
 import { Label } from '@/components/ui/label';
@@ -16,6 +16,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from '@/lib/utils';
 import { Badge } from './ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
+
 
 interface PointCardListProps {
     restaurants: Restaurant[];
@@ -114,6 +116,8 @@ export default function PointCardList({
 }: PointCardListProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('new');
+  const [deletingCard, setDeletingCard] = useState<PointCard | null>(null);
+  const [isDeletePending, startDeleteTransition] = useTransition();
   
   const [newCardsPage, setNewCardsPage] = useState(1);
   const [usedCardsPage, setUsedCardsPage] = useState(1);
@@ -148,6 +152,21 @@ export default function PointCardList({
     });
   };
   
+  const handleDeleteCard = () => {
+    if (!deletingCard) return;
+
+    startDeleteTransition(async () => {
+      const result = await deletePointCard(deletingCard.id);
+      if (result.success) {
+        toast.success(`点卡 ${deletingCard.id} 已删除。`);
+        fetchNewCards(); // Refresh the list
+      } else {
+        toast.error('删除失败', { description: result.error });
+      }
+      setDeletingCard(null);
+    });
+  };
+
   const getRestaurantNameById = (id: string | null) => {
     if (!id) return 'N/A';
     const restaurant = restaurants.find(r => r.id === id);
@@ -175,35 +194,41 @@ export default function PointCardList({
         
         <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsContent value="new" className="mt-0">
-                <div>
-                    <div className="hidden sm:block overflow-x-auto border">
+                <div className="border rounded-lg overflow-hidden">
+                    <div className="hidden sm:block overflow-x-auto">
                         <Table>
                         <TableHeader>
                             <TableRow>
                             <TableHead>卡密</TableHead>
                             <TableHead>创建时间</TableHead>
                             <TableHead className="text-right">面值</TableHead>
+                            <TableHead className="text-right w-[100px]">操作</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {isNewCardsLoading ? (
-                            <TableRow><TableCell colSpan={3} className="text-center h-24"><Loader2 className="mx-auto h-6 w-6 animate-spin" /></TableCell></TableRow>
+                            <TableRow><TableCell colSpan={4} className="text-center h-24"><Loader2 className="mx-auto h-6 w-6 animate-spin" /></TableCell></TableRow>
                             ) : paginatedNewCards.length > 0 ? (
                             paginatedNewCards.map((card) => (
                                 <TableRow key={card.id}>
-                                <TableCell className="font-mono text-xs flex items-center gap-2">
-                                    <span>{card.id}</span>
-                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleCopyToClipboard(card.id)}>
-                                    {copiedId === card.id ? <ClipboardCheck className="h-4 w-4 text-green-500" /> : <Clipboard className="h-4 w-4" />}
-                                    </Button>
+                                <TableCell className="font-mono text-xs">
+                                    {card.id}
                                 </TableCell>
                                 <TableCell>{new Date(card.createdAt).toLocaleString('zh-CN')}</TableCell>
                                 <TableCell className="text-right">{card.points}</TableCell>
+                                <TableCell className="text-right">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleCopyToClipboard(card.id)}>
+                                        {copiedId === card.id ? <ClipboardCheck className="h-4 w-4 text-green-500" /> : <Clipboard className="h-4 w-4" />}
+                                    </Button>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeletingCard(card)}>
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </TableCell>
                                 </TableRow>
                             ))
                             ) : (
                             <TableRow>
-                                <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
+                                <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
                                 没有可用的新点卡。
                                 </TableCell>
                             </TableRow>
@@ -211,7 +236,7 @@ export default function PointCardList({
                         </TableBody>
                         </Table>
                     </div>
-                    <div className="block sm:hidden space-y-4">
+                    <div className="block sm:hidden space-y-4 p-4">
                         {isNewCardsLoading ? (
                             <div className="text-center h-24 flex items-center justify-center"><Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" /></div>
                         ) : paginatedNewCards.length > 0 ? (
@@ -233,6 +258,10 @@ export default function PointCardList({
                                                     {copiedId === card.id ? <ClipboardCheck className="mr-2 h-4 w-4 text-green-500" /> : <Clipboard className="mr-2 h-4 w-4" />}
                                                     <span>{copiedId === card.id ? '已复制' : '复制卡密'}</span>
                                                 </DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={() => setDeletingCard(card)} className="text-destructive">
+                                                  <Trash2 className="mr-2 h-4 w-4" />
+                                                  <span>删除</span>
+                                                </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </div>
@@ -250,7 +279,7 @@ export default function PointCardList({
                     </div>
                 </div>
                  {totalNewPages > 1 && (
-                    <div className="flex items-center justify-between py-4">
+                    <div className="flex items-center justify-between py-4 px-4 border-t">
                         <div className="text-xs text-muted-foreground">总共 {newCards.length} 条. 第 {newCardsPage} 页 / {totalNewPages} 页</div>
                         <div className="flex items-center gap-2">
                             <Button variant="outline" size="sm" onClick={() => setNewCardsPage(p => Math.max(1, p - 1))} disabled={newCardsPage === 1}><ChevronLeft className="mr-2 h-4 w-4" />上一页</Button>
@@ -260,8 +289,8 @@ export default function PointCardList({
                 )}
             </TabsContent>
             <TabsContent value="used" className="mt-0">
-                 <div>
-                    <div className="hidden sm:block overflow-x-auto border">
+                 <div className="border rounded-lg overflow-hidden">
+                    <div className="hidden sm:block overflow-x-auto">
                         <Table>
                         <TableHeader>
                             <TableRow>
@@ -293,7 +322,7 @@ export default function PointCardList({
                         </TableBody>
                         </Table>
                     </div>
-                    <div className="block sm:hidden space-y-4">
+                    <div className="block sm:hidden space-y-4 p-4">
                          {isUsedCardsLoading ? (
                             <div className="text-center h-24 flex items-center justify-center"><Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" /></div>
                         ) : paginatedUsedCards.length > 0 ? (
@@ -316,7 +345,7 @@ export default function PointCardList({
                     </div>
                  </div>
                  {totalUsedPages > 1 && (
-                    <div className="flex items-center justify-between py-4">
+                    <div className="flex items-center justify-between py-4 px-4 border-t">
                         <div className="text-xs text-muted-foreground">总共 {usedCards.length} 条. 第 {usedCardsPage} 页 / {totalUsedPages} 页</div>
                         <div className="flex items-center gap-2">
                             <Button variant="outline" size="sm" onClick={() => setUsedCardsPage(p => Math.max(1, p - 1))} disabled={usedCardsPage === 1}><ChevronLeft className="mr-2 h-4 w-4" />上一页</Button>
@@ -326,7 +355,25 @@ export default function PointCardList({
                 )}
             </TabsContent>
         </Tabs>
+
+        <AlertDialog open={!!deletingCard} onOpenChange={(open) => !open && setDeletingCard(null)}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>确认删除点卡？</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        您确定要删除点卡 <span className="font-mono text-sm bg-muted px-1 py-0.5 rounded">{deletingCard?.id}</span> 吗？
+                        此操作无法撤销。
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isDeletePending}>取消</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteCard} disabled={isDeletePending} className="bg-destructive hover:bg-destructive/90">
+                       {isDeletePending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+                        确认删除
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </>
   );
-
 }
