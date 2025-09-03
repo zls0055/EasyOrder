@@ -40,13 +40,11 @@ const passwordSchema = z.object({
 
 const settingsUpdateSchema = AppSettingsSchema.partial().omit({ 
     id: true, 
-    adminUsername: true, 
     adminPassword: true, 
     categoryOrder: true, 
     orderFetchMode: true, 
     orderPullIntervalSeconds: true,
     syncOrderCount: true,
-    kitchenDisplayPassword: true,
     showKitchenLayoutSwitch: true,
     featureVisibility: true, // This will be handled by the sync settings action
 }).merge(formWithRestaurantId);

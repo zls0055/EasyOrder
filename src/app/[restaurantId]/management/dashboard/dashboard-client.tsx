@@ -606,6 +606,10 @@ function SettingsCard({ settings, onActionSuccess, restaurantId }: { settings: A
             <Input id="placeOrderOpCode" name="placeOrderOpCode" defaultValue={settings.placeOrderOpCode} disabled={isPending} />
           </div>
           <div className="space-y-2">
+            <Label htmlFor="kitchenDisplayPassword">厨房看板访问密码</Label>
+            <Input id="kitchenDisplayPassword" name="kitchenDisplayPassword" defaultValue={settings.kitchenDisplayPassword} disabled={isPending} />
+          </div>
+          <div className="space-y-2">
             <Label>自动打烊时间段</Label>
             <div className="flex items-center gap-4">
                 <div className="flex-1 space-y-1">
@@ -654,7 +658,7 @@ function SecuritySettingsCard({ settings, restaurantId }: { settings: AppSetting
         <div className="space-y-4">
            <div className="space-y-2">
             <Label htmlFor="adminUsername">管理员用户名</Label>
-            <Input id="adminUsername" defaultValue={settings.adminUsername} disabled />
+            <Input id="adminUsername" name="adminUsername" defaultValue={settings.adminUsername} disabled={isPending} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="currentPassword">当前密码</Label>
@@ -826,7 +830,7 @@ export default function DashboardClient({ initialRestaurant, initialSettings, in
     'category-sort': { dishes, settings, onActionSuccess: refreshData, restaurantId },
     'settings': { settings, onActionSuccess: refreshData, restaurantId },
     'recharge': { onActionSuccess: refreshData, restaurantId },
-    'security': { settings, restaurantId },
+    'security': { settings, onActionSuccess: refreshData, restaurantId },
   };
 
   return (
