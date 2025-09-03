@@ -332,135 +332,123 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
 
   return (
     <>
-      
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <Button ref={categoryButtonRef} variant="ghost" size="icon" onClick={() => setIsCategoryListVisible(!isCategoryListVisible)} aria-label={isCategoryListVisible ? "隐藏菜单分类" : "显示菜单分类"} className="md:hidden">
-                {isCategoryListVisible ? <XIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
-              </Button>
-              <div ref={categoryListRef} className={cn("h-auto flex-col items-stretch justify-start p-2 border-y md:border-y-0 md:border-r rounded-r-lg border-border bg-card shadow-xl z-40 w-48 overflow-y-auto", "transition-all duration-300 ease-in-out md:hidden", isCategoryListVisible ? "absolute top-full left-0 mt-2 translate-x-0 opacity-100" : "absolute -translate-x-full opacity-0 pointer-events-none")}>
-                {categoriesWithCount.map((category, index) => (
-                <React.Fragment key={category.name}>
-                  <button onClick={() => handleCategorySelect(category.name)} className={cn("inline-flex items-center text-sm ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus:visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 w-full justify-start px-3 py-3 text-left rounded-md font-medium", selectedCategoryName === category.name ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-muted/50')}>
+      <div className="flex items-center justify-between gap-4 mb-4">
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button ref={categoryButtonRef} variant="outline">
+                  <span>{selectedCategoryName}</span>
+                  <ChevronDown className="h-4 w-4 ml-2" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent ref={categoryListRef}>
+                {categoriesWithCount.map((category) => (
+                  <DropdownMenuItem key={category.name} onSelect={() => handleCategorySelect(category.name)}>
                     {category.name} ({category.count})
-                  </button>
-                  {index < categoriesWithCount.length - 1 && (<Separator className="my-1 bg-border/70" />)}
-                </React.Fragment>
+                  </DropdownMenuItem>
                 ))}
-              </div>
-            </div>
-            <div className="flex items-center border rounded-md shadow-sm bg-background h-9">
-              <div className="relative flex items-center h-full">
-                <Search className="h-4 w-4 text-muted-foreground mx-2" />
-                <Input type="search" placeholder="搜索..." className="h-auto bg-transparent border-0 shadow-none px-0 focus-visible:ring-0 w-32 sm:w-40" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-              </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <div className="flex items-center border rounded-md shadow-sm bg-background h-9">
+            <div className="relative flex items-center h-full">
+              <Search className="h-4 w-4 text-muted-foreground mx-2" />
+              <Input type="search" placeholder="搜索..." className="h-auto bg-transparent border-0 shadow-none px-0 focus-visible:ring-0 w-32 sm:w-40" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
             </div>
           </div>
-          <Button onClick={() => setIsAddOpen(true)} size="icon" aria-label="添加新菜品">
-            <PlusCircle className="h-4 w-4" />
-          </Button>
         </div>
-        
-        <div>
-            <div className="flex flex-col md:flex-row">
-                <div className="hidden md:flex flex-col w-48 border-r pr-4">
-                    {categoriesWithCount.map((category, index) => (
-                        <React.Fragment key={category.name}>
-                            <button onClick={() => handleCategorySelect(category.name)} className={cn("inline-flex items-center text-sm ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus:visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 w-full justify-start px-3 py-3 text-left rounded-md font-medium", selectedCategoryName === category.name ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-muted/50')}>
-                                {category.name} ({category.count})
-                            </button>
-                            {index < categoriesWithCount.length - 1 && (<Separator className="my-1 bg-border/70" />)}
-                        </React.Fragment>
-                    ))}
-                </div>
-                <div className="flex-1 md:pl-4">
-                    <div className="hidden sm:block overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                            <TableRow>
-                                <TableHead>名称</TableHead>
-                                <TableHead>分类</TableHead>
-                                <TableHead className="text-right">价格</TableHead>
-                                <TableHead className="text-right w-[80px]">排序</TableHead>
-                                <TableHead className="w-[80px] text-right">操作</TableHead>
-                            </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                            {paginatedDishes.map((dish) => (
-                                <TableRow key={dish.id}>
-                                <TableCell className="py-2 font-medium">{dish.name}</TableCell>
-                                <TableCell className="py-2 text-muted-foreground">{dish.category}</TableCell>
-                                <TableCell className="text-right py-2">￥{dish.price.toFixed(2)}</TableCell>
-                                <TableCell className="text-right py-2">{dish.sortOrder}</TableCell>
-                                <TableCell className="text-right py-2">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon">
-                                                <MoreVertical className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onSelect={() => setEditingDish(dish)}>
-                                                <Pencil className="mr-2 h-4 w-4" />
-                                                <span>编辑</span>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onSelect={() => setDeletingDish(dish)} className="text-destructive">
-                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                <span>删除</span>
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TableCell>
-                                </TableRow>
-                            ))}
-                            </TableBody>
-                        </Table>
-                    </div>
+        <Button onClick={() => setIsAddOpen(true)} size="icon" aria-label="添加新菜品">
+          <PlusCircle className="h-4 w-4" />
+        </Button>
+      </div>
 
-                    <div className="block sm:hidden space-y-2">
-                        {paginatedDishes.map((dish) => (
-                            <Card key={dish.id} className="p-4">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <p className="font-medium">{dish.name}</p>
-                                        <p className="text-sm text-muted-foreground">{dish.category}</p>
-                                    </div>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onSelect={() => setEditingDish(dish)}><Pencil className="mr-2 h-4 w-4" /><span>编辑</span></DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setDeletingDish(dish)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" /><span>删除</span></DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
-                                <div className="flex justify-between items-baseline mt-2">
-                                    <span className="text-lg font-bold text-accent">￥{dish.price.toFixed(2)}</span>
-                                    <span className="text-sm text-muted-foreground">排序: {dish.sortOrder}</span>
-                                </div>
-                            </Card>
-                        ))}
-                    </div>
-
-                    {dishes.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8"><Utensils className="h-12 w-12 mb-4" /><p className="font-semibold">菜单还是空的</p><p className="text-sm">点击“添加新菜品”按钮来开始吧！</p></div>
-                    ) : paginatedDishes.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8"><Search className="h-12 w-12 mb-4" /><p className="font-semibold">未找到匹配的菜品</p><p className="text-sm">请尝试其他筛选条件。</p></div>
-                    ) : null}
-                </div>
-            </div>
-        </div>
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between">
-            <div className="text-xs text-muted-foreground">总共 {filteredDishes.length} 个菜品. 第 {currentPage} 页 / {totalPages} 页</div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}><ChevronLeft className="mr-2 h-4 w-4" />上一页</Button>
-              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>下一页<ChevronRight className="ml-2 h-4 w-4" /></Button>
-            </div>
+      <div>
+          <div className="hidden sm:block border rounded-lg overflow-x-auto">
+              <Table>
+                  <TableHeader>
+                  <TableRow>
+                      <TableHead>名称</TableHead>
+                      <TableHead>分类</TableHead>
+                      <TableHead className="text-right">价格</TableHead>
+                      <TableHead className="text-right w-[80px]">排序</TableHead>
+                      <TableHead className="w-[80px] text-right">操作</TableHead>
+                  </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                  {paginatedDishes.map((dish) => (
+                      <TableRow key={dish.id}>
+                      <TableCell className="py-2 font-medium">{dish.name}</TableCell>
+                      <TableCell className="py-2 text-muted-foreground">{dish.category}</TableCell>
+                      <TableCell className="text-right py-2">￥{dish.price.toFixed(2)}</TableCell>
+                      <TableCell className="text-right py-2">{dish.sortOrder}</TableCell>
+                      <TableCell className="text-right py-2">
+                          <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon">
+                                      <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onSelect={() => setEditingDish(dish)}>
+                                      <Pencil className="mr-2 h-4 w-4" />
+                                      <span>编辑</span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onSelect={() => setDeletingDish(dish)} className="text-destructive">
+                                      <Trash2 className="mr-2 h-4 w-4" />
+                                      <span>删除</span>
+                                  </DropdownMenuItem>
+                              </DropdownMenuContent>
+                          </DropdownMenu>
+                      </TableCell>
+                      </TableRow>
+                  ))}
+                  </TableBody>
+              </Table>
           </div>
-        )}
+
+          <div className="block sm:hidden space-y-2">
+              {paginatedDishes.map((dish) => (
+                  <Card key={dish.id} className="p-4">
+                      <div className="flex justify-between items-start">
+                          <div>
+                              <p className="font-medium">{dish.name}</p>
+                              <p className="text-sm text-muted-foreground">{dish.category}</p>
+                          </div>
+                          <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onSelect={() => setEditingDish(dish)}><Pencil className="mr-2 h-4 w-4" /><span>编辑</span></DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => setDeletingDish(dish)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" /><span>删除</span></DropdownMenuItem>
+                              </DropdownMenuContent>
+                          </DropdownMenu>
+                      </div>
+                      <div className="flex justify-between items-baseline mt-2">
+                          <span className="text-lg font-bold text-accent">￥{dish.price.toFixed(2)}</span>
+                          <span className="text-sm text-muted-foreground">排序: {dish.sortOrder}</span>
+                      </div>
+                  </Card>
+              ))}
+          </div>
+
+          {dishes.length === 0 ? (
+              <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8"><Utensils className="h-12 w-12 mb-4" /><p className="font-semibold">菜单还是空的</p><p className="text-sm">点击“添加新菜品”按钮来开始吧！</p></div>
+          ) : paginatedDishes.length === 0 ? (
+              <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8"><Search className="h-12 w-12 mb-4" /><p className="font-semibold">未找到匹配的菜品</p><p className="text-sm">请尝试其他筛选条件。</p></div>
+          ) : null}
+      </div>
+      
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <div className="text-xs text-muted-foreground">总共 {filteredDishes.length} 个菜品. 第 {currentPage} 页 / {totalPages} 页</div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}><ChevronLeft className="mr-2 h-4 w-4" />上一页</Button>
+            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>下一页<ChevronRight className="ml-2 h-4 w-4" /></Button>
+          </div>
+        </div>
+      )}
       
       
       <Sheet open={isAddOpen} onOpenChange={setIsAddOpen}>
@@ -923,5 +911,7 @@ export default function DashboardClient({ initialRestaurant, initialSettings, in
     </div>
   );
 }
+
+    
 
     
