@@ -279,7 +279,7 @@ export default function PointCardList({
                     )}
                 </div>
                  {totalNewPages > 1 && (
-                    <div className="flex items-center justify-between py-4 border-t">
+                    <div className="flex items-center justify-between py-4">
                         <div className="text-xs text-muted-foreground">总共 {newCards.length} 条. 第 {newCardsPage} 页 / {totalNewPages} 页</div>
                         <div className="flex items-center gap-2">
                             <Button variant="outline" size="sm" onClick={() => setNewCardsPage(p => Math.max(1, p - 1))} disabled={newCardsPage === 1}><ChevronLeft className="mr-2 h-4 w-4" />上一页</Button>
@@ -345,7 +345,7 @@ export default function PointCardList({
                         )}
                     </div>
                  {totalUsedPages > 1 && (
-                    <div className="flex items-center justify-between py-4 border-t">
+                    <div className="flex items-center justify-between py-4">
                         <div className="text-xs text-muted-foreground">总共 {usedCards.length} 条. 第 {usedCardsPage} 页 / {totalUsedPages} 页</div>
                         <div className="flex items-center gap-2">
                             <Button variant="outline" size="sm" onClick={() => setUsedCardsPage(p => Math.max(1, p - 1))} disabled={usedCardsPage === 1}><ChevronLeft className="mr-2 h-4 w-4" />上一页</Button>
