@@ -333,7 +333,7 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
   return (
     <>
       <div>
-        <div className="flex items-center justify-between gap-4 mb-4">
+        <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="relative">
               <Button ref={categoryButtonRef} variant="ghost" size="icon" onClick={() => setIsCategoryListVisible(!isCategoryListVisible)} aria-label={isCategoryListVisible ? "隐藏菜单分类" : "显示菜单分类"} className="md:hidden">
@@ -431,9 +431,9 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
                     </div>
 
                     {dishes.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8 border-t"><Utensils className="h-12 w-12 mb-4" /><p className="font-semibold">菜单还是空的</p><p className="text-sm">点击“添加新菜品”按钮来开始吧！</p></div>
+                        <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8"><Utensils className="h-12 w-12 mb-4" /><p className="font-semibold">菜单还是空的</p><p className="text-sm">点击“添加新菜品”按钮来开始吧！</p></div>
                     ) : paginatedDishes.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8 border-t"><Search className="h-12 w-12 mb-4" /><p className="font-semibold">未找到匹配的菜品</p><p className="text-sm">请尝试其他筛选条件。</p></div>
+                        <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8"><Search className="h-12 w-12 mb-4" /><p className="font-semibold">未找到匹配的菜品</p><p className="text-sm">请尝试其他筛选条件。</p></div>
                     ) : null}
                 </div>
             </div>
