@@ -160,10 +160,10 @@ export default function PointCardList({
       if (result.success) {
         toast.success(`点卡 ${deletingCard.id} 已删除。`);
         fetchNewCards(); // Refresh the list
+        setDeletingCard(null); // Close the dialog on success
       } else {
         toast.error('删除失败', { description: result.error });
       }
-      setDeletingCard(null);
     });
   };
 
@@ -358,6 +358,7 @@ export default function PointCardList({
 
         <AlertDialog open={!!deletingCard} onOpenChange={(open) => !open && setDeletingCard(null)}>
             <AlertDialogContent>
+              <form action={handleDeleteCard}>
                 <AlertDialogHeader>
                     <AlertDialogTitle>确认删除点卡？</AlertDialogTitle>
                     <AlertDialogDescription>
@@ -366,12 +367,13 @@ export default function PointCardList({
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isDeletePending}>取消</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteCard} disabled={isDeletePending} className="bg-destructive hover:bg-destructive/90">
+                    <AlertDialogCancel type="button" disabled={isDeletePending}>取消</AlertDialogCancel>
+                    <Button type="submit" variant="destructive" disabled={isDeletePending}>
                        {isDeletePending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
                         确认删除
-                    </AlertDialogAction>
+                    </Button>
                 </AlertDialogFooter>
+              </form>
             </AlertDialogContent>
         </AlertDialog>
     </>
