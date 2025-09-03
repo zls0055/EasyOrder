@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useTransition, useEffect, useMemo } from 'react';
@@ -237,7 +238,7 @@ export default function PointCardList({
                         </Table>
                     </div>
                 </div>
-                <div className="block sm:hidden space-y-4">
+                <div className="block sm:hidden space-y-2">
                     {isNewCardsLoading ? (
                         <div className="text-center h-24 flex items-center justify-center"><Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" /></div>
                     ) : paginatedNewCards.length > 0 ? (
@@ -323,7 +324,7 @@ export default function PointCardList({
                         </Table>
                     </div>
                  </div>
-                 <div className="block sm:hidden space-y-4">
+                 <div className="block sm:hidden space-y-2">
                          {isUsedCardsLoading ? (
                             <div className="text-center h-24 flex items-center justify-center"><Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" /></div>
                         ) : paginatedUsedCards.length > 0 ? (
@@ -379,3 +380,5 @@ export default function PointCardList({
     </>
   );
 }
+
+    
