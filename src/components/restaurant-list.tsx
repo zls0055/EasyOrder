@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useState, useTransition, useMemo, useEffect, useRef, useActionState } from 'react';
@@ -74,7 +73,7 @@ const initialState = {
   success: null,
 };
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
 const RestaurantRow = ({ restaurant, onAction, onRefresh, onImport, onExport, onViewLogs, index, refreshingId, copiedId, onCopy }: { 
     restaurant: Restaurant, 
@@ -834,3 +833,5 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
     </div>
   );
 }
+
+    

@@ -50,7 +50,7 @@ export default function PointLogsSheet({ restaurant, open, onOpenChange }: Point
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="flex flex-col w-full sm:max-w-md p-0">
+      <SheetContent className="flex flex-col w-full sm:max-w-md p-0 gap-2">
         <SheetHeader className="p-4 border-b">
           <SheetTitle>
             <div className="flex items-baseline gap-2">
@@ -69,7 +69,7 @@ export default function PointLogsSheet({ restaurant, open, onOpenChange }: Point
         </SheetHeader>
         
         <ScrollArea className="flex-1">
-          <div className="p-4">
+          <div className="px-2">
             {isLoading ? (
               <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
                 <Loader2 className="h-8 w-8 animate-spin mb-4" />
