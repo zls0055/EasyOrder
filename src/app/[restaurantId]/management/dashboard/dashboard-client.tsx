@@ -385,7 +385,7 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
                       <TableCell className="text-right py-2">
                           <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon">
+                                  <Button variant="ghost" size="icon" className="h-8 w-8">
                                       <MoreVertical className="h-4 w-4" />
                                   </Button>
                               </DropdownMenuTrigger>
@@ -915,6 +915,8 @@ export default function DashboardClient({ initialRestaurant, initialSettings, in
     </div>
   );
 }
+
+    
 
     
 
