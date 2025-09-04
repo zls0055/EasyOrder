@@ -834,8 +834,8 @@ export default function DashboardClient({ initialRestaurant, initialSettings, in
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-muted/40 p-4 sm:p-6 md:p-8">
-      <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-background px-2 mb-4 -mx-4 -mt-4 sm:-mx-6 md:-mx-8 sm:-mt-6 md:-mt-8">
+    <div className="flex flex-col min-h-screen bg-muted/40 p-2 sm:p-6 md:p-8">
+      <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-background px-2 mb-4 -mx-2 -mt-2 sm:-mx-6 md:-mx-8 sm:-mt-6 md:-mt-8">
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="md:hidden"><MenuIcon className="h-5 w-5" /><span className="sr-only">打开导航菜单</span></Button>
