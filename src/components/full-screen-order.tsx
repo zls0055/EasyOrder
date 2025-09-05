@@ -142,7 +142,7 @@ export default function OrderDetailView({
   const isActionDisabled = isUpdating || !!addingDishId || isOrderServed;
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full bg-background relative">
       <header className="p-4 flex items-center justify-between gap-4 border-b sticky top-0 bg-background/95 backdrop-blur-sm z-10">
         <div className="flex items-center gap-2">
             <Button variant="secondary" size="icon" className="h-10 w-10 rounded-full" onClick={() => onNavigate('prev')} disabled={isFirst} aria-label="上一个订单"><ChevronLeft className="h-5 w-5" /></Button>
