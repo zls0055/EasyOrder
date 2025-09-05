@@ -6,6 +6,7 @@ import type { NextRequest } from 'next/server';
 import { getSession, getSuperAdminSession, getKitchenSession } from '@/lib/session';
 import { getSettings } from './lib/settings';
 
+// In-memory store for rate limiting
 const ipRequestCounts = new Map<string, { count: number; expires: number }>();
 
 async function checkRateLimit(request: NextRequest) {
@@ -14,31 +15,35 @@ async function checkRateLimit(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const limit = parseInt(process.env.RATE_LIMIT_REQUESTS || '100', 10);
+  const limit = parseInt(process.env.RATE_LIMIT_REQUESTS || '20', 10);
   const windowSeconds = parseInt(process.env.RATE_LIMIT_WINDOW_SECONDS || '60', 10);
-  const ip = request.headers.get('x-forwarded-for') ?? '127.0.0.1';
-
+  const ip = request.headers.get('x-forwarded-for') ?? request.ip ?? '127.0.0.1';
   const now = Date.now();
 
   const ipData = ipRequestCounts.get(ip);
-
+  
   // If record has expired, reset it
   if (ipData && ipData.expires < now) {
+    console.log(`[RATE LIMIT] Expired record for IP: ${ip}. Resetting count.`);
     ipRequestCounts.delete(ip);
   }
 
-  const currentCount = ipRequestCounts.get(ip)?.count || 0;
+  const currentCount = (ipRequestCounts.get(ip)?.count || 0) + 1;
+  const expires = ipData?.expires || now + windowSeconds * 1000;
 
-  if (currentCount >= limit) {
+  console.log(`[RATE LIMIT] IP: ${ip}, Request Count: ${currentCount}, Limit: ${limit}`);
+
+  if (currentCount > limit) {
+    console.warn(`[RATE LIMIT] Blocked IP: ${ip}. Exceeded ${limit} requests in ${windowSeconds}s.`);
     return new NextResponse('Too Many Requests', { status: 429 });
   }
 
   ipRequestCounts.set(ip, {
-    count: currentCount + 1,
-    expires: ipData?.expires || now + windowSeconds * 1000,
+    count: currentCount,
+    expires: expires,
   });
 
-  // Clean up expired entries periodically (e.g., every 100 requests)
+  // Clean up expired entries periodically to prevent memory leaks
   if (ipRequestCounts.size % 100 === 0) {
     for (const [key, value] of ipRequestCounts.entries()) {
       if (value.expires < now) {
