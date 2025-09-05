@@ -198,14 +198,14 @@ export default function OrderDetailView({
       </ScrollArea>
       
       {isServerTab && (
-        <div className="absolute bottom-4 right-4 z-20">
-          <AddDishDialog dishes={allDishes} settings={settings} onAddDish={handleAddDish} addingDishId={addingDishId}>
-            <Button className="shadow-lg" disabled={isActionDisabled}>
-              {isUpdating || addingDishId ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
-              {isOrderServed ? '订单已上齐' : '加菜'}
-            </Button>
-          </AddDishDialog>
-        </div>
+        <footer className="p-4 border-t sticky bottom-0 bg-background z-10 flex justify-center">
+            <AddDishDialog dishes={allDishes} settings={settings} onAddDish={handleAddDish} addingDishId={addingDishId}>
+                <Button className="shadow-lg" disabled={isActionDisabled}>
+                {isUpdating || addingDishId ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
+                {isOrderServed ? '订单已上齐' : '加菜'}
+                </Button>
+            </AddDishDialog>
+        </footer>
       )}
 
       {!isServerTab && (
