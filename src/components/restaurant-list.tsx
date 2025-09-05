@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useTransition, useMemo, useEffect, useRef, useActionState } from 'react';
@@ -88,20 +89,21 @@ const RestaurantRow = ({ restaurant, onAction, onRefresh, onImport, onExport, on
     copiedId: string | null,
     onCopy: (id: string) => void,
 }) => {
-    const [settings, setSettings] = useState<AppSettings | null>(null);
-    const [isLoadingSettings, setIsLoadingSettings] = useState(true);
+    const [isLoadingSettings, setIsLoadingSettings] = useState(false);
     const isRefreshingThisRow = refreshingId === restaurant.id;
     const isCopied = copiedId === restaurant.id;
 
-    useEffect(() => {
-        const fetchSettings = async () => {
-            setIsLoadingSettings(true);
+    const handleFetchSettings = async () => {
+        setIsLoadingSettings(true);
+        try {
             const fetchedSettings = await getSettings(restaurant.id);
-            setSettings(fetchedSettings);
+            onAction({ type: 'sync-settings', restaurant, settings: fetchedSettings });
+        } catch (error) {
+            sonnerToast.error("获取高级设置失败", { description: error instanceof Error ? error.message : "未知错误" });
+        } finally {
             setIsLoadingSettings(false);
-        };
-        fetchSettings();
-    }, [restaurant.id]);
+        }
+    };
 
     return (
         <TableRow className={cn(index % 2 !== 0 && 'bg-muted/50')}>
@@ -165,7 +167,7 @@ const RestaurantRow = ({ restaurant, onAction, onRefresh, onImport, onExport, on
                                     <DropdownMenuItem onSelect={() => onAction({ type: 'recharge', restaurant })}>
                                         <DollarSign className="mr-2 h-4 w-4" /><span>充值点数</span>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={() => settings && onAction({ type: 'sync-settings', restaurant, settings })} disabled={isLoadingSettings}>
+                                    <DropdownMenuItem onSelect={handleFetchSettings} disabled={isLoadingSettings}>
                                         {isLoadingSettings ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <SettingsIcon className="mr-2 h-4 w-4" />}
                                         <span>高级设置</span>
                                     </DropdownMenuItem>
@@ -840,3 +842,4 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
     </div>
   );
 }
+
