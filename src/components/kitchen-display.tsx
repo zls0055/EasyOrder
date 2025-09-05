@@ -211,7 +211,7 @@ export default function KitchenDisplay({ allDishes, settings, restaurantId }: Ki
             )}
         </header>
         <ScrollArea className="flex-1">
-            <div className="p-4">
+            <div className="p-2">
             {isLoading ? (
                 <div className="flex flex-col items-center justify-center h-[calc(100vh-100px)] text-muted-foreground">
                     <Loader2 className="h-10 w-10 mx-auto mb-4 animate-spin" />
