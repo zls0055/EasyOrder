@@ -56,6 +56,7 @@ type DishImportData = {
 interface RestaurantListProps {
   restaurants: Restaurant[];
   onRestaurantAdded: () => void;
+  isLoading: boolean;
 }
 
 type DialogState = 
@@ -298,7 +299,7 @@ function ViewDishesSheet({ restaurant, open, onOpenChange }: { restaurant: Resta
 }
 
 
-export default function RestaurantList({ restaurants: initialRestaurants, onRestaurantAdded }: RestaurantListProps) {
+export default function RestaurantList({ restaurants: initialRestaurants, onRestaurantAdded, isLoading }: RestaurantListProps) {
   const [isPending, startTransition] = useTransition();
   const [isRefreshing, startRefreshTransition] = useTransition();
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
@@ -780,7 +781,13 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {paginatedRestaurants.length > 0 ? paginatedRestaurants.map((r, index) => (
+                {isLoading ? (
+                    <TableRow>
+                        <TableCell colSpan={3} className="h-24 text-center">
+                            <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
+                        </TableCell>
+                    </TableRow>
+                ) : paginatedRestaurants.length > 0 ? paginatedRestaurants.map((r, index) => (
                     <RestaurantRow 
                         key={r.id} 
                         restaurant={r} 
@@ -833,5 +840,3 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
     </div>
   );
 }
-
-    

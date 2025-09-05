@@ -16,25 +16,26 @@ async function checkRateLimit(request: NextRequest) {
   }
 
   const limit = parseInt(process.env.RATE_LIMIT_REQUESTS || '20', 10);
+  // console.log(`process.env.RATE_LIMIT_REQUESTS -> ${process.env.RATE_LIMIT_REQUESTS}`)
+  // console.log(`limit-----> ${limit}`)
   const windowSeconds = parseInt(process.env.RATE_LIMIT_WINDOW_SECONDS || '60', 10);
-  const ip = request.headers.get('x-forwarded-for') ?? request.ip ?? '127.0.0.1';
+  // console.log(`windowSeconds----> ${windowSeconds}`)
+  // console.log(`process.env.RATE_LIMIT_WINDOW_SECONDS -> ${process.env.RATE_LIMIT_WINDOW_SECONDS}`)
+  const ip = request.headers.get('x-forwarded-for') ?? '127.0.0.1';
   const now = Date.now();
 
-  const ipData = ipRequestCounts.get(ip);
+  let ipData = ipRequestCounts.get(ip);
   
   // If record has expired, reset it
   if (ipData && ipData.expires < now) {
-    console.log(`[RATE LIMIT] Expired record for IP: ${ip}. Resetting count.`);
     ipRequestCounts.delete(ip);
   }
-
+  ipData = ipRequestCounts.get(ip);
   const currentCount = (ipRequestCounts.get(ip)?.count || 0) + 1;
   const expires = ipData?.expires || now + windowSeconds * 1000;
 
-  console.log(`[RATE LIMIT] IP: ${ip}, Request Count: ${currentCount}, Limit: ${limit}`);
-
   if (currentCount > limit) {
-    console.warn(`[RATE LIMIT] Blocked IP: ${ip}. Exceeded ${limit} requests in ${windowSeconds}s.`);
+    console.log(`-------->Too Many Requests ip: ${ip} / currentCount: ${currentCount} / limit: ${limit} / windowSeconds:${windowSeconds}`)
     return new NextResponse('Too Many Requests', { status: 429 });
   }
 

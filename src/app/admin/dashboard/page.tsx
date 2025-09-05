@@ -10,6 +10,5 @@ export default async function SuperAdminDashboard() {
   }
 
   // The client component will now fetch its own data.
-  // We no longer pre-fetch it here.
   return <DashboardClient />;
 }

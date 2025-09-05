@@ -3,7 +3,7 @@
 
 import React, { useState, useTransition, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { LogOut, Menu as MenuIcon, University, CreditCard, X as XIcon, Loader2, KeyRound, Save } from 'lucide-react';
+import { LogOut, Menu as MenuIcon, University, CreditCard, X as XIcon, Loader2, KeyRound, Save, RotateCcw } from 'lucide-react';
 import { logoutSuperAdmin, updateSuperAdminPassword } from '@/lib/session';
 import RestaurantList from "@/components/restaurant-list";
 import PointCardList from "@/components/point-card-list";
@@ -41,12 +41,7 @@ function SuperAdminSecurityCard() {
     };
 
     return (
-        // <Card>
-        //     <CardHeader>
-        //         <CardTitle>修改超级管理员密码</CardTitle>
-        //     </CardHeader>
             <form ref={formRef} onSubmit={handleFormSubmit}>
-                {/* <CardContent className="space-y-4"> */}
                     <div className="space-y-2">
                         <Label htmlFor="currentPassword">当前密码</Label>
                         <Input id="currentPassword" name="currentPassword" type="password" placeholder="输入当前使用的密码" required disabled={isPending} />
@@ -59,17 +54,13 @@ function SuperAdminSecurityCard() {
                         <Label htmlFor="confirmPassword">确认新密码</Label>
                         <Input id="confirmPassword" name="confirmPassword" type="password" placeholder="再次输入新密码" required disabled={isPending} />
                     </div>
-                {/* </CardContent> */}
-                {/* <CardFooter> */}
                     <div className="space-y-2 pt-2">
                     <Button type="submit" variant="destructive" disabled={isPending}>
                         {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                         更新密码并登出
                     </Button>
                     </div>
-                {/* </CardFooter> */}
             </form>
-        // </Card>
     );
 }
 
@@ -95,26 +86,33 @@ function LoadingSkeleton() {
 
 export default function DashboardClient() {
     const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isRestaurantsLoading, startRestaurantsTransition] = useTransition();
     const [activeView, setActiveView] = useState<ActiveView>('restaurants');
     const [isLogoutPending, startLogoutTransition] = useTransition();
 
-    // Hoisted state for point cards
     const [newCards, setNewCards] = useState<PointCard[]>([]);
     const [usedCards, setUsedCards] = useState<PointCard[]>([]);
     const [isNewCardsLoading, startNewCardsTransition] = useTransition();
     const [isUsedCardsLoading, startUsedCardsTransition] = useTransition();
+    
+    const [hasLoaded, setHasLoaded] = useState<Record<ActiveView, boolean>>({
+        'restaurants': false,
+        'point-cards': false,
+        'security': true, // No initial data to load
+    });
 
-    const fetchRestaurants = useCallback(async () => {
-        setIsLoading(true);
-        try {
-            const fetchedRestaurants = await getRestaurants();
-            setRestaurants(fetchedRestaurants);
-        } catch (error) {
-            console.error("Failed to fetch restaurants", error);
-        } finally {
-            setIsLoading(false);
-        }
+    const fetchRestaurants = useCallback(() => {
+        startRestaurantsTransition(async () => {
+            try {
+                const fetchedRestaurants = await getRestaurants();
+                setRestaurants(fetchedRestaurants);
+            } catch (error) {
+                toast.error('获取餐馆列表失败');
+                console.error("Failed to fetch restaurants", error);
+            } finally {
+                setHasLoaded(prev => ({...prev, restaurants: true}));
+            }
+        });
     }, []);
     
     const fetchNewCards = useCallback(() => {
@@ -124,6 +122,8 @@ export default function DashboardClient() {
               setNewCards(newCardsData);
             } catch (error) {
               toast.error('获取新点卡失败', { description: error instanceof Error ? error.message : '未知错误' });
+            } finally {
+                 setHasLoaded(prev => ({...prev, 'point-cards': true}));
             }
         });
     }, []);
@@ -140,9 +140,12 @@ export default function DashboardClient() {
     }, []);
 
     useEffect(() => {
-        fetchRestaurants();
-        fetchNewCards();
-    }, [fetchRestaurants, fetchNewCards]);
+        if (activeView === 'restaurants' && !hasLoaded.restaurants) {
+            fetchRestaurants();
+        } else if (activeView === 'point-cards' && !hasLoaded['point-cards']) {
+            fetchNewCards();
+        }
+    }, [activeView, hasLoaded, fetchRestaurants, fetchNewCards]);
 
 
     const handleLogoutSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -151,15 +154,17 @@ export default function DashboardClient() {
             await logoutSuperAdmin();
         });
     };
-
-    if (isLoading) {
-        return <LoadingSkeleton />;
-    }
+    
+    const isLoading = (activeView === 'restaurants' && isRestaurantsLoading && !hasLoaded.restaurants) || (activeView === 'point-cards' && isNewCardsLoading && !hasLoaded['point-cards']);
 
     const ActiveComponent = viewConfig[activeView].component;
 
     const componentProps: any = {
-        'restaurants': { restaurants: restaurants, onRestaurantAdded: fetchRestaurants },
+        'restaurants': { 
+            restaurants: restaurants, 
+            onRestaurantAdded: fetchRestaurants,
+            isLoading: isRestaurantsLoading
+        },
         'point-cards': { 
             restaurants: restaurants,
             newCards,
@@ -189,6 +194,13 @@ export default function DashboardClient() {
                 </DropdownMenu>
 
                 <h1 className="text-2xl font-bold">{viewConfig[activeView].title}</h1>
+
+                {activeView === 'restaurants' && (
+                    <Button variant="ghost" size="icon" onClick={fetchRestaurants} disabled={isRestaurantsLoading} className="ml-4">
+                        <RotateCcw className={cn("h-4 w-4", isRestaurantsLoading && "animate-spin")} />
+                    </Button>
+                )}
+
                 <div className="ml-auto">
                     <form onSubmit={handleLogoutSubmit}>
                     <Button variant="outline" size="sm" type="submit" disabled={isLogoutPending}>
@@ -210,15 +222,19 @@ export default function DashboardClient() {
                     })}
                 </nav>
                  <div className="grid gap-6">
-                    <fieldset disabled={isLogoutPending} className={cn(isLogoutPending && "opacity-50")}>
-                        <div className="grid gap-2">
-                           <ActiveComponent {...componentProps[activeView]} />
+                    {isLoading ? (
+                         <div className="flex items-center justify-center pt-20">
+                            <Loader2 className="h-10 w-10 animate-spin text-primary" />
                         </div>
-                    </fieldset>
+                    ) : (
+                         <fieldset disabled={isLogoutPending} className={cn(isLogoutPending && "opacity-50")}>
+                            <div className="grid gap-2">
+                               <ActiveComponent {...componentProps[activeView]} />
+                            </div>
+                        </fieldset>
+                    )}
                 </div>
             </main>
         </div>
     );
 }
-
-    
