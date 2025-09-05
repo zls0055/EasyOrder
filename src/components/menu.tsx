@@ -181,7 +181,7 @@ export default function Menu({
     <div className="space-y-6">
       {Object.entries(groupedDishes).map(([category, dishesInCategory]) => (
         <div key={category}>
-          <h2 className="text-xl font-bold mb-4 p-3 bg-secondary text-secondary-foreground rounded-lg shadow-md flex items-center">
+          <h2 className="text-xl font-bold mb-2 p-3 bg-secondary text-secondary-foreground rounded-lg shadow-md flex items-center">
             {category === RECENTLY_ORDERED_CATEGORY && <Star className="h-5 w-5 mr-2 text-yellow-400" />} {category} ({dishesInCategory.length})
           </h2>
           <div className="dish-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
