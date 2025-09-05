@@ -159,7 +159,7 @@ export default function OrderDetailView({
       
       <ScrollArea className="flex-1">
         <div className={cn("bg-card text-card-foreground transition-colors", isOrderServed && "bg-primary/10")}>
-            <div className="p-6">
+            <div className="p-2">
                 <div className="flex justify-between items-baseline mb-2">
                     <p className="text-base text-muted-foreground">{new Date(order.placedAt).toLocaleString('zh-CN')}</p>
                     <div className="text-2xl font-bold text-primary"><span>￥{order.total.toFixed(1)}</span></div>
