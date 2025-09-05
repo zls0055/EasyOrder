@@ -237,7 +237,7 @@ export default function KitchenDisplay({ allDishes, settings, restaurantId }: Ki
                             "rounded-lg border bg-card text-card-foreground shadow-sm transition-all flex flex-col mb-4 break-inside-avoid-column",
                             isServed && "bg-primary/10"
                         )}>
-                             <div className="p-4">
+                             <div className="p-2">
                                 <div className="flex justify-between items-start mb-3">
                                     <button
                                         onClick={() => setSelectedOrder(pOrder)}
@@ -261,7 +261,7 @@ export default function KitchenDisplay({ allDishes, settings, restaurantId }: Ki
                                 </div>
                                 <Separator />
                             </div>
-                            <div className="flex-1 px-4">
+                            <div className="flex-1 px-2">
                                 <Table className="text-sm">
                                 <TableHeader>
                                     <TableRow>
@@ -283,7 +283,7 @@ export default function KitchenDisplay({ allDishes, settings, restaurantId }: Ki
                                 </TableBody>
                                 </Table>
                             </div>
-                            <div className="p-4 mt-auto flex justify-end">
+                            <div className="p-2 mt-auto flex justify-end">
                                 <Button variant={isServed ? 'secondary' : 'default'} size="sm" onClick={() => handleToggleOrderStatus(pOrder.id)}>
                                     {isServed ? '取消标记' : '标记为已上齐'}
                                 </Button>
