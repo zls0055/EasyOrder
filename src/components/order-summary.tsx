@@ -117,7 +117,7 @@ export default function OrderSummary({ table, onUpdateQuantity, onRemoveItem, on
     }
     return {
       icon: <ShoppingBag className="h-5 w-5" />,
-      text: itemCount > 0 ? `${itemCount}项 - ￥${orderTotal.toFixed(2)}` : '空订单',
+      text: itemCount > 0 ? `${itemCount}项 - ￥${orderTotal.toFixed(1)}` : '空订单',
       variant: 'accent' as const,
       disabled: false,
     };
@@ -186,7 +186,7 @@ export default function OrderSummary({ table, onUpdateQuantity, onRemoveItem, on
                     <div>
                         <p className="font-semibold text-sm">{item.dish.name}</p>
                         <p className="text-xs text-muted-foreground">
-                        ￥{item.dish.price.toFixed(2)} x {item.quantity} = ￥{(item.dish.price * item.quantity).toFixed(2)}
+                        ￥{item.dish.price.toFixed(1)} x {item.quantity} = ￥{(item.dish.price * item.quantity).toFixed(1)}
                         </p>
                     </div>
                     <div className={cn("flex items-center gap-1", isActionDisabled && "opacity-50")}>
@@ -207,7 +207,7 @@ export default function OrderSummary({ table, onUpdateQuantity, onRemoveItem, on
                 <Separator className="my-2" />
                 <div className="flex justify-between items-center text-base font-bold">
                 <span>总计:</span>
-                <span>￥{orderTotal.toFixed(2)}</span>
+                <span>￥{orderTotal.toFixed(1)}</span>
                 </div>
             </div>
             ) : (

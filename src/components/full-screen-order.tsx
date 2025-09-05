@@ -162,7 +162,7 @@ export default function OrderDetailView({
             <div className="p-6">
                 <div className="flex justify-between items-baseline mb-2">
                     <p className="text-base text-muted-foreground">{new Date(order.placedAt).toLocaleString('zh-CN')}</p>
-                    <div className="text-2xl font-bold text-primary"><span>￥{order.total.toFixed(2)}</span></div>
+                    <div className="text-2xl font-bold text-primary"><span>￥{order.total.toFixed(1)}</span></div>
                 </div>
                 <Separator className="my-4" />
                 <Table>
@@ -178,7 +178,7 @@ export default function OrderDetailView({
                         <TableCell className="font-medium py-4">
                           <p className="text-xl">{item.dish.name}</p>
                           <div className="flex items-center gap-2 mt-1">
-                              <p className="text-base text-muted-foreground">￥{item.dish.price.toFixed(2)}</p>
+                              <p className="text-base text-muted-foreground">￥{item.dish.price.toFixed(1)}</p>
                               {isServerTab && (
                                 <div className="flex items-center gap-1">
                                     <Button variant="secondary" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); handleUpdateQuantity(item.dish.id, -1)}} disabled={isActionDisabled}><MinusCircle className="h-4 w-4" /></Button>
@@ -188,7 +188,7 @@ export default function OrderDetailView({
                               )}
                           </div>
                         </TableCell>
-                        <TableCell className="text-right text-xl font-semibold py-4 align-middle">￥{(item.dish.price * item.quantity).toFixed(2)}</TableCell>
+                        <TableCell className="text-right text-xl font-semibold py-4 align-middle">￥{(item.dish.price * item.quantity).toFixed(1)}</TableCell>
                       </TableRow>
                     )})}
                   </TableBody>

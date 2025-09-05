@@ -267,7 +267,7 @@ function ViewDishesSheet({ restaurant, open, onOpenChange }: { restaurant: Resta
                             {dishesInCategory.map((dish) => (
                             <TableRow key={dish.id}>
                                 <TableCell className="font-medium">{dish.name}</TableCell>
-                                <TableCell>￥{dish.price.toFixed(2)}</TableCell>
+                                <TableCell>￥{dish.price.toFixed(1)}</TableCell>
                                 <TableCell className="text-right">{dish.sortOrder}</TableCell>
                             </TableRow>
                             ))}

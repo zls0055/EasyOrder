@@ -168,7 +168,7 @@ export default function Menu({
           {quantityInOrder && quantityInOrder > 0 && (<Badge variant="destructive" className="absolute top-1 right-1 h-5 w-5 rounded-full flex items-center justify-center p-2 text-xs">{quantityInOrder}</Badge>)}
           <CardHeader className="p-3 pb-2"><CardTitle className="text-base font-semibold line-clamp-1">{dish.name}</CardTitle></CardHeader>
           <CardContent className="p-3 pt-0 flex justify-between items-center">
-              <p className="text-sm font-bold text-accent">￥{dish.price.toFixed(2)}</p>
+              <p className="text-sm font-bold text-accent">￥{dish.price.toFixed(1)}</p>
               <Button size="icon" variant={isJustAdded ? "secondary" : "default"} onClick={() => onAddDish(dish)} disabled={isDisabled || isJustAdded} aria-label={`将 ${dish.name} 加入订单`}>
                   {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : (isJustAdded ? <Check className="h-4 w-4" /> : <ShoppingCart className="h-4 w-4" />)}
               </Button>

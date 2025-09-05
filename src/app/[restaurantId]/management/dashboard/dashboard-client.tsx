@@ -380,7 +380,7 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
                       <TableRow key={dish.id}>
                       <TableCell className="py-2 font-medium">{dish.name}</TableCell>
                       <TableCell className="py-2 text-muted-foreground">{dish.category}</TableCell>
-                      <TableCell className="text-right py-2">￥{dish.price.toFixed(2)}</TableCell>
+                      <TableCell className="text-right py-2">￥{dish.price.toFixed(1)}</TableCell>
                       <TableCell className="text-right py-2">{dish.sortOrder}</TableCell>
                       <TableCell className="text-right py-2">
                           <DropdownMenu>
@@ -426,7 +426,7 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
                           </DropdownMenu>
                       </div>
                       <div className="flex justify-between items-baseline mt-2">
-                          <span className="text-lg font-bold text-accent">￥{dish.price.toFixed(2)}</span>
+                          <span className="text-lg font-bold text-accent">￥{dish.price.toFixed(1)}</span>
                           <span className="text-sm text-muted-foreground">排序: {dish.sortOrder}</span>
                       </div>
                   </Card>

@@ -255,7 +255,7 @@ export default function KitchenDisplay({ allDishes, settings, restaurantId }: Ki
                                         </p>
                                     </button>
                                     <div className="text-right pt-1 ml-4 shrink-0">
-                                        <p className="text-xl font-bold text-primary">￥{pOrder.total.toFixed(2)}</p>
+                                        <p className="text-xl font-bold text-primary">￥{pOrder.total.toFixed(1)}</p>
                                         <p className="text-xs text-muted-foreground">(共 {totalQuantity} 件)</p>
                                     </div>
                                 </div>
@@ -276,7 +276,7 @@ export default function KitchenDisplay({ allDishes, settings, restaurantId }: Ki
                                         <TableRow key={item.dish.id} className={cn(index % 2 !== 0 && 'bg-muted/30')}>
                                             <TableCell className="px-2 py-1 text-muted-foreground">{index + 1}</TableCell>
                                             <TableCell className="truncate py-1 px-2">{item.dish.name}</TableCell>
-                                            <TableCell className="py-1 px-2 text-muted-foreground">￥{item.dish.price.toFixed(2)}</TableCell>
+                                            <TableCell className="py-1 px-2 text-muted-foreground">￥{item.dish.price.toFixed(1)}</TableCell>
                                             <TableCell className="py-1 px-2 text-right text-muted-foreground">x {item.quantity}</TableCell>
                                         </TableRow>
                                     ))}

@@ -58,7 +58,7 @@ const OrderList = ({ orders, emptyMessage, onOrderSelect }: {
                                 {new Date(pOrder.placedAt).toLocaleString('zh-CN')}
                             </p>
                         </button>
-                        <p className="text-xl font-bold text-primary pt-1">￥{pOrder.total.toFixed(2)}</p>
+                        <p className="text-xl font-bold text-primary pt-1">￥{pOrder.total.toFixed(1)}</p>
                     </div>
                     <Separator />
                     <div className="mt-3">
@@ -67,7 +67,7 @@ const OrderList = ({ orders, emptyMessage, onOrderSelect }: {
                             {pOrder.order.map((item, index) => (
                                 <TableRow key={item.dish.id} className={cn(index % 2 !== 0 && 'bg-muted/30')}>
                                     <TableCell className="w-[50%] truncate py-1 px-2">{item.dish.name}</TableCell>
-                                    <TableCell className="py-1 px-2 text-muted-foreground">￥{item.dish.price.toFixed(2)}</TableCell>
+                                    <TableCell className="py-1 px-2 text-muted-foreground">￥{item.dish.price.toFixed(1)}</TableCell>
                                     <TableCell className="py-1 px-2 text-right text-muted-foreground">x {item.quantity}</TableCell>
                                 </TableRow>
                             ))}
