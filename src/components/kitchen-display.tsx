@@ -223,7 +223,7 @@ export default function KitchenDisplay({ allDishes, settings, restaurantId }: Ki
                 </div>
             ) : (
                 <div className={cn(
-                    "gap-4",
+                    "gap-2",
                     layoutMode === 'grid' 
                         ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
                         : "columns-1 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5"
