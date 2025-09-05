@@ -198,7 +198,7 @@ export default function OrderDetailView({
       </ScrollArea>
       
       {isServerTab && (
-        <div className="absolute bottom-4 right-4 z-20">
+        <div className="fixed bottom-4 right-4 z-20">
             <AddDishDialog dishes={allDishes} settings={settings} onAddDish={handleAddDish} addingDishId={addingDishId}>
                 <Button className="shadow-lg" size="lg" disabled={isActionDisabled}>
                 {isUpdating || addingDishId ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
@@ -209,7 +209,7 @@ export default function OrderDetailView({
       )}
 
       {!isServerTab && (
-        <div className="absolute bottom-4 right-4 z-20">
+        <div className="fixed bottom-4 right-4 z-20">
             <Dialog onOpenChange={(open) => { if (open) generateAndDrawQRCode() }}>
                 <DialogTrigger asChild>
                     <Button className="shadow-lg" variant="outline"><Share2 className="mr-2 h-4 w-4" />分享订单</Button>
