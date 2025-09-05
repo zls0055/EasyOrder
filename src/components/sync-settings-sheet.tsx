@@ -101,7 +101,7 @@ export default function SyncSettingsSheet({
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col h-[calc(100%-80px)]">
+          <form onSubmit={handleSubmit} className="flex flex-col h-[calc(100%-50px)]">
             <input type="hidden" name="restaurantId" value={restaurant.id} />
             <div className="py-6 space-y-8 flex-1 overflow-y-auto">
                 <div className="space-y-4">
