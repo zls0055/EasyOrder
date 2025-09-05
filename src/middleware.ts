@@ -16,10 +16,9 @@ async function checkRateLimit(request: NextRequest) {
 
   const limit = parseInt(process.env.RATE_LIMIT_REQUESTS || '100', 10);
   const windowSeconds = parseInt(process.env.RATE_LIMIT_WINDOW_SECONDS || '60', 10);
-  const ip = request.ip ?? '127.0.0.1';
+  const ip = request.headers.get('x-forwarded-for') ?? '127.0.0.1';
 
   const now = Date.now();
-  const windowStart = now - windowSeconds * 1000;
 
   const ipData = ipRequestCounts.get(ip);
 
