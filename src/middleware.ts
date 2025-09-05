@@ -6,7 +6,58 @@ import type { NextRequest } from 'next/server';
 import { getSession, getSuperAdminSession, getKitchenSession } from '@/lib/session';
 import { getSettings } from './lib/settings';
 
+const ipRequestCounts = new Map<string, { count: number; expires: number }>();
+
+async function checkRateLimit(request: NextRequest) {
+  const isEnabled = process.env.RATE_LIMIT_ENABLED === 'true';
+  if (!isEnabled) {
+    return NextResponse.next();
+  }
+
+  const limit = parseInt(process.env.RATE_LIMIT_REQUESTS || '100', 10);
+  const windowSeconds = parseInt(process.env.RATE_LIMIT_WINDOW_SECONDS || '60', 10);
+  const ip = request.ip ?? '127.0.0.1';
+
+  const now = Date.now();
+  const windowStart = now - windowSeconds * 1000;
+
+  const ipData = ipRequestCounts.get(ip);
+
+  // If record has expired, reset it
+  if (ipData && ipData.expires < now) {
+    ipRequestCounts.delete(ip);
+  }
+
+  const currentCount = ipRequestCounts.get(ip)?.count || 0;
+
+  if (currentCount >= limit) {
+    return new NextResponse('Too Many Requests', { status: 429 });
+  }
+
+  ipRequestCounts.set(ip, {
+    count: currentCount + 1,
+    expires: ipData?.expires || now + windowSeconds * 1000,
+  });
+
+  // Clean up expired entries periodically (e.g., every 100 requests)
+  if (ipRequestCounts.size % 100 === 0) {
+    for (const [key, value] of ipRequestCounts.entries()) {
+      if (value.expires < now) {
+        ipRequestCounts.delete(key);
+      }
+    }
+  }
+  
+  return NextResponse.next();
+}
+
+
 export async function middleware(request: NextRequest) {
+  const rateLimitResponse = await checkRateLimit(request);
+  if (rateLimitResponse.status === 429) {
+    return rateLimitResponse;
+  }
+
   const { pathname } = request.nextUrl;
 
   // Super Admin routes
