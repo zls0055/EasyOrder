@@ -240,7 +240,7 @@ export default function Menu({
                   </React.Fragment>
                 ))}
               </TabsList>
-               <TabsContent value={selectedCategoryName} className="w-full h-full overflow-y-auto p-4 mt-0 flex-1">
+               <TabsContent value={selectedCategoryName} className="w-full h-full overflow-y-auto p-2 mt-0 flex-1">
                   {isSearching ? ( searchResults && Object.keys(searchResults).length > 0 ? <GroupedDishList groupedDishes={searchResults} /> : <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground"><Search className="h-10 w-10 mb-2" /><p className="font-semibold">未找到匹配的菜品</p><p className="text-sm mt-1">请尝试其他搜索词。</p></div>) : selectedCategoryName === '全部菜品' ? <GroupedDishList groupedDishes={allDishesGrouped} /> : (dishesForCategory.length > 0 ? <div className="dish-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">{dishesForCategory.map((dish) => <DishCard key={dish.id} dish={dish} />)}</div> : <p className="text-muted-foreground p-6">请选择一个分类查看菜品。</p>)}
                </TabsContent>
             </div>
@@ -250,3 +250,5 @@ export default function Menu({
     </Card>
   );
 }
+
+    
