@@ -161,7 +161,7 @@ export default function PlacedOrdersSheetContent({ viewMode, allDishes, settings
           <h2 className="text-lg font-semibold">本地订单历史 (此设备)</h2>
       </div>
       <ScrollArea className="flex-1">
-          <div className="p-6 pb-24">
+          <div className="p-2 pb-24">
               <OrderList 
                   orders={localOrders} 
                   emptyMessage="此设备上没有历史订单记录。"
