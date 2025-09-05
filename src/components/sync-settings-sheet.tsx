@@ -21,10 +21,11 @@ import { updateSyncSettingsAction } from '@/lib/actions';
 import { toast } from 'sonner';
 import { Separator } from './ui/separator';
 import { Switch } from './ui/switch';
+import { getSettings } from '@/lib/settings';
 
 interface SyncSettingsSheetProps {
   restaurant: Restaurant;
-  currentSettings: AppSettings;
+  initialSettings: AppSettings | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSettingsUpdated: () => void;
@@ -32,27 +33,35 @@ interface SyncSettingsSheetProps {
 
 export default function SyncSettingsSheet({
   restaurant,
-  currentSettings,
+  initialSettings,
   open,
   onOpenChange,
   onSettingsUpdated,
 }: SyncSettingsSheetProps) {
-  const [mode, setMode] = useState(currentSettings.orderFetchMode);
-  const [interval, setInterval] = useState(currentSettings.orderPullIntervalSeconds);
-  const [syncCount, setSyncCount] = useState(currentSettings.syncOrderCount);
-  const [kitchenPassword, setKitchenPassword] = useState(currentSettings.kitchenDisplayPassword);
-  const [showKitchenLayoutSwitch, setShowKitchenLayoutSwitch] = useState(currentSettings.showKitchenLayoutSwitch);
-  const [features, setFeatures] = useState(currentSettings.featureVisibility);
+  const [settings, setSettings] = useState<AppSettings | null>(initialSettings);
+  const [isDataLoading, setIsDataLoading] = useState(!initialSettings);
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    setMode(currentSettings.orderFetchMode);
-    setInterval(currentSettings.orderPullIntervalSeconds);
-    setSyncCount(currentSettings.syncOrderCount);
-    setKitchenPassword(currentSettings.kitchenDisplayPassword);
-    setShowKitchenLayoutSwitch(currentSettings.showKitchenLayoutSwitch);
-    setFeatures(currentSettings.featureVisibility);
-  }, [currentSettings]);
+    if (open && !settings) {
+      setIsDataLoading(true);
+      getSettings(restaurant.id)
+        .then((fetchedSettings) => {
+          setSettings(fetchedSettings);
+        })
+        .catch((error) => {
+          console.error("Failed to fetch settings:", error);
+          toast.error("获取高级设置失败");
+          onOpenChange(false);
+        })
+        .finally(() => {
+          setIsDataLoading(false);
+        });
+    }
+    if (!open) {
+        setSettings(null);
+    }
+  }, [open, restaurant.id, settings, onOpenChange]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,7 +79,7 @@ export default function SyncSettingsSheet({
     });
   };
 
-  const featureLabels: Record<keyof typeof features, string> = {
+  const featureLabels: Record<keyof AppSettings['featureVisibility'], string> = {
     menuManagement: "菜单管理",
     categorySort: "分类排序",
     generalSettings: "通用设置",
@@ -81,14 +90,19 @@ export default function SyncSettingsSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-md">
-        <form onSubmit={handleSubmit} className="flex flex-col h-full">
+         <SheetHeader>
+            <SheetTitle>高级设置</SheetTitle>
+            <SheetDescription>
+                为餐馆 “{restaurant.name}” 配置厨房同步及后台功能模块。
+            </SheetDescription>
+        </SheetHeader>
+        {isDataLoading || !settings ? (
+          <div className="flex items-center justify-center h-full">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex flex-col h-[calc(100%-80px)]">
             <input type="hidden" name="restaurantId" value={restaurant.id} />
-            <SheetHeader>
-                <SheetTitle>高级设置</SheetTitle>
-                <SheetDescription>
-                    为餐馆 “{restaurant.name}” 配置厨房同步及后台功能模块。
-                </SheetDescription>
-            </SheetHeader>
             <div className="py-6 space-y-8 flex-1 overflow-y-auto">
                 <div className="space-y-4">
                      <Label className="text-base font-semibold">厨房看板设置</Label>
@@ -99,8 +113,7 @@ export default function SyncSettingsSheet({
                               id="kitchenDisplayPassword"
                               name="kitchenDisplayPassword"
                               type="text"
-                              value={kitchenPassword}
-                              onChange={(e) => setKitchenPassword(e.target.value)}
+                              defaultValue={settings.kitchenDisplayPassword}
                               placeholder="留空则无需密码"
                               disabled={isPending}
                           />
@@ -111,8 +124,7 @@ export default function SyncSettingsSheet({
                           <Switch
                               id="showKitchenLayoutSwitch"
                               name="showKitchenLayoutSwitch"
-                              checked={showKitchenLayoutSwitch}
-                              onCheckedChange={setShowKitchenLayoutSwitch}
+                              defaultChecked={settings.showKitchenLayoutSwitch}
                               disabled={isPending}
                           />
                       </div>
@@ -123,7 +135,7 @@ export default function SyncSettingsSheet({
 
                 <div className="space-y-4">
                      <Label className="text-base font-semibold">订单同步模式</Label>
-                    <RadioGroup name="orderFetchMode" value={mode} onValueChange={(value) => setMode(value as 'push' | 'pull')} className="space-y-2">
+                    <RadioGroup name="orderFetchMode" defaultValue={settings.orderFetchMode} className="space-y-2">
                         <div>
                             <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="push" id="mode-push" />
@@ -145,22 +157,19 @@ export default function SyncSettingsSheet({
                     </RadioGroup>
                 </div>
 
-                {mode === 'pull' && (
-                    <div className="space-y-2 pl-6 animate-in fade-in duration-300">
-                        <Label htmlFor="interval">拉取间隔 (秒)</Label>
-                        <Input
-                            id="interval"
-                            name="orderPullIntervalSeconds"
-                            type="number"
-                            value={interval}
-                            onChange={(e) => setInterval(Number(e.target.value))}
-                            min="2"
-                            step="1"
-                            disabled={isPending}
-                        />
-                        <p className="text-xs text-muted-foreground">建议设置为 5-10 秒。设置过低会增加服务器压力。</p>
-                    </div>
-                )}
+                <div className="space-y-2 pl-6 animate-in fade-in duration-300">
+                    <Label htmlFor="interval">拉取间隔 (秒)</Label>
+                    <Input
+                        id="interval"
+                        name="orderPullIntervalSeconds"
+                        type="number"
+                        defaultValue={settings.orderPullIntervalSeconds}
+                        min="2"
+                        step="1"
+                        disabled={isPending}
+                    />
+                    <p className="text-xs text-muted-foreground">建议设置为 5-10 秒。设置过低会增加服务器压力。</p>
+                </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="syncOrderCount">同步订单数量</Label>
@@ -168,8 +177,7 @@ export default function SyncSettingsSheet({
                         id="syncOrderCount"
                         name="syncOrderCount"
                         type="number"
-                        value={syncCount}
-                        onChange={(e) => setSyncCount(Number(e.target.value))}
+                        defaultValue={settings.syncOrderCount}
                         min="1"
                         step="1"
                         disabled={isPending}
@@ -183,14 +191,13 @@ export default function SyncSettingsSheet({
                     <Label className="text-base font-semibold">后台功能模块可见性</Label>
                     <p className="text-sm text-muted-foreground">控制此餐馆后台管理界面中可见的功能模块。</p>
                     <div className="space-y-4 rounded-lg border p-4">
-                        {(Object.keys(features) as Array<keyof typeof features>).map((key) => (
+                        {(Object.keys(featureLabels) as Array<keyof AppSettings['featureVisibility']>).map((key) => (
                             <div key={key} className="flex items-center justify-between">
                                 <Label htmlFor={`feature-${key}`}>{featureLabels[key]}</Label>
                                 <Switch
                                     id={`feature-${key}`}
                                     name={`featureVisibility.${key}`}
-                                    checked={features[key]}
-                                    onCheckedChange={(checked) => setFeatures(prev => ({...prev, [key]: checked}))}
+                                    defaultChecked={settings.featureVisibility[key]}
                                     disabled={isPending}
                                 />
                             </div>
@@ -207,7 +214,8 @@ export default function SyncSettingsSheet({
                     保存设置
                 </Button>
             </SheetFooter>
-        </form>
+          </form>
+        )}
          <SheetClose asChild>
             <Button variant="ghost" size="icon" className="absolute top-4 right-4 h-8 w-8 rounded-full">
                 <X className="h-4 w-4" />

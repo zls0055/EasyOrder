@@ -65,7 +65,7 @@ type DialogState =
     | { type: 'clear'; restaurant: Restaurant }
     | { type: 'edit'; restaurant: Restaurant }
     | { type: 'recharge'; restaurant: Restaurant }
-    | { type: 'sync-settings', restaurant: Restaurant, settings: AppSettings }
+    | { type: 'sync-settings', restaurant: Restaurant, settings: AppSettings | null }
     | { type: 'import-csv', restaurant: Restaurant }
     | { type: 'view-dishes', restaurant: Restaurant }
     | null;
@@ -89,21 +89,8 @@ const RestaurantRow = ({ restaurant, onAction, onRefresh, onImport, onExport, on
     copiedId: string | null,
     onCopy: (id: string) => void,
 }) => {
-    const [isLoadingSettings, setIsLoadingSettings] = useState(false);
     const isRefreshingThisRow = refreshingId === restaurant.id;
     const isCopied = copiedId === restaurant.id;
-
-    const handleFetchSettings = async () => {
-        setIsLoadingSettings(true);
-        try {
-            const fetchedSettings = await getSettings(restaurant.id);
-            onAction({ type: 'sync-settings', restaurant, settings: fetchedSettings });
-        } catch (error) {
-            sonnerToast.error("获取高级设置失败", { description: error instanceof Error ? error.message : "未知错误" });
-        } finally {
-            setIsLoadingSettings(false);
-        }
-    };
 
     return (
         <TableRow className={cn(index % 2 !== 0 && 'bg-muted/50')}>
@@ -167,8 +154,8 @@ const RestaurantRow = ({ restaurant, onAction, onRefresh, onImport, onExport, on
                                     <DropdownMenuItem onSelect={() => onAction({ type: 'recharge', restaurant })}>
                                         <DollarSign className="mr-2 h-4 w-4" /><span>充值点数</span>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={handleFetchSettings} disabled={isLoadingSettings}>
-                                        {isLoadingSettings ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <SettingsIcon className="mr-2 h-4 w-4" />}
+                                    <DropdownMenuItem onSelect={() => onAction({ type: 'sync-settings', restaurant, settings: null })}>
+                                        <SettingsIcon className="mr-2 h-4 w-4" />
                                         <span>高级设置</span>
                                     </DropdownMenuItem>
                                 </DropdownMenuSubContent>
@@ -683,7 +670,7 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
             open={true}
             onOpenChange={(open) => !open && setDialogState(null)}
             restaurant={dialogState.restaurant}
-            currentSettings={dialogState.settings}
+            initialSettings={dialogState.settings}
             onSettingsUpdated={() => {
                 setDialogState(null);
                 onRestaurantAdded();
@@ -842,4 +829,3 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
     </div>
   );
 }
-
