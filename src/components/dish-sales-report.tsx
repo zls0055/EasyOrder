@@ -93,25 +93,17 @@ export default function DishSalesReport({ dishes, restaurantId }: DishSalesRepor
 
   if (logs.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center justify-center text-center text-muted-foreground p-8">
-            <BarChartHorizontal className="h-12 w-12 mb-4" />
-            <p className="font-semibold">没有可用的销售数据</p>
-            <p className="text-sm">当有新的订单产生后，这里会显示菜品的销量统计。</p>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8">
+          <BarChartHorizontal className="h-12 w-12 mb-4" />
+          <p className="font-semibold">没有可用的销售数据</p>
+          <p className="text-sm">当有新的订单产生后，这里会显示菜品的销量统计。</p>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex justify-between items-center">
-            <div>
-                
-            </div>
+    <div className="space-y-6">
+        <div className="flex justify-end items-center">
             <div className="flex items-center gap-2">
                 <Button variant="outline" size="icon" onClick={() => handleDateChange('prev')} disabled={!canGoPrev}>
                     <ChevronLeft className="h-4 w-4" />
@@ -125,8 +117,7 @@ export default function DishSalesReport({ dishes, restaurantId }: DishSalesRepor
                 </Button>
             </div>
         </div>
-      </CardHeader>
-      <CardContent className="grid gap-6">
+        
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
@@ -171,7 +162,6 @@ export default function DishSalesReport({ dishes, restaurantId }: DishSalesRepor
             </TableBody>
           </Table>
         </div>
-      </CardContent>
-    </Card>
+    </div>
   );
 }
