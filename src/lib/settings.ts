@@ -326,27 +326,35 @@ export async function getPointLogs(restaurantId: string): Promise<PointLog[]> {
 
 export async function getDishOrderLogs(restaurantId: string): Promise<DishOrderLog[]> {
     if (!restaurantId) return [];
+    console.log(`[getDishOrderLogs] Fetching for restaurant: ${restaurantId}`);
     try {
         const logsRef = collection(db, RESTAURANTS_COLLECTION, restaurantId, DISH_ORDER_LOGS_COLLECTION);
         const q = query(logsRef, orderBy('__name__', 'desc'));
         const snapshot = await getDocs(q);
 
         if (snapshot.empty) {
+            console.log(`[getDishOrderLogs][${restaurantId}] No logs found (collection is empty).`);
             return [];
         }
+        console.log(`[getDishOrderLogs][${restaurantId}] Found ${snapshot.docs.length} documents.`);
 
         const logs = snapshot.docs
             .map(doc => {
                 if (doc.id === '.placeholder') return null;
                 const data = doc.data();
                 const dataToParse = { date: doc.id, counts: data.counts || {} };
+                console.log(`[getDishOrderLogs][${restaurantId}] Parsing doc ${doc.id}:`, dataToParse);
                 const parsed = DishOrderLogSchema.safeParse(dataToParse);
-                if (parsed.success) return parsed.data;
+                if (parsed.success) {
+                    console.log(`[getDishOrderLogs][${restaurantId}] Successfully parsed doc ${doc.id}`);
+                    return parsed.data;
+                }
                 console.warn(`[getDishOrderLogs][${restaurantId}] -> Skipping invalid log document. Zod error:`, parsed.error);
                 return null;
             })
             .filter((log): log is DishOrderLog => log !== null);
         
+        console.log(`[getDishOrderLogs][${restaurantId}] Returning ${logs.length} parsed logs.`);
         return logs;
 
     } catch (error) {

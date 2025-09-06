@@ -29,20 +29,30 @@ export default function DishSalesReport({ dishes, restaurantId }: DishSalesRepor
 
   useEffect(() => {
     startTransition(async () => {
+      console.log('[DishSalesReport] Fetching dish order logs...');
       const fetchedLogs = await getCachedDishOrderLogs(restaurantId);
+      console.log('[DishSalesReport] Fetched logs:', fetchedLogs);
       setLogs(fetchedLogs);
       if (fetchedLogs.length > 0) {
         setSelectedDate(fetchedLogs[0].date);
+        console.log('[DishSalesReport] Initial selected date set to:', fetchedLogs[0].date);
+      } else {
+        console.log('[DishSalesReport] No logs found, selected date not set.');
       }
     });
   }, [restaurantId]);
 
   const salesDataForSelectedDate: SalesData[] = useMemo(() => {
+    console.log(`[DishSalesReport] Memoizing sales data for selectedDate: ${selectedDate}`);
     if (!selectedDate) return [];
     const logForDate = logs.find(log => log.date === selectedDate);
-    if (!logForDate) return [];
+    if (!logForDate) {
+      console.log(`[DishSalesReport] No log found for date: ${selectedDate}`);
+      return [];
+    }
+    console.log(`[DishSalesReport] Log for date ${selectedDate}:`, logForDate);
 
-    return Object.entries(logForDate.counts)
+    const data = Object.entries(logForDate.counts)
       .map(([dishId, count]) => {
         const dish = dishMap.get(dishId);
         return {
@@ -51,6 +61,9 @@ export default function DishSalesReport({ dishes, restaurantId }: DishSalesRepor
         };
       })
       .sort((a, b) => b.count - a.count);
+      
+    console.log(`[DishSalesReport] Processed sales data for ${selectedDate}:`, data);
+    return data;
   }, [selectedDate, logs, dishMap]);
 
   const handleDateChange = (direction: 'prev' | 'next') => {
@@ -60,7 +73,9 @@ export default function DishSalesReport({ dishes, restaurantId }: DishSalesRepor
     const newIndex = direction === 'prev' ? currentIndex + 1 : currentIndex - 1;
 
     if (newIndex >= 0 && newIndex < logs.length) {
-      setSelectedDate(logs[newIndex].date);
+      const newDate = logs[newIndex].date;
+      console.log(`[DishSalesReport] Date changed to: ${newDate}`);
+      setSelectedDate(newDate);
     }
   };
 
