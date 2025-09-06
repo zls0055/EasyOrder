@@ -37,6 +37,7 @@ interface CategoryInfo {
 }
 
 const RECENTLY_ORDERED_CATEGORY = '最近点的菜品';
+const RECOMMENDED_CATEGORY = '本店推荐';
 
 export default function Menu({ 
     dishes, 
@@ -60,6 +61,7 @@ export default function Menu({
   const categoryButtonRef = useRef<HTMLButtonElement>(null);
 
   const orderQuantityMap = useMemo(() => new Map(orderItems.map(item => [item.dish.id, item.quantity])), [orderItems]);
+  const recommendedDishes = useMemo(() => dishes.filter(d => d.isRecommended), [dishes]);
 
   const availableCategories: CategoryInfo[] = useMemo(() => {
     const allUniqueCategories = Array.from(new Set(dishes.map(d => d.category)));
@@ -72,10 +74,15 @@ export default function Menu({
     const finalCategoryOrder = [...new Set([...orderedCategoryNames, ...allUniqueCategories])];
 
     const categoriesInfo = finalCategoryOrder.filter(catName => categoryCounts[catName]).map(catName => ({ name: catName, count: categoryCounts[catName] }));
+    
+    const specialCategories: CategoryInfo[] = [];
+    if (recommendedDishes.length > 0) {
+      specialCategories.push({ name: RECOMMENDED_CATEGORY, count: recommendedDishes.length });
+    }
     const recentCategory = recentDishes.length > 0 ? [{ name: RECENTLY_ORDERED_CATEGORY, count: recentDishes.length }] : [];
 
-    return [ { name: '全部菜品', count: dishes.length }, ...categoriesInfo, ...recentCategory ];
-  }, [dishes, settings.categoryOrder, recentDishes]);
+    return [ { name: '全部菜品', count: dishes.length }, ...specialCategories, ...categoriesInfo, ...recentCategory ];
+  }, [dishes, settings.categoryOrder, recentDishes, recommendedDishes]);
 
   const isSearching = !!searchQuery.trim();
 
@@ -84,7 +91,7 @@ export default function Menu({
     if (availableCategories.length > 0) {
       const currentCategoryExists = availableCategories.some(cat => cat.name === selectedCategoryName);
       if (!selectedCategoryName || !currentCategoryExists) {
-         setSelectedCategoryName('全部菜品');
+         setSelectedCategoryName(availableCategories[0].name);
       }
     } else {
       setSelectedCategoryName('');
@@ -126,23 +133,29 @@ export default function Menu({
 
   const allDishesGrouped = useMemo(() => {
     const grouped: Record<string, Dish[]> = {};
-    const categoryOrder = availableCategories.map(c => c.name).filter(name => name !== '全部菜品' && name !== RECENTLY_ORDERED_CATEGORY);
+    const categoryOrder = availableCategories.map(c => c.name).filter(name => name !== '全部菜品');
+
+    if (recommendedDishes.length > 0) {
+      grouped[RECOMMENDED_CATEGORY] = recommendedDishes;
+    }
 
     for (const dish of dishes) {
       if (!grouped[dish.category]) grouped[dish.category] = [];
       grouped[dish.category].push(dish);
     }
+    if (recentDishes.length > 0) grouped[RECENTLY_ORDERED_CATEGORY] = recentDishes;
+
     const orderedGrouped: Record<string, Dish[]> = {};
     categoryOrder.forEach(catName => { if (grouped[catName]) orderedGrouped[catName] = grouped[catName]; });
-    if (recentDishes.length > 0) orderedGrouped[RECENTLY_ORDERED_CATEGORY] = recentDishes;
     return orderedGrouped;
-  }, [dishes, availableCategories, recentDishes]);
+  }, [dishes, availableCategories, recentDishes, recommendedDishes]);
 
   const dishesForCategory = useMemo(() => {
     if (isSearching || !selectedCategoryName || selectedCategoryName === '全部菜品') return [];
     if (selectedCategoryName === RECENTLY_ORDERED_CATEGORY) return recentDishes;
+    if (selectedCategoryName === RECOMMENDED_CATEGORY) return recommendedDishes;
     return dishes.filter((dish) => dish.category === selectedCategoryName);
-  }, [dishes, selectedCategoryName, isSearching, recentDishes]);
+  }, [dishes, selectedCategoryName, isSearching, recentDishes, recommendedDishes]);
 
   if (dishes.length === 0) {
     return (
@@ -164,8 +177,9 @@ export default function Menu({
     const quantityInOrder = orderQuantityMap.get(dish.id);
 
     return (
-        <Card key={dish.id} className="dish-card relative flex flex-col justify-between overflow-hidden">
+        <Card key={dish.id} className={cn("dish-card relative flex flex-col justify-between overflow-hidden", dish.isRecommended && "border-amber-500 border-2")}>
           {quantityInOrder && quantityInOrder > 0 && (<Badge variant="destructive" className="absolute top-1 right-1 h-5 w-5 rounded-full flex items-center justify-center p-2 text-xs">{quantityInOrder}</Badge>)}
+          {dish.isRecommended && <div className="absolute top-1 left-1"><Star className="h-4 w-4 text-yellow-500 fill-yellow-400" /></div> }
           <CardHeader className="p-3 pb-2"><CardTitle className="text-base font-semibold line-clamp-1">{dish.name}</CardTitle></CardHeader>
           <CardContent className="p-3 pt-0 flex justify-between items-center">
               <p className="text-sm font-bold text-accent">￥{dish.price.toFixed(1)}</p>
@@ -182,7 +196,9 @@ export default function Menu({
       {Object.entries(groupedDishes).map(([category, dishesInCategory]) => (
         <div key={category}>
           <h2 className="text-xl font-bold mb-2 p-3 bg-secondary text-secondary-foreground rounded-lg shadow-md flex items-center">
-            {category === RECENTLY_ORDERED_CATEGORY && <Star className="h-5 w-5 mr-2 text-yellow-400" />} {category} ({dishesInCategory.length})
+            {category === RECENTLY_ORDERED_CATEGORY && <History className="h-5 w-5 mr-2" />}
+            {category === RECOMMENDED_CATEGORY && <Star className="h-5 w-5 mr-2 text-yellow-400" />}
+            {category} ({dishesInCategory.length})
           </h2>
           <div className="dish-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
             {dishesInCategory.map((dish) => <DishCard key={dish.id} dish={dish} />)}
@@ -234,7 +250,9 @@ export default function Menu({
                 {availableCategories.map((category, index) => (
                   <React.Fragment key={category.name}>
                     <TabsTrigger value={category.name} className="inline-flex items-center text-sm ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus:visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow-sm w-full justify-start px-3 py-3 text-left rounded-md font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/50">
-                      {category.name === RECENTLY_ORDERED_CATEGORY && <Star className="h-4 w-4 mr-2 text-yellow-400" />} {category.name} ({category.count})
+                      {category.name === RECENTLY_ORDERED_CATEGORY && <History className="h-4 w-4 mr-2" />}
+                      {category.name === RECOMMENDED_CATEGORY && <Star className="h-4 w-4 mr-2 text-yellow-400" />} 
+                      {category.name} ({category.count})
                     </TabsTrigger>
                     {index < availableCategories.length - 1 && (<Separator className="my-1 bg-border/70" />)}
                   </React.Fragment>
@@ -250,8 +268,3 @@ export default function Menu({
     </Card>
   );
 }
-
-    
-
-    
-

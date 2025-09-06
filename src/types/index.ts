@@ -14,6 +14,7 @@ export const DishSchema = z.object({
   price: z.number(),
   category: z.string(),
   sortOrder: z.number().default(0),
+  isRecommended: z.boolean().optional().default(false),
 });
 export type Dish = z.infer<typeof DishSchema>;
 
@@ -103,8 +104,8 @@ export const PointLogSchema = z.object({
 export type PointLog = z.infer<typeof PointLogSchema>;
 
 export const DishOrderLogSchema = z.object({
-  date: z.string().regex(/^\d{4-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
-  counts: z.record(z.string(), z.number().min(0)), // dishId -> count
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
+  counts: z.record(z.string(), z.number().min(0)), // Allow float, then we can handle it in code if needed.
 });
 export type DishOrderLog = z.infer<typeof DishOrderLogSchema>;
 

@@ -18,7 +18,7 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
-import { KeyRound, Pencil, PlusCircle, Save, Trash2, Loader2, Utensils, ChevronLeft, ChevronRight, Search, LogOut, PanelsTopLeft, Settings, DoorClosed, GripVertical, MoreVertical, ArrowUp, ArrowDown, Menu as MenuIcon, X as XIcon, Check, Upload, Download, ChevronDown, CreditCard, History, DatabaseZap, FileText, BarChartHorizontal } from 'lucide-react';
+import { KeyRound, Pencil, PlusCircle, Save, Trash2, Loader2, Utensils, ChevronLeft, ChevronRight, Search, LogOut, PanelsTopLeft, Settings, DoorClosed, GripVertical, MoreVertical, ArrowUp, ArrowDown, Menu as MenuIcon, X as XIcon, Check, Upload, Download, ChevronDown, CreditCard, History, DatabaseZap, FileText, BarChartHorizontal, Star } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -110,6 +110,13 @@ function AddDishForm({ onActionSuccess, restaurantId }: { onActionSuccess: () =>
             <Label htmlFor="sortOrder">排序 (数字越小越靠前)</Label>
             <Input id="sortOrder" name="sortOrder" type="number" defaultValue="0" required disabled={isPending} />
           </div>
+          <div className="flex items-center justify-between rounded-lg border p-3">
+              <div className="space-y-0.5">
+                  <Label htmlFor="isRecommendedAdd" className="text-sm font-medium">设为推荐菜品</Label>
+                  <p className="text-xs text-muted-foreground">推荐菜品将在菜单中突出显示。</p>
+              </div>
+              <Switch id="isRecommendedAdd" name="isRecommended" />
+          </div>
         </div>
         <SheetFooter className="mt-auto">
           <SheetClose asChild>
@@ -171,6 +178,13 @@ function EditDishForm({ dish, onActionSuccess, restaurantId }: { dish: Dish; onA
           <div className="space_y-2">
             <Label htmlFor="sortOrder-edit">排序 (数字越小越靠前)</Label>
             <Input id="sortOrder-edit" name="sortOrder" type="number" defaultValue={dish.sortOrder} required disabled={isPending} />
+          </div>
+          <div className="flex items-center justify-between rounded-lg border p-3">
+              <div className="space-y-0.5">
+                  <Label htmlFor="isRecommendedEdit" className="text-sm font-medium">设为推荐菜品</Label>
+                  <p className="text-xs text-muted-foreground">推荐菜品将在菜单中突出显示。</p>
+              </div>
+              <Switch id="isRecommendedEdit" name="isRecommended" defaultChecked={dish.isRecommended} />
           </div>
         </div>
         <SheetFooter className="mt-auto">
@@ -380,7 +394,7 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
                   <TableBody>
                   {paginatedDishes.map((dish) => (
                       <TableRow key={dish.id}>
-                      <TableCell className="py-2 font-medium">{dish.name}</TableCell>
+                      <TableCell className="py-2 font-medium flex items-center">{dish.name} {dish.isRecommended && <Star className="ml-2 h-4 w-4 text-yellow-500 fill-yellow-400" />}</TableCell>
                       <TableCell className="py-2 text-muted-foreground">{dish.category}</TableCell>
                       <TableCell className="text-right py-2">￥{dish.price.toFixed(1)}</TableCell>
                       <TableCell className="text-right py-2">{dish.sortOrder}</TableCell>
@@ -414,7 +428,7 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
                   <Card key={dish.id} className="p-4">
                       <div className="flex justify-between items-start">
                           <div>
-                              <p className="font-medium">{dish.name}</p>
+                              <p className="font-medium flex items-center">{dish.name} {dish.isRecommended && <Star className="ml-2 h-4 w-4 text-yellow-500 fill-yellow-400" />}</p>
                               <p className="text-sm text-muted-foreground">{dish.category}</p>
                           </div>
                           <DropdownMenu>
@@ -919,11 +933,3 @@ export default function DashboardClient({ initialRestaurant, initialSettings, in
     </div>
   );
 }
-
-    
-
-    
-
-    
-
-    

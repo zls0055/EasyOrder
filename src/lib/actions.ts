@@ -30,6 +30,7 @@ const dishFormSchema = z.object({
   price: z.coerce.number({invalid_type_error: "价格必须是数字"}).min(0.01, '价格必须大于0'),
   category: z.string().min(1, '菜品分类不能为空'),
   sortOrder: z.coerce.number({invalid_type_error: "排序值必须是数字"}).default(0),
+  isRecommended: z.boolean().default(false),
 }).merge(formWithRestaurantId);
 
 const passwordSchema = z.object({
@@ -100,17 +101,19 @@ export async function addRestaurantAction(prevState: any, formData: FormData): P
 
 
 export async function addDishAction(prevState: any, formData: FormData): Promise<ActionState> {
-    const validatedFields = dishFormSchema.safeParse(Object.fromEntries(formData.entries()));
+    const rawData = Object.fromEntries(formData.entries());
+    const dataToValidate = { ...rawData, isRecommended: rawData.isRecommended === 'on' };
+    const validatedFields = dishFormSchema.safeParse(dataToValidate);
 
     if (!validatedFields.success) {
         const errorSummary = Object.values(validatedFields.error.flatten().fieldErrors).flat().join(', ');
         return { success: null, error: `表单验证失败: ${errorSummary}` };
     }
 
-    const { restaurantId, name, price, category, sortOrder } = validatedFields.data;
+    const { restaurantId, name, price, category, sortOrder, isRecommended } = validatedFields.data;
     try {
         const newDocRef = doc(collection(db, RESTAURANTS_COLLECTION, restaurantId, DISHES_COLLECTION));
-        const newDish: Dish = { id: newDocRef.id, name, price, category, sortOrder };
+        const newDish: Dish = { id: newDocRef.id, name, price, category, sortOrder, isRecommended };
         
         await setDoc(newDocRef, newDish);
         revalidateTag(`dishes-${restaurantId}`);
@@ -124,7 +127,9 @@ export async function addDishAction(prevState: any, formData: FormData): Promise
 }
 
 export async function updateDishAction(prevState: any, formData: FormData): Promise<ActionState> {
-    const validatedFields = dishFormSchema.safeParse(Object.fromEntries(formData.entries()));
+    const rawData = Object.fromEntries(formData.entries());
+    const dataToValidate = { ...rawData, isRecommended: rawData.isRecommended === 'on' };
+    const validatedFields = dishFormSchema.safeParse(dataToValidate);
 
     if (!validatedFields.success) {
         const errorSummary = Object.values(validatedFields.error.flatten().fieldErrors).flat().join(', ');
