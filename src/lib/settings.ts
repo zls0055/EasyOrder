@@ -1,7 +1,7 @@
 
 'use server';
 import { db } from '@/lib/firebase';
-import { AppSettings, AppSettingsSchema, Dish, DishSchema, Restaurant, RestaurantSchema, PointLog, PointLogSchema, PointCardSchema, PointCard, RechargeLogSchema, RechargeLog } from '@/types';
+import { AppSettings, AppSettingsSchema, Dish, DishSchema, Restaurant, RestaurantSchema, PointLog, PointLogSchema, PointCardSchema, PointCard, RechargeLogSchema, RechargeLog, DishOrderLog, DishOrderLogSchema } from '@/types';
 import { initialDishes } from '@/lib/data';
 import { collection, doc, getDoc, getDocs, setDoc, writeBatch, query, orderBy, deleteDoc, updateDoc, Timestamp, increment, runTransaction, limit, where } from 'firebase/firestore';
 import { unstable_cache as cache, revalidateTag } from 'next/cache';
@@ -13,6 +13,7 @@ const CONFIG_DOC_ID = 'app-config';
 const DISHES_COLLECTION = 'dishes';
 const ORDERS_COLLECTION = 'orders';
 const POINT_LOGS_COLLECTION = 'pointLogs';
+const DISH_ORDER_LOGS_COLLECTION = 'dishOrderLogs';
 const POINT_CARDS_COLLECTION = 'pointCards';
 const RECHARGE_LOGS_COLLECTION = 'rechargeLogs';
 
@@ -91,6 +92,8 @@ export async function addRestaurant(name: string): Promise<Restaurant> {
     batch.set(doc(newDocRef, ORDERS_COLLECTION, '.placeholder'), placeholderData);
     batch.set(doc(newDocRef, POINT_LOGS_COLLECTION, '.placeholder'), placeholderData);
     batch.set(doc(newDocRef, RECHARGE_LOGS_COLLECTION, '.placeholder'), placeholderData);
+    batch.set(doc(newDocRef, DISH_ORDER_LOGS_COLLECTION, '.placeholder'), placeholderData);
+
 
     await batch.commit();
 
@@ -120,6 +123,8 @@ export async function deleteRestaurant(restaurantId: string): Promise<{ success:
         await deleteSubcollection(collection(restaurantDocRef, ORDERS_COLLECTION));
         await deleteSubcollection(collection(restaurantDocRef, POINT_LOGS_COLLECTION));
         await deleteSubcollection(collection(restaurantDocRef, RECHARGE_LOGS_COLLECTION));
+        await deleteSubcollection(collection(restaurantDocRef, DISH_ORDER_LOGS_COLLECTION));
+
 
         await deleteDoc(restaurantDocRef);
 
@@ -129,6 +134,7 @@ export async function deleteRestaurant(restaurantId: string): Promise<{ success:
         revalidateTag(`restaurant-${restaurantId}`);
         revalidateTag(`pointLogs-${restaurantId}`);
         revalidateTag(`rechargeLogs-${restaurantId}`);
+        revalidateTag(`dishOrderLogs-${restaurantId}`);
         return { success: true };
     } catch (e) {
         console.error(`Failed to delete restaurant ${restaurantId}:`, e);
@@ -194,6 +200,8 @@ export async function clearRestaurantData(restaurantId: string): Promise<{ succe
         await deleteSubcollection(collection(restaurantDocRef, ORDERS_COLLECTION));
         await deleteSubcollection(collection(restaurantDocRef, POINT_LOGS_COLLECTION));
         await deleteSubcollection(collection(restaurantDocRef, RECHARGE_LOGS_COLLECTION));
+        await deleteSubcollection(collection(restaurantDocRef, DISH_ORDER_LOGS_COLLECTION));
+
 
         const settingsRef = doc(restaurantDocRef, SETTINGS_COLLECTION, CONFIG_DOC_ID);
         const defaultSettings = AppSettingsSchema.parse({});
@@ -204,6 +212,7 @@ export async function clearRestaurantData(restaurantId: string): Promise<{ succe
         batch.set(doc(restaurantDocRef, ORDERS_COLLECTION, '.placeholder'), placeholderData);
         batch.set(doc(restaurantDocRef, POINT_LOGS_COLLECTION, '.placeholder'), placeholderData);
         batch.set(doc(restaurantDocRef, RECHARGE_LOGS_COLLECTION, '.placeholder'), placeholderData);
+        batch.set(doc(restaurantDocRef, DISH_ORDER_LOGS_COLLECTION, '.placeholder'), placeholderData);
         
         await batch.commit();
 
@@ -211,6 +220,7 @@ export async function clearRestaurantData(restaurantId: string): Promise<{ succe
         revalidateTag(`dishes-${restaurantId}`);
         revalidateTag(`pointLogs-${restaurantId}`);
         revalidateTag(`rechargeLogs-${restaurantId}`);
+        revalidateTag(`dishOrderLogs-${restaurantId}`);
         return { success: true };
     } catch (e) {
         console.error(`Failed to clear data for restaurant ${restaurantId}:`, e);
@@ -310,6 +320,37 @@ export async function getPointLogs(restaurantId: string): Promise<PointLog[]> {
 
     } catch (error) {
         console.error(`[getPointLogs][${restaurantId}] Error fetching point logs:`, error);
+        return [];
+    }
+}
+
+export async function getDishOrderLogs(restaurantId: string): Promise<DishOrderLog[]> {
+    if (!restaurantId) return [];
+    try {
+        const logsRef = collection(db, RESTAURANTS_COLLECTION, restaurantId, DISH_ORDER_LOGS_COLLECTION);
+        const q = query(logsRef, orderBy('__name__', 'desc'));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+            return [];
+        }
+
+        const logs = snapshot.docs
+            .map(doc => {
+                if (doc.id === '.placeholder') return null;
+                const data = doc.data();
+                const dataToParse = { date: doc.id, counts: data.counts || {} };
+                const parsed = DishOrderLogSchema.safeParse(dataToParse);
+                if (parsed.success) return parsed.data;
+                console.warn(`[getDishOrderLogs][${restaurantId}] -> Skipping invalid log document. Zod error:`, parsed.error);
+                return null;
+            })
+            .filter((log): log is DishOrderLog => log !== null);
+        
+        return logs;
+
+    } catch (error) {
+        console.error(`[getDishOrderLogs][${restaurantId}] Error fetching dish order logs:`, error);
         return [];
     }
 }
@@ -477,6 +518,15 @@ export const getCachedPointLogs = async (restaurantId: string) => cache(
   ['pointLogs', restaurantId],
   {
     tags: [`pointLogs-${restaurantId}`],
+    revalidate: 3600
+  }
+)();
+
+export const getCachedDishOrderLogs = async (restaurantId: string) => cache(
+  async () => getDishOrderLogs(restaurantId),
+  ['dishOrderLogs', restaurantId],
+  {
+    tags: [`dishOrderLogs-${restaurantId}`],
     revalidate: 3600
   }
 )();

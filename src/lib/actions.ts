@@ -7,7 +7,7 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import { AppSettings, AppSettingsSchema, Dish, DishSchema } from '@/types';
 import { getSettings, redeemPointCard as redeemCardService, addRestaurant as addRestaurantService } from '@/lib/settings';
 import { logout } from '@/lib/session';
-import { collection, doc, setDoc, updateDoc, deleteDoc, writeBatch, getDoc, runTransaction } from 'firebase/firestore';
+import { collection, doc, setDoc, updateDoc, deleteDoc, writeBatch, getDoc, runTransaction, Timestamp } from 'firebase/firestore';
 
 
 const RESTAURANTS_COLLECTION = 'restaurants';
@@ -15,6 +15,10 @@ const DISHES_COLLECTION = 'dishes';
 const SETTINGS_COLLECTION = 'settings';
 const CONFIG_DOC_ID = 'app-config';
 const RECHARGE_LOGS_COLLECTION = 'rechargeLogs';
+const ORDERS_COLLECTION = 'orders';
+const POINT_LOGS_COLLECTION = 'pointLogs';
+const DISH_ORDER_LOGS_COLLECTION = 'dishOrderLogs';
+
 
 const formWithRestaurantId = z.object({
   restaurantId: z.string().min(1),
@@ -67,7 +71,21 @@ export async function addRestaurantAction(prevState: any, formData: FormData): P
     const name = formData.get('name') as string;
     if (name && name.trim()) {
         try {
-            await addRestaurantService(name.trim());
+            const newRestaurant = await addRestaurantService(name.trim());
+            
+            // Add placeholder documents to subcollections
+            const batch = writeBatch(db);
+            const placeholderData = { initialized: true, at: Timestamp.now() };
+            const restaurantRef = doc(db, RESTAURANTS_COLLECTION, newRestaurant.id);
+            
+            batch.set(doc(restaurantRef, DISHES_COLLECTION, '.placeholder'), placeholderData);
+            batch.set(doc(restaurantRef, ORDERS_COLLECTION, '.placeholder'), placeholderData);
+            batch.set(doc(restaurantRef, POINT_LOGS_COLLECTION, '.placeholder'), placeholderData);
+            batch.set(doc(restaurantRef, RECHARGE_LOGS_COLLECTION, '.placeholder'), placeholderData);
+            batch.set(doc(restaurantRef, DISH_ORDER_LOGS_COLLECTION, '.placeholder'), placeholderData);
+            
+            await batch.commit();
+
             revalidateTag('restaurants');
             return { success: `餐馆 "${name.trim()}" 已成功创建。`, error: null };
         } catch (error) {
@@ -192,6 +210,7 @@ const syncSettingsSchema = z.object({
   'featureVisibility.generalSettings': z.boolean(),
   'featureVisibility.pointCardRecharge': z.boolean(),
   'featureVisibility.securitySettings': z.boolean(),
+  'featureVisibility.dishSalesReport': z.boolean(),
 });
 
 export async function updateSyncSettingsAction(prevState: any, formData: FormData): Promise<ActionState> {
@@ -204,6 +223,7 @@ export async function updateSyncSettingsAction(prevState: any, formData: FormDat
         'featureVisibility.generalSettings': rawData['featureVisibility.generalSettings'] === 'on',
         'featureVisibility.pointCardRecharge': rawData['featureVisibility.pointCardRecharge'] === 'on',
         'featureVisibility.securitySettings': rawData['featureVisibility.securitySettings'] === 'on',
+        'featureVisibility.dishSalesReport': rawData['featureVisibility.dishSalesReport'] === 'on',
     };
 
     const validatedFields = syncSettingsSchema.safeParse(dataToValidate);
@@ -225,6 +245,7 @@ export async function updateSyncSettingsAction(prevState: any, formData: FormDat
             generalSettings: data['featureVisibility.generalSettings'],
             pointCardRecharge: data['featureVisibility.pointCardRecharge'],
             securitySettings: data['featureVisibility.securitySettings'],
+            dishSalesReport: data['featureVisibility.dishSalesReport'],
         }
     };
     

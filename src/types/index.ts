@@ -71,6 +71,7 @@ export const FeatureVisibilitySchema = z.object({
   generalSettings: z.boolean().default(true),
   pointCardRecharge: z.boolean().default(false),
   securitySettings: z.boolean().default(true),
+  dishSalesReport: z.boolean().default(true),
 });
 export type FeatureVisibility = z.infer<typeof FeatureVisibilitySchema>;
 
@@ -99,6 +100,12 @@ export const PointLogSchema = z.object({
   count: z.number().int().min(0),
 });
 export type PointLog = z.infer<typeof PointLogSchema>;
+
+export const DishOrderLogSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
+  counts: z.record(z.string(), z.number().int().min(0)), // dishId -> count
+});
+export type DishOrderLog = z.infer<typeof DishOrderLogSchema>;
 
 export const PointCardSchema = z.object({
   id: z.string(),

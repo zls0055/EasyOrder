@@ -18,7 +18,7 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
-import { KeyRound, Pencil, PlusCircle, Save, Trash2, Loader2, Utensils, ChevronLeft, ChevronRight, Search, LogOut, PanelsTopLeft, Settings, DoorClosed, GripVertical, MoreVertical, ArrowUp, ArrowDown, Menu as MenuIcon, X as XIcon, Check, Upload, Download, ChevronDown, CreditCard, History, DatabaseZap, FileText } from 'lucide-react';
+import { KeyRound, Pencil, PlusCircle, Save, Trash2, Loader2, Utensils, ChevronLeft, ChevronRight, Search, LogOut, PanelsTopLeft, Settings, DoorClosed, GripVertical, MoreVertical, ArrowUp, ArrowDown, Menu as MenuIcon, X as XIcon, Check, Upload, Download, ChevronDown, CreditCard, History, DatabaseZap, FileText, BarChartHorizontal } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -47,6 +47,8 @@ import { Separator } from '@/components/ui/separator';
 import Papa from 'papaparse';
 import { getRechargeLogs } from '@/lib/settings';
 import PointLogsSheet from '@/components/point-logs-sheet';
+import DishSalesReport from '@/components/dish-sales-report';
+
 
 interface DashboardClientProps {
   initialRestaurant: Restaurant;
@@ -772,11 +774,12 @@ function RechargeCard({ restaurantId, onActionSuccess }: { restaurantId: string;
 }
 
 
-type ActiveView = 'menu' | 'category-sort' | 'settings' | 'recharge' | 'security';
+type ActiveView = 'menu' | 'category-sort' | 'sales-report' | 'settings' | 'recharge' | 'security';
 
 const viewConfig: Record<ActiveView, { title: string; component: React.FC<any>; icon: React.ElementType, key: keyof FeatureVisibility }> = {
   'menu': { title: '菜单管理', component: DishesSection, icon: Utensils, key: 'menuManagement' },
   'category-sort': { title: '分类排序', component: CategorySortCard, icon: GripVertical, key: 'categorySort' },
+  'sales-report': { title: '菜品销量', component: DishSalesReport, icon: BarChartHorizontal, key: 'dishSalesReport' },
   'settings': { title: '通用设置', component: SettingsCard, icon: Settings, key: 'generalSettings' },
   'recharge': { title: '点卡充值', component: RechargeCard, icon: CreditCard, key: 'pointCardRecharge' },
   'security': { title: '安全设置', component: SecuritySettingsCard, icon: KeyRound, key: 'securitySettings' },
@@ -828,6 +831,7 @@ export default function DashboardClient({ initialRestaurant, initialSettings, in
   const componentProps: any = {
     'menu': { dishes, settings, onActionSuccess: refreshData, restaurantId },
     'category-sort': { dishes, settings, onActionSuccess: refreshData, restaurantId },
+    'sales-report': { dishes, restaurantId },
     'settings': { settings, onActionSuccess: refreshData, restaurantId },
     'recharge': { onActionSuccess: refreshData, restaurantId },
     'security': { settings, onActionSuccess: refreshData, restaurantId },

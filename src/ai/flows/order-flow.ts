@@ -19,6 +19,7 @@ import { collection, addDoc, doc, getDoc, updateDoc, query, orderBy, limit, getD
 const RESTAURANTS_COLLECTION = 'restaurants';
 const ORDERS_COLLECTION = 'orders';
 const POINT_LOGS_COLLECTION = 'pointLogs';
+const DISH_ORDER_LOGS_COLLECTION = 'dishOrderLogs';
 
 function isWithinAutoCloseTime(startTime: string, endTime: string): boolean {
   const nowInBeijing = new Date().toLocaleString('zh-CN', {
@@ -45,7 +46,7 @@ function isWithinAutoCloseTime(startTime: string, endTime: string): boolean {
 }
 
 export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResult> {
-  const { restaurantId } = input;
+  const { restaurantId, order } = input;
   if (!restaurantId) {
     return { order: null, logs: ['[SERVER] Order rejected: Missing restaurantId.'], error: '下单失败，缺少餐馆信息。' };
   }
@@ -53,14 +54,16 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
   try {
     const restaurantRef = doc(db, RESTAURANTS_COLLECTION, restaurantId);
     
-    // Correctly get the log date ID in YYYY-MM-DD format
     const logDateId = new Date().toISOString().split('T')[0];
     const pointLogRef = doc(db, RESTAURANTS_COLLECTION, restaurantId, POINT_LOGS_COLLECTION, logDateId);
+    const dishLogRef = doc(db, RESTAURANTS_COLLECTION, restaurantId, DISH_ORDER_LOGS_COLLECTION, logDateId);
+
 
     const placeOrderResult = await runTransaction(db, async (transaction) => {
       // --- ALL READS FIRST ---
       const restaurantDoc = await transaction.get(restaurantRef);
-      const pointLogDoc = await transaction.get(pointLogRef); // Read point log early
+      const pointLogDoc = await transaction.get(pointLogRef);
+      const dishLogDoc = await transaction.get(dishLogRef);
 
       // --- VALIDATION AND LOGIC ---
       if (!restaurantDoc.exists()) {
@@ -71,7 +74,6 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
         return { order: null, logs: ['[SERVER] Order rejected: Insufficient points.'], error: '点数不足，请联系管理员充值。' };
       }
 
-      // Settings are read outside transaction, which is fine.
       const settings = await getSettings(restaurantId);
 
       if (settings.isRestaurantClosed) {
@@ -87,7 +89,9 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
       }
 
       const timestamp = Timestamp.now();
-      const expireAt = new Timestamp(timestamp.seconds + 86400, timestamp.nanoseconds);
+      const oneMonthFromNow = new Date();
+      oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
+      const expireAt = Timestamp.fromDate(oneMonthFromNow);
 
       const orderToSave = {
         ...input,
@@ -105,22 +109,40 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
       // Write 2: Decrement points
       transaction.update(restaurantRef, { points: increment(-1) });
 
-      // Write 3: Update or create the daily point log
-      const expirationDate = new Date();
-      expirationDate.setDate(expirationDate.getDate() + 90);
-      const expireAtTimestamp = Timestamp.fromDate(expirationDate);
+      // Write 3: Update or create the daily point log (expires in 90 days)
+      const pointLogExpirationDate = new Date();
+      pointLogExpirationDate.setDate(pointLogExpirationDate.getDate() + 90);
+      const pointLogExpireAt = Timestamp.fromDate(pointLogExpirationDate);
 
       if (pointLogDoc.exists()) {
-        // If the log for today exists, increment it.
         transaction.update(pointLogRef, { 
             count: increment(1),
-            expireAt: expireAtTimestamp // Also update expiration date
+            expireAt: pointLogExpireAt 
         });
       } else {
-        // If the log for today does not exist, create it.
         transaction.set(pointLogRef, { 
             count: 1, 
-            expireAt: expireAtTimestamp 
+            expireAt: pointLogExpireAt 
+        });
+      }
+
+      // Write 4: Update or create daily dish order logs (expires in 30 days)
+      const dishUpdates: { [key: string]: any } = { expireAt };
+      order.forEach(item => {
+        dishUpdates[`counts.${item.dish.id}`] = increment(item.quantity);
+      });
+      
+      if (dishLogDoc.exists()) {
+        transaction.update(dishLogRef, dishUpdates);
+      } else {
+        // To use increment, the fields must exist. So for a new doc, we need to set initial values.
+        const initialCounts: { [key: string]: number } = {};
+         order.forEach(item => {
+            initialCounts[item.dish.id] = item.quantity;
+        });
+        transaction.set(dishLogRef, {
+          counts: initialCounts,
+          expireAt: expireAt,
         });
       }
       
@@ -137,11 +159,12 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
       };
     });
     
-    // Revalidate caches after transaction to show updated points
+    // Revalidate caches after transaction to show updated data
     if(placeOrderResult.order) {
         revalidateTag(`restaurant-${restaurantId}`);
-        revalidateTag('restaurants'); // Revalidate the list of all restaurants
-        revalidateTag(`pointLogs-${restaurantId}`); // Revalidate point logs
+        revalidateTag('restaurants');
+        revalidateTag(`pointLogs-${restaurantId}`);
+        revalidateTag(`dishOrderLogs-${restaurantId}`);
     }
     
     return placeOrderResult;
