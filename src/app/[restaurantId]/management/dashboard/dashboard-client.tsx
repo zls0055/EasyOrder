@@ -912,9 +912,7 @@ export default function DashboardClient({ initialRestaurant, initialSettings, in
     });
   };
   
-  const ActiveComponent = viewConfig[activeView].component;
-
-  const componentProps: any = {
+  const componentProps: Record<ActiveView, any> = {
     'menu': { dishes, settings, onActionSuccess: refreshData, restaurantId },
     'category-sort': { dishes, settings, onActionSuccess: refreshData, restaurantId },
     'sales-report': { dishes, restaurantId },
@@ -991,8 +989,19 @@ export default function DashboardClient({ initialRestaurant, initialSettings, in
         </nav>
         <div className="grid gap-2">
             <fieldset disabled={isLogoutPending} className={cn(isLogoutPending && "opacity-50")}>
-                <div className="grid gap-2">
-                    <ActiveComponent {...componentProps[activeView]} />
+                <div className="relative grid gap-2">
+                  {visibleViews.map((viewKey) => {
+                    const Component = viewConfig[viewKey].component;
+                    const props = componentProps[viewKey];
+                    return (
+                      <div
+                        key={viewKey}
+                        className={cn(activeView !== viewKey && 'hidden')}
+                      >
+                        <Component {...props} />
+                      </div>
+                    )
+                  })}
                 </div>
             </fieldset>
         </div>
