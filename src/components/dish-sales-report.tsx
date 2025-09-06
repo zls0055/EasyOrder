@@ -110,7 +110,7 @@ export default function DishSalesReport({ dishes, restaurantId }: DishSalesRepor
       <CardHeader>
         <div className="flex justify-between items-center">
             <div>
-                <CardDescription>按日查看各菜品的销售数量。</CardDescription>
+                
             </div>
             <div className="flex items-center gap-2">
                 <Button variant="outline" size="icon" onClick={() => handleDateChange('prev')} disabled={!canGoPrev}>
