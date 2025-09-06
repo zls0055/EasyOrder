@@ -74,7 +74,7 @@ export default function Menu({
     const categoriesInfo = finalCategoryOrder.filter(catName => categoryCounts[catName]).map(catName => ({ name: catName, count: categoryCounts[catName] }));
     const recentCategory = recentDishes.length > 0 ? [{ name: RECENTLY_ORDERED_CATEGORY, count: recentDishes.length }] : [];
 
-    return [ ...recentCategory, { name: '全部菜品', count: dishes.length }, ...categoriesInfo ];
+    return [ { name: '全部菜品', count: dishes.length }, ...categoriesInfo, ...recentCategory ];
   }, [dishes, settings.categoryOrder, recentDishes]);
 
   const isSearching = !!searchQuery.trim();
@@ -84,12 +84,12 @@ export default function Menu({
     if (availableCategories.length > 0) {
       const currentCategoryExists = availableCategories.some(cat => cat.name === selectedCategoryName);
       if (!selectedCategoryName || !currentCategoryExists) {
-         setSelectedCategoryName(recentDishes.length > 0 ? RECENTLY_ORDERED_CATEGORY : '全部菜品');
+         setSelectedCategoryName('全部菜品');
       }
     } else {
       setSelectedCategoryName('');
     }
-  }, [availableCategories, selectedCategoryName, isSearching, recentDishes.length]);
+  }, [availableCategories, selectedCategoryName, isSearching]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -133,8 +133,8 @@ export default function Menu({
       grouped[dish.category].push(dish);
     }
     const orderedGrouped: Record<string, Dish[]> = {};
-    if (recentDishes.length > 0) orderedGrouped[RECENTLY_ORDERED_CATEGORY] = recentDishes;
     categoryOrder.forEach(catName => { if (grouped[catName]) orderedGrouped[catName] = grouped[catName]; });
+    if (recentDishes.length > 0) orderedGrouped[RECENTLY_ORDERED_CATEGORY] = recentDishes;
     return orderedGrouped;
   }, [dishes, availableCategories, recentDishes]);
 
@@ -254,3 +254,4 @@ export default function Menu({
     
 
     
+
