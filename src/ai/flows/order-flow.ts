@@ -127,15 +127,13 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
       }
 
       // Write 4: Update or create daily dish order logs (expires in 30 days)
-      const dishUpdates: { [key: string]: any } = { expireAt };
-      order.forEach(item => {
-        dishUpdates[`counts.${item.dish.id}`] = increment(item.quantity);
-      });
-      
       if (dishLogDoc.exists()) {
+        const dishUpdates: { [key: string]: any } = { expireAt };
+        order.forEach(item => {
+            dishUpdates[`counts.${item.dish.id}`] = increment(item.quantity);
+        });
         transaction.update(dishLogRef, dishUpdates);
       } else {
-        // To use increment, the fields must exist. So for a new doc, we need to set initial values.
         const initialCounts: { [key: string]: number } = {};
          order.forEach(item => {
             initialCounts[item.dish.id] = item.quantity;
