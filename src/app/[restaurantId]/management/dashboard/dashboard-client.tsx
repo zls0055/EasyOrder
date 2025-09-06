@@ -236,7 +236,8 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
   const [searchQuery, setSearchQuery] = useState('');
   const [isDeletePending, startDeleteTransition] = useTransition();
   const [isAvailabilityPending, startAvailabilityTransition] = useTransition();
-  
+  const [pendingDishId, setPendingDishId] = useState<string | null>(null);
+
   const categoryListRef = useRef<HTMLDivElement>(null);
   const categoryButtonRef = useRef<HTMLButtonElement>(null);
   const [isCategoryListVisible, setIsCategoryListVisible] = useState(false);
@@ -324,6 +325,7 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
   };
 
   const handleToggleAvailability = (dishId: string, currentAvailability: boolean | undefined) => {
+    setPendingDishId(dishId);
     startAvailabilityTransition(async () => {
         const formData = new FormData();
         formData.append('restaurantId', restaurantId);
@@ -337,6 +339,7 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
         } else {
             sonnerToast.error('更新失败', { description: result?.error || '发生未知错误' });
         }
+        setPendingDishId(null);
     });
   };
 
@@ -426,55 +429,60 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
                   </TableRow>
                   </TableHeader>
                   <TableBody>
-                  {paginatedDishes.map((dish) => (
-                      <TableRow key={dish.id} className={cn(!dish.isAvailable && 'bg-muted/50')}>
-                      <TableCell className="py-2 font-medium flex items-center">
-                        <span className={cn(!dish.isAvailable && 'text-muted-foreground')}>{dish.name}</span>
-                        {dish.isRecommended && <Star className="ml-2 h-4 w-4 text-yellow-500 fill-yellow-400" />}
-                      </TableCell>
-                      <TableCell className="py-2 text-muted-foreground">{dish.category}</TableCell>
-                      <TableCell>
-                          <div className="flex items-center gap-2">
-                              <Switch
-                                  id={`avail-switch-${dish.id}`}
-                                  checked={dish.isAvailable}
-                                  onCheckedChange={() => handleToggleAvailability(dish.id, dish.isAvailable)}
-                                  disabled={isAvailabilityPending}
-                                  aria-label={dish.isAvailable ? '下架菜品' : '上架菜品'}
-                              />
-                               {!dish.isAvailable && <Badge variant="secondary">已下架</Badge>}
-                          </div>
-                      </TableCell>
-                      <TableCell className={cn("text-right py-2", !dish.isAvailable && 'text-muted-foreground')}>￥{dish.price.toFixed(1)}</TableCell>
-                      <TableCell className={cn("text-right py-2", !dish.isAvailable && 'text-muted-foreground')}>{dish.sortOrder}</TableCell>
-                      <TableCell className="text-right py-2">
-                          <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                                      <MoreVertical className="h-4 w-4" />
-                                  </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onSelect={() => setEditingDish(dish)}>
-                                      <Pencil className="mr-2 h-4 w-4" />
-                                      <span>编辑</span>
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onSelect={() => setDeletingDish(dish)} className="text-destructive">
-                                      <Trash2 className="mr-2 h-4 w-4" />
-                                      <span>删除</span>
-                                  </DropdownMenuItem>
-                              </DropdownMenuContent>
-                          </DropdownMenu>
-                      </TableCell>
+                  {paginatedDishes.map((dish) => {
+                    const isPending = pendingDishId === dish.id;
+                    return (
+                      <TableRow key={dish.id} className={cn(!dish.isAvailable && 'bg-muted/50', isPending && 'opacity-50 pointer-events-none')}>
+                        <TableCell className="py-2 font-medium flex items-center">
+                          <span className={cn(!dish.isAvailable && 'text-muted-foreground')}>{dish.name}</span>
+                          {dish.isRecommended && <Star className="ml-2 h-4 w-4 text-yellow-500 fill-yellow-400" />}
+                        </TableCell>
+                        <TableCell className="py-2 text-muted-foreground">{dish.category}</TableCell>
+                        <TableCell>
+                            <div className="flex items-center gap-2">
+                                <Switch
+                                    id={`avail-switch-${dish.id}`}
+                                    checked={dish.isAvailable}
+                                    onCheckedChange={() => handleToggleAvailability(dish.id, dish.isAvailable)}
+                                    disabled={isAvailabilityPending}
+                                    aria-label={dish.isAvailable ? '下架菜品' : '上架菜品'}
+                                />
+                                {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : (!dish.isAvailable && <Badge variant="secondary">已下架</Badge>)}
+                            </div>
+                        </TableCell>
+                        <TableCell className={cn("text-right py-2", !dish.isAvailable && 'text-muted-foreground')}>￥{dish.price.toFixed(1)}</TableCell>
+                        <TableCell className={cn("text-right py-2", !dish.isAvailable && 'text-muted-foreground')}>{dish.sortOrder}</TableCell>
+                        <TableCell className="text-right py-2">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                        <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onSelect={() => setEditingDish(dish)}>
+                                        <Pencil className="mr-2 h-4 w-4" />
+                                        <span>编辑</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => setDeletingDish(dish)} className="text-destructive">
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        <span>删除</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </TableCell>
                       </TableRow>
-                  ))}
+                    )}
+                  )}
                   </TableBody>
               </Table>
           </div>
 
           <div className="block sm:hidden space-y-2">
-              {paginatedDishes.map((dish) => (
-                  <Card key={dish.id} className={cn("p-4", !dish.isAvailable && 'bg-muted/50')}>
+              {paginatedDishes.map((dish) => {
+                const isPending = pendingDishId === dish.id;
+                return (
+                  <Card key={dish.id} className={cn("p-4", !dish.isAvailable && 'bg-muted/50', isPending && 'opacity-50 pointer-events-none')}>
                       <div className="flex justify-between items-start">
                           <div>
                               <p className="font-medium flex items-center">
@@ -498,7 +506,10 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
                           <span className="text-sm text-muted-foreground">排序: {dish.sortOrder}</span>
                       </div>
                       <div className="mt-4 flex items-center justify-between border-t pt-3">
-                        <Label htmlFor={`avail-switch-sm-${dish.id}`} className={cn("text-sm", !dish.isAvailable && "text-muted-foreground")}>{dish.isAvailable ? '已上架' : '已下架'}</Label>
+                        <Label htmlFor={`avail-switch-sm-${dish.id}`} className={cn("text-sm flex items-center gap-2", !dish.isAvailable && "text-muted-foreground")}>
+                          {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                          {dish.isAvailable ? '已上架' : '已下架'}
+                        </Label>
                         <Switch 
                             id={`avail-switch-sm-${dish.id}`}
                             checked={dish.isAvailable}
@@ -507,7 +518,7 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
                         />
                       </div>
                   </Card>
-              ))}
+              )})}
           </div>
 
           {dishes.length === 0 ? (
