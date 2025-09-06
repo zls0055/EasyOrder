@@ -103,7 +103,7 @@ export type PointLog = z.infer<typeof PointLogSchema>;
 
 export const DishOrderLogSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
-  counts: z.record(z.string(), z.number().int().min(0)), // dishId -> count
+  counts: z.record(z.string(), z.number().min(0)), // dishId -> count
 });
 export type DishOrderLog = z.infer<typeof DishOrderLogSchema>;
 
