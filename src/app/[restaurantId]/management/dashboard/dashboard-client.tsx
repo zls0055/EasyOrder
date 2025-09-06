@@ -670,7 +670,7 @@ function SettingsCard({ settings, onActionSuccess, restaurantId }: { settings: A
   return (
     <div className="space-y-4">
       <form onSubmit={handleFormSubmit}>
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
               <Label htmlFor="isRestaurantClosed" className="text-base">手动打烊</Label>
@@ -1014,3 +1014,5 @@ export default function DashboardClient({ initialRestaurant, initialSettings, in
     </div>
   );
 }
+
+    
