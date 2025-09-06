@@ -95,7 +95,6 @@ export default function DishSalesReport({ dishes, restaurantId }: DishSalesRepor
     return (
       <Card>
         <CardHeader>
-          <CardTitle>菜品销量报告</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center text-center text-muted-foreground p-8">
             <BarChartHorizontal className="h-12 w-12 mb-4" />
@@ -111,7 +110,6 @@ export default function DishSalesReport({ dishes, restaurantId }: DishSalesRepor
       <CardHeader>
         <div className="flex justify-between items-center">
             <div>
-                <CardTitle>菜品销量报告</CardTitle>
                 <CardDescription>按日查看各菜品的销售数量。</CardDescription>
             </div>
             <div className="flex items-center gap-2">
