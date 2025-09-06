@@ -82,6 +82,7 @@ export default function SyncSettingsSheet({
   const featureLabels: Record<keyof AppSettings['featureVisibility'], string> = {
     menuManagement: "菜单管理",
     categorySort: "分类排序",
+    dishSalesReport: "菜品销量",
     generalSettings: "通用设置",
     pointCardRecharge: "点卡充值",
     securitySettings: "安全设置",

@@ -4,7 +4,7 @@
 import { z } from 'zod';
 import { db } from '@/lib/firebase';
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { AppSettings, AppSettingsSchema, Dish, DishSchema } from '@/types';
+import { AppSettings, AppSettingsSchema, Dish, DishSchema, FeatureVisibilitySchema } from '@/types';
 import { getSettings, redeemPointCard as redeemCardService, addRestaurant as addRestaurantService } from '@/lib/settings';
 import { logout } from '@/lib/session';
 import { collection, doc, setDoc, updateDoc, deleteDoc, writeBatch, getDoc, runTransaction, Timestamp } from 'firebase/firestore';
@@ -204,26 +204,24 @@ const syncSettingsSchema = z.object({
   syncOrderCount: z.coerce.number().int().min(1, "数量必须大于0"),
   kitchenDisplayPassword: z.string().optional(),
   showKitchenLayoutSwitch: z.boolean(),
-  // Feature Visibility
-  'featureVisibility.menuManagement': z.boolean(),
-  'featureVisibility.categorySort': z.boolean(),
-  'featureVisibility.generalSettings': z.boolean(),
-  'featureVisibility.pointCardRecharge': z.boolean(),
-  'featureVisibility.securitySettings': z.boolean(),
-  'featureVisibility.dishSalesReport': z.boolean(),
+  // Use .passthrough() to allow other feature visibility keys
+  featureVisibility: FeatureVisibilitySchema.passthrough(),
 });
 
 export async function updateSyncSettingsAction(prevState: any, formData: FormData): Promise<ActionState> {
     const rawData = Object.fromEntries(formData.entries());
+    
+    const featureVisibility: Record<string, boolean> = {};
+    for (const key in rawData) {
+        if (key.startsWith('featureVisibility.')) {
+            featureVisibility[key.replace('featureVisibility.', '')] = rawData[key] === 'on';
+        }
+    }
+
     const dataToValidate = {
         ...rawData,
         showKitchenLayoutSwitch: rawData.showKitchenLayoutSwitch === 'on',
-        'featureVisibility.menuManagement': rawData['featureVisibility.menuManagement'] === 'on',
-        'featureVisibility.categorySort': rawData['featureVisibility.categorySort'] === 'on',
-        'featureVisibility.generalSettings': rawData['featureVisibility.generalSettings'] === 'on',
-        'featureVisibility.pointCardRecharge': rawData['featureVisibility.pointCardRecharge'] === 'on',
-        'featureVisibility.securitySettings': rawData['featureVisibility.securitySettings'] === 'on',
-        'featureVisibility.dishSalesReport': rawData['featureVisibility.dishSalesReport'] === 'on',
+        featureVisibility: featureVisibility
     };
 
     const validatedFields = syncSettingsSchema.safeParse(dataToValidate);
@@ -234,19 +232,13 @@ export async function updateSyncSettingsAction(prevState: any, formData: FormDat
     }
     
     const { restaurantId, ...data } = validatedFields.data;
+    
     const settingsToUpdate: Record<string, any> = {
         orderFetchMode: data.orderFetchMode,
         orderPullIntervalSeconds: data.orderPullIntervalSeconds,
         syncOrderCount: data.syncOrderCount,
         showKitchenLayoutSwitch: data.showKitchenLayoutSwitch,
-        featureVisibility: {
-            menuManagement: data['featureVisibility.menuManagement'],
-            categorySort: data['featureVisibility.categorySort'],
-            generalSettings: data['featureVisibility.generalSettings'],
-            pointCardRecharge: data['featureVisibility.pointCardRecharge'],
-            securitySettings: data['featureVisibility.securitySettings'],
-            dishSalesReport: data['featureVisibility.dishSalesReport'],
-        }
+        featureVisibility: data.featureVisibility,
     };
     
     if (data.kitchenDisplayPassword !== undefined) {
