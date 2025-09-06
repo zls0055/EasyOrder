@@ -18,7 +18,7 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
-import { KeyRound, Pencil, PlusCircle, Save, Trash2, Loader2, Utensils, ChevronLeft, ChevronRight, Search, LogOut, PanelsTopLeft, Settings, DoorClosed, GripVertical, MoreVertical, ArrowUp, ArrowDown, Menu as MenuIcon, X as XIcon, Check, Upload, Download, ChevronDown, CreditCard, History, DatabaseZap, FileText, BarChartHorizontal, Star } from 'lucide-react';
+import { KeyRound, Pencil, PlusCircle, Save, Trash2, Loader2, Utensils, ChevronLeft, ChevronRight, Search, LogOut, PanelsTopLeft, Settings, DoorClosed, GripVertical, MoreVertical, ArrowUp, ArrowDown, Menu as MenuIcon, X as XIcon, Check, Upload, Download, ChevronDown, CreditCard, History, DatabaseZap, FileText, BarChartHorizontal, Star, Package, PackageOpen } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -35,7 +35,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu"
-import { addDishAction, updateDishAction, deleteDishAction, updateSettings, updatePassword, updateCategoryOrderAction, redeemPointCardAction } from '@/lib/actions';
+import { addDishAction, updateDishAction, deleteDishAction, updateSettings, updatePassword, updateCategoryOrderAction, redeemPointCardAction, updateDishAvailabilityAction } from '@/lib/actions';
 import { logout } from '@/lib/session';
 import Link from 'next/link';
 import { toast as sonnerToast } from 'sonner';
@@ -48,6 +48,7 @@ import Papa from 'papaparse';
 import { getRechargeLogs } from '@/lib/settings';
 import PointLogsSheet from '@/components/point-logs-sheet';
 import DishSalesReport from '@/components/dish-sales-report';
+import { Badge } from '@/components/ui/badge';
 
 
 interface DashboardClientProps {
@@ -116,6 +117,13 @@ function AddDishForm({ onActionSuccess, restaurantId }: { onActionSuccess: () =>
                   <p className="text-xs text-muted-foreground">推荐菜品将在菜单中突出显示。</p>
               </div>
               <Switch id="isRecommendedAdd" name="isRecommended" />
+          </div>
+           <div className="flex items-center justify-between rounded-lg border p-3">
+              <div className="space-y-0.5">
+                  <Label htmlFor="isAvailableAdd" className="text-sm font-medium">上架菜品</Label>
+                  <p className="text-xs text-muted-foreground">关闭后，顾客将无法在菜单中看到此菜品。</p>
+              </div>
+              <Switch id="isAvailableAdd" name="isAvailable" defaultChecked={true} />
           </div>
         </div>
         <SheetFooter className="mt-auto">
@@ -186,6 +194,13 @@ function EditDishForm({ dish, onActionSuccess, restaurantId }: { dish: Dish; onA
               </div>
               <Switch id="isRecommendedEdit" name="isRecommended" defaultChecked={dish.isRecommended} />
           </div>
+           <div className="flex items-center justify-between rounded-lg border p-3">
+              <div className="space-y-0.5">
+                  <Label htmlFor="isAvailableEdit" className="text-sm font-medium">上架菜品</Label>
+                  <p className="text-xs text-muted-foreground">关闭后，顾客将无法在菜单中看到此菜品。</p>
+              </div>
+              <Switch id="isAvailableEdit" name="isAvailable" defaultChecked={dish.isAvailable} />
+          </div>
         </div>
         <SheetFooter className="mt-auto">
           <SheetClose asChild>
@@ -220,6 +235,7 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDeletePending, startDeleteTransition] = useTransition();
+  const [isAvailabilityPending, startAvailabilityTransition] = useTransition();
   
   const categoryListRef = useRef<HTMLDivElement>(null);
   const categoryButtonRef = useRef<HTMLButtonElement>(null);
@@ -307,6 +323,23 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
     });
   };
 
+  const handleToggleAvailability = (dishId: string, currentAvailability: boolean | undefined) => {
+    startAvailabilityTransition(async () => {
+        const formData = new FormData();
+        formData.append('restaurantId', restaurantId);
+        formData.append('dishId', dishId);
+        formData.append('isAvailable', !currentAvailability ? 'on' : '');
+
+        const result = await updateDishAvailabilityAction(null, formData);
+        if (result?.success) {
+            sonnerToast.success('状态已更新', { description: result.success });
+            onActionSuccess();
+        } else {
+            sonnerToast.error('更新失败', { description: result?.error || '发生未知错误' });
+        }
+    });
+  };
+
   const filteredDishes = useMemo(() => {
     const categoryOrder = settings.categoryOrder || [];
     const categoryIndexMap = new Map(categoryOrder.map((cat, index) => [cat, index]));
@@ -386,6 +419,7 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
                   <TableRow>
                       <TableHead>名称</TableHead>
                       <TableHead>分类</TableHead>
+                      <TableHead>状态</TableHead>
                       <TableHead className="text-right">价格</TableHead>
                       <TableHead className="text-right w-[80px]">排序</TableHead>
                       <TableHead className="w-[80px] text-right">操作</TableHead>
@@ -393,11 +427,26 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
                   </TableHeader>
                   <TableBody>
                   {paginatedDishes.map((dish) => (
-                      <TableRow key={dish.id}>
-                      <TableCell className="py-2 font-medium flex items-center">{dish.name} {dish.isRecommended && <Star className="ml-2 h-4 w-4 text-yellow-500 fill-yellow-400" />}</TableCell>
+                      <TableRow key={dish.id} className={cn(!dish.isAvailable && 'bg-muted/50')}>
+                      <TableCell className="py-2 font-medium flex items-center">
+                        <span className={cn(!dish.isAvailable && 'text-muted-foreground')}>{dish.name}</span>
+                        {dish.isRecommended && <Star className="ml-2 h-4 w-4 text-yellow-500 fill-yellow-400" />}
+                      </TableCell>
                       <TableCell className="py-2 text-muted-foreground">{dish.category}</TableCell>
-                      <TableCell className="text-right py-2">￥{dish.price.toFixed(1)}</TableCell>
-                      <TableCell className="text-right py-2">{dish.sortOrder}</TableCell>
+                      <TableCell>
+                          <div className="flex items-center gap-2">
+                              <Switch
+                                  id={`avail-switch-${dish.id}`}
+                                  checked={dish.isAvailable}
+                                  onCheckedChange={() => handleToggleAvailability(dish.id, dish.isAvailable)}
+                                  disabled={isAvailabilityPending}
+                                  aria-label={dish.isAvailable ? '下架菜品' : '上架菜品'}
+                              />
+                               {!dish.isAvailable && <Badge variant="secondary">已下架</Badge>}
+                          </div>
+                      </TableCell>
+                      <TableCell className={cn("text-right py-2", !dish.isAvailable && 'text-muted-foreground')}>￥{dish.price.toFixed(1)}</TableCell>
+                      <TableCell className={cn("text-right py-2", !dish.isAvailable && 'text-muted-foreground')}>{dish.sortOrder}</TableCell>
                       <TableCell className="text-right py-2">
                           <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -425,10 +474,13 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
 
           <div className="block sm:hidden space-y-2">
               {paginatedDishes.map((dish) => (
-                  <Card key={dish.id} className="p-4">
+                  <Card key={dish.id} className={cn("p-4", !dish.isAvailable && 'bg-muted/50')}>
                       <div className="flex justify-between items-start">
                           <div>
-                              <p className="font-medium flex items-center">{dish.name} {dish.isRecommended && <Star className="ml-2 h-4 w-4 text-yellow-500 fill-yellow-400" />}</p>
+                              <p className="font-medium flex items-center">
+                                  <span className={cn(!dish.isAvailable && 'text-muted-foreground')}>{dish.name}</span>
+                                  {dish.isRecommended && <Star className="ml-2 h-4 w-4 text-yellow-500 fill-yellow-400" />}
+                              </p>
                               <p className="text-sm text-muted-foreground">{dish.category}</p>
                           </div>
                           <DropdownMenu>
@@ -442,8 +494,17 @@ function DishesSection({ dishes, settings, onActionSuccess, restaurantId }: { di
                           </DropdownMenu>
                       </div>
                       <div className="flex justify-between items-baseline mt-2">
-                          <span className="text-lg font-bold text-accent">￥{dish.price.toFixed(1)}</span>
+                          <span className={cn("text-lg font-bold", dish.isAvailable ? 'text-accent' : 'text-muted-foreground')}>￥{dish.price.toFixed(1)}</span>
                           <span className="text-sm text-muted-foreground">排序: {dish.sortOrder}</span>
+                      </div>
+                      <div className="mt-4 flex items-center justify-between border-t pt-3">
+                        <Label htmlFor={`avail-switch-sm-${dish.id}`} className={cn("text-sm", !dish.isAvailable && "text-muted-foreground")}>{dish.isAvailable ? '已上架' : '已下架'}</Label>
+                        <Switch 
+                            id={`avail-switch-sm-${dish.id}`}
+                            checked={dish.isAvailable}
+                            onCheckedChange={() => handleToggleAvailability(dish.id, dish.isAvailable)}
+                            disabled={isAvailabilityPending}
+                        />
                       </div>
                   </Card>
               ))}

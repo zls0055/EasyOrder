@@ -128,3 +128,6 @@ export default async function Page({ params }: { params: Promise<{ restaurantId:
     </Suspense>
   );
 }
+
+// Revalidate this page every time it's visited to ensure freshest data.
+export const revalidate = 0;

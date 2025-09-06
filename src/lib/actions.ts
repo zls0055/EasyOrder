@@ -3,7 +3,7 @@
 
 import { z } from 'zod';
 import { db } from '@/lib/firebase';
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidateTag } from 'next/cache';
 import { AppSettings, AppSettingsSchema, Dish, DishSchema, FeatureVisibilitySchema } from '@/types';
 import { getSettings, redeemPointCard as redeemCardService, addRestaurant as addRestaurantService } from '@/lib/settings';
 import { logout } from '@/lib/session';
@@ -31,6 +31,7 @@ const dishFormSchema = z.object({
   category: z.string().min(1, '菜品分类不能为空'),
   sortOrder: z.coerce.number({invalid_type_error: "排序值必须是数字"}).default(0),
   isRecommended: z.boolean().default(false),
+  isAvailable: z.boolean().default(true),
 }).merge(formWithRestaurantId);
 
 const passwordSchema = z.object({
@@ -62,6 +63,10 @@ const categoryOrderSchema = z.object({
   categoryOrder: z.string().transform(str => str ? str.split(',') : [])
 }).merge(formWithRestaurantId);
 
+const availabilitySchema = z.object({
+  dishId: z.string(),
+  isAvailable: z.boolean(),
+}).merge(formWithRestaurantId);
 
 type ActionState = {
   success?: string | null;
@@ -102,7 +107,11 @@ export async function addRestaurantAction(prevState: any, formData: FormData): P
 
 export async function addDishAction(prevState: any, formData: FormData): Promise<ActionState> {
     const rawData = Object.fromEntries(formData.entries());
-    const dataToValidate = { ...rawData, isRecommended: rawData.isRecommended === 'on' };
+    const dataToValidate = { 
+        ...rawData, 
+        isRecommended: rawData.isRecommended === 'on',
+        isAvailable: rawData.isAvailable === 'on'
+    };
     const validatedFields = dishFormSchema.safeParse(dataToValidate);
 
     if (!validatedFields.success) {
@@ -110,15 +119,14 @@ export async function addDishAction(prevState: any, formData: FormData): Promise
         return { success: null, error: `表单验证失败: ${errorSummary}` };
     }
 
-    const { restaurantId, name, price, category, sortOrder, isRecommended } = validatedFields.data;
+    const { restaurantId, name, price, category, sortOrder, isRecommended, isAvailable } = validatedFields.data;
     try {
         const newDocRef = doc(collection(db, RESTAURANTS_COLLECTION, restaurantId, DISHES_COLLECTION));
-        const newDish: Dish = { id: newDocRef.id, name, price, category, sortOrder, isRecommended };
+        const newDish: Dish = { id: newDocRef.id, name, price, category, sortOrder, isRecommended, isAvailable };
         
         await setDoc(newDocRef, newDish);
         revalidateTag(`dishes-${restaurantId}`);
-        revalidatePath(`/${restaurantId}/management/dashboard`);
-        revalidatePath(`/${restaurantId}`);
+        revalidateTag(`restaurant-page-${restaurantId}`);
         return { success: "新菜品已成功添加。", error: null };
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
@@ -128,7 +136,11 @@ export async function addDishAction(prevState: any, formData: FormData): Promise
 
 export async function updateDishAction(prevState: any, formData: FormData): Promise<ActionState> {
     const rawData = Object.fromEntries(formData.entries());
-    const dataToValidate = { ...rawData, isRecommended: rawData.isRecommended === 'on' };
+    const dataToValidate = { 
+        ...rawData, 
+        isRecommended: rawData.isRecommended === 'on',
+        isAvailable: rawData.isAvailable === 'on'
+    };
     const validatedFields = dishFormSchema.safeParse(dataToValidate);
 
     if (!validatedFields.success) {
@@ -145,8 +157,7 @@ export async function updateDishAction(prevState: any, formData: FormData): Prom
         const docRef = doc(db, RESTAURANTS_COLLECTION, restaurantId, DISHES_COLLECTION, id);
         await updateDoc(docRef, dishData);
         revalidateTag(`dishes-${restaurantId}`);
-        revalidatePath(`/${restaurantId}/management/dashboard`);
-        revalidatePath(`/${restaurantId}`);
+        revalidateTag(`restaurant-page-${restaurantId}`);
         return { success: "菜品信息已成功更新。", error: null };
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
@@ -164,14 +175,39 @@ export async function deleteDishAction(prevState: any, formData: FormData): Prom
         const docRef = doc(db, RESTAURANTS_COLLECTION, restaurantId, DISHES_COLLECTION, id);
         await deleteDoc(docRef);
         revalidateTag(`dishes-${restaurantId}`);
-        revalidatePath(`/${restaurantId}/management/dashboard`);
-        revalidatePath(`/${restaurantId}`);
+        revalidateTag(`restaurant-page-${restaurantId}`);
         return { success: "菜品已删除。", error: null };
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
         return { success: null, error: `删除菜品时发生错误: ${errorMessage}` };
     }
 }
+
+export async function updateDishAvailabilityAction(prevState: any, formData: FormData): Promise<ActionState> {
+    const rawData = {
+        dishId: formData.get('dishId'),
+        restaurantId: formData.get('restaurantId'),
+        isAvailable: formData.get('isAvailable') === 'on'
+    };
+    const validatedFields = availabilitySchema.safeParse(rawData);
+    
+    if (!validatedFields.success) {
+        return { success: null, error: "数据无效，无法更新菜品状态。" };
+    }
+    const { restaurantId, dishId, isAvailable } = validatedFields.data;
+
+    try {
+        const docRef = doc(db, RESTAURANTS_COLLECTION, restaurantId, DISHES_COLLECTION, dishId);
+        await updateDoc(docRef, { isAvailable: isAvailable });
+        revalidateTag(`dishes-${restaurantId}`);
+        revalidateTag(`restaurant-page-${restaurantId}`);
+        return { success: `菜品状态已更新为“${isAvailable ? '上架' : '下架'}”。` };
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+        return { success: null, error: `更新菜品状态时发生错误: ${errorMessage}` };
+    }
+}
+
 
 export async function updateSettings(prevState: any, formData: FormData): Promise<ActionState> {
     const rawData = Object.fromEntries(formData.entries());
@@ -194,8 +230,7 @@ export async function updateSettings(prevState: any, formData: FormData): Promis
         const docRef = doc(db, RESTAURANTS_COLLECTION, restaurantId, SETTINGS_COLLECTION, CONFIG_DOC_ID);
         await updateDoc(docRef, settingsToUpdate);
         revalidateTag(`settings-${restaurantId}`);
-        revalidatePath(`/${restaurantId}/management/dashboard`);
-        revalidatePath(`/${restaurantId}`);
+        revalidateTag(`restaurant-page-${restaurantId}`);
         return { success: "设置已成功更新。", error: null };
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
@@ -278,8 +313,7 @@ export async function updateCategoryOrderAction(prevState: any, formData: FormDa
         const docRef = doc(db, RESTAURANTS_COLLECTION, restaurantId, SETTINGS_COLLECTION, CONFIG_DOC_ID);
         await updateDoc(docRef, { categoryOrder: categoryOrder });
         revalidateTag(`settings-${restaurantId}`);
-        revalidatePath(`/${restaurantId}/management/dashboard`);
-        revalidatePath(`/${restaurantId}`);
+        revalidateTag(`restaurant-page-${restaurantId}`);
         return { success: "分类排序已保存。", error: null };
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
@@ -373,8 +407,7 @@ export async function batchUpdateDishesAction(restaurantId: string, dishes: Dish
   try {
     await batch.commit();
     revalidateTag(`dishes-${restaurantId}`);
-    revalidatePath(`/${restaurantId}/management/dashboard`);
-    revalidatePath(`/${restaurantId}`);
+    revalidateTag(`restaurant-page-${restaurantId}`);
     return { success: `${validatedDishes.data.length}个菜品已成功处理。`, error: null };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';

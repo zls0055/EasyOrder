@@ -15,6 +15,7 @@ export const DishSchema = z.object({
   category: z.string(),
   sortOrder: z.number().default(0),
   isRecommended: z.boolean().optional().default(false),
+  isAvailable: z.boolean().optional().default(true),
 });
 export type Dish = z.infer<typeof DishSchema>;
 

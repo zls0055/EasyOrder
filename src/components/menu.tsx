@@ -59,13 +59,15 @@ export default function Menu({
   const [isCategoryListVisible, setIsCategoryListVisible] = useState(false);
   const categoryListRef = useRef<HTMLDivElement>(null);
   const categoryButtonRef = useRef<HTMLButtonElement>(null);
+  
+  const availableDishes = useMemo(() => dishes.filter(d => d.isAvailable), [dishes]);
 
   const orderQuantityMap = useMemo(() => new Map(orderItems.map(item => [item.dish.id, item.quantity])), [orderItems]);
-  const recommendedDishes = useMemo(() => dishes.filter(d => d.isRecommended), [dishes]);
+  const recommendedDishes = useMemo(() => availableDishes.filter(d => d.isRecommended), [availableDishes]);
 
   const availableCategories: CategoryInfo[] = useMemo(() => {
-    const allUniqueCategories = Array.from(new Set(dishes.map(d => d.category)));
-    const categoryCounts = dishes.reduce((acc, dish) => {
+    const allUniqueCategories = Array.from(new Set(availableDishes.map(d => d.category)));
+    const categoryCounts = availableDishes.reduce((acc, dish) => {
       acc[dish.category] = (acc[dish.category] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
@@ -81,8 +83,8 @@ export default function Menu({
     }
     const recentCategory = recentDishes.length > 0 ? [{ name: RECENTLY_ORDERED_CATEGORY, count: recentDishes.length }] : [];
 
-    return [ { name: '全部菜品', count: dishes.length }, ...specialCategories, ...categoriesInfo, ...recentCategory ];
-  }, [dishes, settings.categoryOrder, recentDishes, recommendedDishes]);
+    return [ { name: '全部菜品', count: availableDishes.length }, ...specialCategories, ...categoriesInfo, ...recentCategory ];
+  }, [availableDishes, settings.categoryOrder, recentDishes, recommendedDishes]);
 
   const isSearching = !!searchQuery.trim();
 
@@ -118,7 +120,7 @@ export default function Menu({
   const searchResults = useMemo(() => {
     if (!isSearching) return null;
     const lowerCaseQuery = searchQuery.toLowerCase().trim();
-    const filteredDishes = dishes.filter((dish) => dish.name.toLowerCase().includes(lowerCaseQuery));
+    const filteredDishes = availableDishes.filter((dish) => dish.name.toLowerCase().includes(lowerCaseQuery));
     const grouped: Record<string, Dish[]> = {};
     const categoryOrder = availableCategories.map(c => c.name);
     const orderedGrouped: Record<string, Dish[]> = {};
@@ -129,7 +131,7 @@ export default function Menu({
     }
     categoryOrder.forEach(catName => { if (grouped[catName]) orderedGrouped[catName] = grouped[catName]; });
     return orderedGrouped;
-  }, [dishes, searchQuery, isSearching, availableCategories]);
+  }, [availableDishes, searchQuery, isSearching, availableCategories]);
 
   const allDishesGrouped = useMemo(() => {
     const grouped: Record<string, Dish[]> = {};
@@ -139,7 +141,7 @@ export default function Menu({
       grouped[RECOMMENDED_CATEGORY] = recommendedDishes;
     }
 
-    for (const dish of dishes) {
+    for (const dish of availableDishes) {
       if (!grouped[dish.category]) grouped[dish.category] = [];
       grouped[dish.category].push(dish);
     }
@@ -148,14 +150,14 @@ export default function Menu({
     const orderedGrouped: Record<string, Dish[]> = {};
     categoryOrder.forEach(catName => { if (grouped[catName]) orderedGrouped[catName] = grouped[catName]; });
     return orderedGrouped;
-  }, [dishes, availableCategories, recentDishes, recommendedDishes]);
+  }, [availableDishes, availableCategories, recentDishes, recommendedDishes]);
 
   const dishesForCategory = useMemo(() => {
     if (isSearching || !selectedCategoryName || selectedCategoryName === '全部菜品') return [];
     if (selectedCategoryName === RECENTLY_ORDERED_CATEGORY) return recentDishes;
     if (selectedCategoryName === RECOMMENDED_CATEGORY) return recommendedDishes;
-    return dishes.filter((dish) => dish.category === selectedCategoryName);
-  }, [dishes, selectedCategoryName, isSearching, recentDishes, recommendedDishes]);
+    return availableDishes.filter((dish) => dish.category === selectedCategoryName);
+  }, [availableDishes, selectedCategoryName, isSearching, recentDishes, recommendedDishes]);
 
   if (dishes.length === 0) {
     return (
