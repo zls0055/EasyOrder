@@ -91,6 +91,7 @@ export const AppSettingsSchema = z.object({
   orderPullIntervalSeconds: z.coerce.number().int().min(2, "拉取间隔不能少于2秒").default(5),
   kitchenDisplayPassword: z.string().default('123456'),
   showKitchenLayoutSwitch: z.boolean().default(false),
+  showKitchenSalesReport: z.boolean().default(false),
   featureVisibility: FeatureVisibilitySchema.default({}),
 });
 export type AppSettings = z.infer<typeof AppSettingsSchema>;

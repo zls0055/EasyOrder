@@ -129,6 +129,15 @@ export default function SyncSettingsSheet({
                               disabled={isPending}
                           />
                       </div>
+                      <div className="flex items-center justify-between">
+                          <Label htmlFor="showKitchenSalesReport">显示销量统计按钮</Label>
+                          <Switch
+                              id="showKitchenSalesReport"
+                              name="showKitchenSalesReport"
+                              defaultChecked={settings.showKitchenSalesReport}
+                              disabled={isPending}
+                          />
+                      </div>
                     </div>
                 </div>
 

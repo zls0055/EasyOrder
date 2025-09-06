@@ -204,32 +204,34 @@ export default function KitchenDisplay({ allDishes, settings, restaurantId }: Ki
   return (
     <div className="flex flex-col h-full bg-muted/40">
         <header className="p-4 flex justify-center items-center gap-2 sticky top-0 bg-background/95 backdrop-blur-sm z-10 border-b">
-             <div className="absolute left-4">
-                <Sheet open={isReportSheetOpen} onOpenChange={setIsReportSheetOpen}>
-                    <SheetTrigger asChild>
-                        <Button variant="outline" size="sm" className="flex items-center gap-2">
-                            <BarChartHorizontal className="h-4 w-4" />
-                            <span>销量统计</span>
-                        </Button>
-                    </SheetTrigger>
-                    <SheetContent className="w-full sm:max-w-lg p-0 flex flex-col">
-                         <SheetHeader className="p-4 border-b">
-                            <SheetTitle>菜品销量统计</SheetTitle>
-                             <SheetClose asChild>
-                                <Button variant="ghost" size="icon" className="absolute top-3 right-3 h-8 w-8 rounded-full z-50">
-                                <X className="h-4 w-4" />
-                                <span className="sr-only">关闭</span>
-                                </Button>
-                            </SheetClose>
-                         </SheetHeader>
-                        <ScrollArea className="flex-1">
-                            <div className="p-4">
-                                <DishSalesReport dishes={allDishes} restaurantId={restaurantId} />
-                            </div>
-                        </ScrollArea>
-                    </SheetContent>
-                </Sheet>
-            </div>
+             {settings.showKitchenSalesReport && (
+                <div className="absolute left-4">
+                    <Sheet open={isReportSheetOpen} onOpenChange={setIsReportSheetOpen}>
+                        <SheetTrigger asChild>
+                            <Button variant="outline" size="sm" className="flex items-center gap-2">
+                                <BarChartHorizontal className="h-4 w-4" />
+                                <span>销量统计</span>
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent className="w-full sm:max-w-lg p-0 flex flex-col">
+                            <SheetHeader className="p-4 border-b">
+                                <SheetTitle>菜品销量统计</SheetTitle>
+                                <SheetClose asChild>
+                                    <Button variant="ghost" size="icon" className="absolute top-3 right-3 h-8 w-8 rounded-full z-50">
+                                    <X className="h-4 w-4" />
+                                    <span className="sr-only">关闭</span>
+                                    </Button>
+                                </SheetClose>
+                            </SheetHeader>
+                            <ScrollArea className="flex-1">
+                                <div className="p-4">
+                                    <DishSalesReport dishes={allDishes} restaurantId={restaurantId} />
+                                </div>
+                            </ScrollArea>
+                        </SheetContent>
+                    </Sheet>
+                </div>
+            )}
             
             <h1 className="text-xl font-bold">厨房看板</h1>
             {settings.showKitchenLayoutSwitch && (

@@ -51,6 +51,7 @@ const settingsUpdateSchema = AppSettingsSchema.partial().omit({
     orderPullIntervalSeconds: true,
     syncOrderCount: true,
     showKitchenLayoutSwitch: true,
+    showKitchenSalesReport: true,
     featureVisibility: true, // This will be handled by the sync settings action
 }).merge(formWithRestaurantId).extend({
     kitchenDisplayPassword: z.string().optional() // Allow it to be optional or empty
@@ -204,6 +205,7 @@ const syncSettingsSchema = z.object({
   syncOrderCount: z.coerce.number().int().min(1, "数量必须大于0"),
   kitchenDisplayPassword: z.string().optional(),
   showKitchenLayoutSwitch: z.boolean(),
+  showKitchenSalesReport: z.boolean(),
   // Use .passthrough() to allow other feature visibility keys
   featureVisibility: FeatureVisibilitySchema.passthrough(),
 });
@@ -221,6 +223,7 @@ export async function updateSyncSettingsAction(prevState: any, formData: FormDat
     const dataToValidate = {
         ...rawData,
         showKitchenLayoutSwitch: rawData.showKitchenLayoutSwitch === 'on',
+        showKitchenSalesReport: rawData.showKitchenSalesReport === 'on',
         featureVisibility: featureVisibility
     };
 
@@ -238,6 +241,7 @@ export async function updateSyncSettingsAction(prevState: any, formData: FormDat
         orderPullIntervalSeconds: data.orderPullIntervalSeconds,
         syncOrderCount: data.syncOrderCount,
         showKitchenLayoutSwitch: data.showKitchenLayoutSwitch,
+        showKitchenSalesReport: data.showKitchenSalesReport,
         featureVisibility: data.featureVisibility,
     };
     
