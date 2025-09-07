@@ -448,10 +448,17 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
       const sortedDishesForExport = [...dishes].sort((a, b) => {
           const categoryOrder = settings.categoryOrder || [];
           const categoryIndexMap = new Map(categoryOrder.map((cat, index) => [cat, index]));
+
           const catIndexA = categoryIndexMap.get(a.category) ?? Infinity;
           const catIndexB = categoryIndexMap.get(b.category) ?? Infinity;
-          if (catIndexA !== catIndexB) return catIndexA - catIndexB;
+          if (catIndexA !== catIndexB) {
+              if (catIndexA === Infinity) return 1;
+              if (catIndexB === Infinity) return -1;
+              return catIndexA - catIndexB;
+          }
+
           if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
+          
           return a.name.localeCompare(b.name, 'zh-Hans-CN');
       });
       
