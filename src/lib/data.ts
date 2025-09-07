@@ -2,7 +2,7 @@ import type { Dish, Table } from '@/types';
 
 // Adding a default sortOrder (0) to all dishes. 
 // A lower number means it appears higher in the list within its category.
-export const initialDishes: Dish[] = [
+export const initialDishes: any[] = [
   // 经济快餐 (Economy Fast Food) - New Category
   { id: 'dish-95', name: '木耳肉丝', price: 15.0, category: '经济快餐', sortOrder: 0 },
   { id: 'dish-96', name: '香干肉丝', price: 15.0, category: '经济快餐', sortOrder: 0 },
@@ -265,7 +265,7 @@ export const initialDishes: Dish[] = [
 ];
 
 // 干锅类 (Dry Pot)
-export const dryPotDishes: Dish[] = [
+export const dryPotDishes: any[] = [
   { id: 'dish-174', name: '干锅猪脚', price: 40.0, category: '干锅类', sortOrder: 0 },
   { id: 'dish-175', name: '干锅啤酒鸭', price: 35.0, category: '干锅类', sortOrder: 0 },
   { id: 'dish-176', name: '干锅鸡', price: 35.0, category: '干锅类', sortOrder: 0 },

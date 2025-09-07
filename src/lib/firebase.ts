@@ -1,10 +1,6 @@
-// "use client";
-// Import the functions you need from the SDKs you need
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore, initializeFirestore } from "firebase/firestore";
+import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
+import { getFirestore, initializeFirestore, Firestore } from "firebase/firestore";
 
-
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDPd8bO_HhcrNcV6qxkclrh_Np2N3fypP8",
   authDomain: "easyorder-b95sc.firebaseapp.com",
@@ -14,17 +10,39 @@ const firebaseConfig = {
   appId: "1:805060760707:web:a4627e703995f3ff95b7b6"
 };
 
-// Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const appName = "easy-order-items";
 
-// Use the asia-east2 (Hong Kong) regional endpoint for Firestore.
-initializeFirestore(app, {
-  host: 'firestore.douzhidao.dpdns.org'
-}, "easy-order-items");
+function getAppInstance(): FirebaseApp {
+  if (getApps().length) {
+    return getApp();
+  }
+  return initializeApp(firebaseConfig);
+}
 
-const db = getFirestore(app,"easy-order-items");
+// Using a global variable to cache the Firestore instance
+// This helps prevent re-initialization issues in server environments
+declare global {
+  // eslint-disable-next-line no-var
+  var firestoreInstance: Firestore | undefined;
+}
 
+function getDbInstance(): Firestore {
+  if (typeof window !== 'undefined') {
+    // Client-side initialization
+    const app = getAppInstance();
+    // Use initializeFirestore to connect to a specific database ID
+    return initializeFirestore(app, {}, appName);
+  } else {
+    // Server-side, use a global cache
+    if (!global.firestoreInstance) {
+      const app = getAppInstance();
+      global.firestoreInstance = initializeFirestore(app, {}, appName);
+    }
+    return global.firestoreInstance;
+  }
+}
 
-// const db = getFirestore(app);
+const app: FirebaseApp = getAppInstance();
+const db: Firestore = getDbInstance();
 
 export { app, db };
