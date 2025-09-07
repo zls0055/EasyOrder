@@ -446,20 +446,39 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
       const settings = await getSettings(restaurant.id);
 
       const sortedDishesForExport = [...dishes].sort((a, b) => {
-          const categoryOrder = settings.categoryOrder || [];
-          const categoryIndexMap = new Map(categoryOrder.map((cat, index) => [cat, index]));
+        const categoryOrder = settings.categoryOrder || [];
+        const catIndexA = categoryOrder.indexOf(a.category);
+        const catIndexB = categoryOrder.indexOf(b.category);
 
-          const catIndexA = categoryIndexMap.get(a.category) ?? Infinity;
-          const catIndexB = categoryIndexMap.get(b.category) ?? Infinity;
-          if (catIndexA !== catIndexB) {
-              if (catIndexA === Infinity) return 1;
-              if (catIndexB === Infinity) return -1;
-              return catIndexA - catIndexB;
-          }
+        // Both categories are in the custom sort order
+        if (catIndexA !== -1 && catIndexB !== -1) {
+            if (catIndexA !== catIndexB) {
+                return catIndexA - catIndexB;
+            }
+        }
+        // Only category A is in the custom sort order
+        else if (catIndexA !== -1) {
+            return -1;
+        }
+        // Only category B is in the custom sort order
+        else if (catIndexB !== -1) {
+            return 1;
+        }
+        // Neither category is in the custom sort order, sort them alphabetically
+        else {
+            const catCompare = a.category.localeCompare(b.category, 'zh-Hans-CN');
+            if (catCompare !== 0) {
+                return catCompare;
+            }
+        }
 
-          if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
-          
-          return a.name.localeCompare(b.name, 'zh-Hans-CN');
+        // If categories are the same or have the same custom order index, sort by sortOrder
+        if (a.sortOrder !== b.sortOrder) {
+            return a.sortOrder - b.sortOrder;
+        }
+
+        // If sortOrder is also the same, sort by name
+        return a.name.localeCompare(b.name, 'zh-Hans-CN');
       });
       
       const dataToExport = sortedDishesForExport.map(dish => ({ ...dish, new_id: '' }));
@@ -846,3 +865,4 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
     </div>
   );
 }
+
