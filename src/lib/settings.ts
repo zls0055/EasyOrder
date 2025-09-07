@@ -1,4 +1,5 @@
 
+
 'use server';
 import { db } from '@/lib/firebase';
 import { AppSettings, AppSettingsSchema, Dish, DishSchema, Restaurant, RestaurantSchema, PointLog, PointLogSchema, PointCardSchema, PointCard, RechargeLogSchema, RechargeLog, DishOrderLog, DishOrderLogSchema } from '@/types';
@@ -231,7 +232,11 @@ export async function clearRestaurantData(restaurantId: string): Promise<{ succe
 
 
 export async function getSettings(restaurantId: string): Promise<AppSettings> {
-  if (!restaurantId) return AppSettingsSchema.parse({});
+  console.log(`[getSettings] Attempting to fetch settings for restaurant: ${restaurantId}`);
+  if (!restaurantId) {
+    console.warn("[getSettings] No restaurantId provided. Returning default settings.");
+    return AppSettingsSchema.parse({});
+  }
   try {
     const settingsRef = doc(db, RESTAURANTS_COLLECTION, restaurantId, SETTINGS_COLLECTION, CONFIG_DOC_ID);
     const docSnap = await getDoc(settingsRef);
@@ -240,30 +245,36 @@ export async function getSettings(restaurantId: string): Promise<AppSettings> {
       const settingsData = docSnap.data();
       const parsedSettings = AppSettingsSchema.safeParse(settingsData);
       if (parsedSettings.success) {
+        console.log(`[getSettings] Successfully fetched and parsed settings for ${restaurantId}.`);
         return parsedSettings.data;
       } else {
-        console.warn("Firestore settings are invalid, merging with defaults:", parsedSettings.error);
+        console.warn(`[getSettings] Firestore settings for ${restaurantId} are invalid, merging with defaults. Error:`, parsedSettings.error);
         const defaultSettings = AppSettingsSchema.parse({});
         const mergedSettings = { ...defaultSettings, ...settingsData };
         return AppSettingsSchema.parse(mergedSettings);
       }
     } else {
-      console.log(`Settings for restaurant ${restaurantId} not found, returning defaults.`);
+      console.log(`[getSettings] Settings for restaurant ${restaurantId} not found, returning defaults.`);
       return AppSettingsSchema.parse({});
     }
   } catch(error) {
-      console.error(`[getSettings] Error fetching settings for ${restaurantId}, returning defaults. Error: ${error}`);
+      console.error(`[getSettings] Error fetching settings for ${restaurantId}, returning defaults. Error:`, error);
       return AppSettingsSchema.parse({});
   }
 }
 
 export async function getDishes(restaurantId: string): Promise<Dish[]> {
-    if (!restaurantId) return [];
+    console.log(`[getDishes] Attempting to fetch dishes for restaurant: ${restaurantId}`);
+    if (!restaurantId) {
+        console.warn("[getDishes] No restaurantId provided. Returning empty array.");
+        return [];
+    }
     try {
         const dishesRef = collection(db, RESTAURANTS_COLLECTION, restaurantId, DISHES_COLLECTION);
         const dishesSnapshot = await getDocs(dishesRef);
 
         if (dishesSnapshot.empty) {
+            console.log(`[getDishes] No dishes found for ${restaurantId}. Returning empty array.`);
             return [];
         }
 
@@ -271,18 +282,19 @@ export async function getDishes(restaurantId: string): Promise<Dish[]> {
             .map(doc => {
                 const parsed = DishSchema.safeParse(doc.data());
                 if (parsed.success) return parsed.data;
-                console.warn(`Skipping invalid dish document (ID: ${doc.id}):`, parsed.error);
+                console.warn(`[getDishes] Skipping invalid dish document (ID: ${doc.id}):`, parsed.error);
                 return null;
             })
             .filter((d): d is Dish => d !== null);
         
+        console.log(`[getDishes] Successfully fetched and parsed ${dishes.length} dishes for ${restaurantId}.`);
         return dishes.sort((a, b) => {
             if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
             return a.name.localeCompare(b.name, 'zh-Hans-CN');
         });
 
     } catch(error) {
-        console.error(`[getDishes] Error fetching or seeding dishes for ${restaurantId}, returning empty array. Error: ${error}`);
+        console.error(`[getDishes] Error fetching dishes for ${restaurantId}, returning empty array. Error:`, error);
         return [];
     }
 }
