@@ -491,8 +491,8 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
           price: parseFloat(row.price),
           category: row.category,
           sortOrder: parseInt(row.sortOrder, 10) || 0,
-          isRecommended: row.isRecommended === 'TRUE' || row.isRecommended === '1',
-          isAvailable: !(row.isAvailable === 'FALSE' || row.isAvailable === '0'), // Default to true
+          isRecommended: row.isRecommended === 'TRUE' || row.isRecommended === '1' || row.isRecommended === true,
+          isAvailable: !(row.isAvailable === 'FALSE' || row.isAvailable === '0' || row.isAvailable === false), // Default to true
         })).filter(d => (d.id || d.new_id) && d.name && !isNaN(d.price) && d.category);
         
         if (parsedDishes.length === 0) {
