@@ -118,63 +118,72 @@ const RestaurantRow = ({ restaurant, onAction, onRefresh, onImport, onExport, on
                 </div>
             </TableCell>
             <TableCell className="text-right py-2 px-2">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
-                    </DropdownMenuTrigger>
-                     <DropdownMenuContent align="end">
-                        <DropdownMenuSub>
-                             <DropdownMenuSubTrigger><LinkIcon className="mr-2 h-4 w-4" /><span>页面链接</span></DropdownMenuSubTrigger>
-                             <DropdownMenuPortal>
-                                <DropdownMenuSubContent>
-                                    <DropdownMenuItem asChild><Link href={`/${restaurant.id}`} target="_blank" className="flex items-center"><PanelsTopLeft className="mr-2 h-4 w-4" /><span>点餐页</span></Link></DropdownMenuItem>
-                                    <DropdownMenuItem asChild><Link href={`/${restaurant.id}/management`} target="_blank" className="flex items-center"><KeyRound className="mr-2 h-4 w-4" /><span>管理后台</span></Link></DropdownMenuItem>
-                                    <DropdownMenuItem asChild><Link href={`/${restaurant.id}/orders`} target="_blank" className="flex items-center"><Utensils className="mr-2 h-4 w-4" /><span>厨房看板</span></Link></DropdownMenuItem>
-                                </DropdownMenuSubContent>
-                             </DropdownMenuPortal>
-                        </DropdownMenuSub>
-                         <DropdownMenuSeparator />
-                         <DropdownMenuSub>
-                            <DropdownMenuSubTrigger><Database className="mr-2 h-4 w-4" /><span>数据管理</span></DropdownMenuSubTrigger>
-                             <DropdownMenuPortal>
-                                <DropdownMenuSubContent>
-                                    <DropdownMenuItem onSelect={() => onAction({ type: 'view-dishes', restaurant })}><FileText className="mr-2 h-4 w-4" /><span>查看菜品</span></DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem onSelect={() => onImport(restaurant)}><Upload className="mr-2 h-4 w-4" /><span>导入菜品 (CSV)</span></DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={() => onExport(restaurant)} disabled={isExportingThisRow}>
-                                        {isExportingThisRow ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                                        <span>{isExportingThisRow ? '导出中...' : '导出菜品 (CSV)'}</span>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                     <DropdownMenuItem onSelect={() => onAction({ type: 'clear', restaurant })} className="text-amber-600 focus:text-amber-600">
-                                        <RotateCcw className="mr-2 h-4 w-4" /><span>清空数据</span>
-                                    </DropdownMenuItem>
-                                </DropdownMenuSubContent>
-                            </DropdownMenuPortal>
-                         </DropdownMenuSub>
-                        <DropdownMenuSub>
-                             <DropdownMenuSubTrigger><Wrench className="mr-2 h-4 w-4" /><span>餐馆设置</span></DropdownMenuSubTrigger>
-                              <DropdownMenuPortal>
-                                <DropdownMenuSubContent>
-                                     <DropdownMenuItem onSelect={() => onAction({ type: 'edit', restaurant })}>
-                                        <Edit className="mr-2 h-4 w-4" /><span>修改名称</span>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={() => onAction({ type: 'recharge', restaurant })}>
-                                        <DollarSign className="mr-2 h-4 w-4" /><span>充值点数</span>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={() => onAction({ type: 'sync-settings', restaurant, settings: null })}>
-                                        <SettingsIcon className="mr-2 h-4 w-4" />
-                                        <span>高级设置</span>
-                                    </DropdownMenuItem>
-                                </DropdownMenuSubContent>
-                            </DropdownMenuPortal>
-                        </DropdownMenuSub>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onSelect={() => onAction({ type: 'delete', restaurant })} className="text-destructive focus:text-destructive">
-                            <Trash2 className="mr-2 h-4 w-4" /><span>删除餐馆</span>
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                 <div className="flex justify-end items-center h-8">
+                    {isExportingThisRow ? (
+                        <div className="flex items-center text-muted-foreground text-xs gap-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>导出中...</span>
+                        </div>
+                    ) : (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger><LinkIcon className="mr-2 h-4 w-4" /><span>页面链接</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuPortal>
+                                        <DropdownMenuSubContent>
+                                            <DropdownMenuItem asChild><Link href={`/${restaurant.id}`} target="_blank" className="flex items-center"><PanelsTopLeft className="mr-2 h-4 w-4" /><span>点餐页</span></Link></DropdownMenuItem>
+                                            <DropdownMenuItem asChild><Link href={`/${restaurant.id}/management`} target="_blank" className="flex items-center"><KeyRound className="mr-2 h-4 w-4" /><span>管理后台</span></Link></DropdownMenuItem>
+                                            <DropdownMenuItem asChild><Link href={`/${restaurant.id}/orders`} target="_blank" className="flex items-center"><Utensils className="mr-2 h-4 w-4" /><span>厨房看板</span></Link></DropdownMenuItem>
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuPortal>
+                                </DropdownMenuSub>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger><Database className="mr-2 h-4 w-4" /><span>数据管理</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuPortal>
+                                        <DropdownMenuSubContent>
+                                            <DropdownMenuItem onSelect={() => onAction({ type: 'view-dishes', restaurant })}><FileText className="mr-2 h-4 w-4" /><span>查看菜品</span></DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem onSelect={() => onImport(restaurant)}><Upload className="mr-2 h-4 w-4" /><span>导入菜品 (CSV)</span></DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => onExport(restaurant)}>
+                                                <Download className="mr-2 h-4 w-4" />
+                                                <span>导出菜品 (CSV)</span>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem onSelect={() => onAction({ type: 'clear', restaurant })} className="text-amber-600 focus:text-amber-600">
+                                                <RotateCcw className="mr-2 h-4 w-4" /><span>清空数据</span>
+                                            </DropdownMenuItem>
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuPortal>
+                                </DropdownMenuSub>
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger><Wrench className="mr-2 h-4 w-4" /><span>餐馆设置</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuPortal>
+                                        <DropdownMenuSubContent>
+                                            <DropdownMenuItem onSelect={() => onAction({ type: 'edit', restaurant })}>
+                                                <Edit className="mr-2 h-4 w-4" /><span>修改名称</span>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => onAction({ type: 'recharge', restaurant })}>
+                                                <DollarSign className="mr-2 h-4 w-4" /><span>充值点数</span>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={() => onAction({ type: 'sync-settings', restaurant, settings: null })}>
+                                                <SettingsIcon className="mr-2 h-4 w-4" />
+                                                <span>高级设置</span>
+                                            </DropdownMenuItem>
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuPortal>
+                                </DropdownMenuSub>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onSelect={() => onAction({ type: 'delete', restaurant })} className="text-destructive focus:text-destructive">
+                                    <Trash2 className="mr-2 h-4 w-4" /><span>删除餐馆</span>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
+                </div>
             </TableCell>
         </TableRow>
     )
@@ -460,23 +469,28 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
 
           const settings = await getSettings(restaurant.id);
           const categoryOrder = settings.categoryOrder || [];
+          
+          const categoryIndexMap = new Map(categoryOrder.map((cat, index) => [cat, index]));
 
           const sortedDishesForExport = [...dishes].sort((a, b) => {
-              const catIndexA = categoryOrder.indexOf(a.category);
-              const catIndexB = categoryOrder.indexOf(b.category);
-
-              if (catIndexA !== -1 && catIndexB !== -1) {
-                  if (catIndexA !== catIndexB) return catIndexA - catIndexB;
-              } else if (catIndexA !== -1) {
-                  return -1;
-              } else if (catIndexB !== -1) {
-                  return 1;
-              } else {
-                   const catCompare = a.category.localeCompare(b.category, 'zh-Hans-CN');
-                   if (catCompare !== 0) return catCompare;
+              const catIndexA = categoryIndexMap.get(a.category) ?? Infinity;
+              const catIndexB = categoryIndexMap.get(b.category) ?? Infinity;
+              
+              if (catIndexA !== catIndexB) {
+                return catIndexA - catIndexB;
               }
 
-              if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
+              // If categories are the same (or both are unsorted), sort by their names
+              if (a.category !== b.category) {
+                  return a.category.localeCompare(b.category, 'zh-Hans-CN');
+              }
+              
+              // Then sort by sortOrder
+              if (a.sortOrder !== b.sortOrder) {
+                  return a.sortOrder - b.sortOrder;
+              }
+
+              // Finally, sort by name
               return a.name.localeCompare(b.name, 'zh-Hans-CN');
           });
           
