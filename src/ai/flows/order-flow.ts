@@ -3,7 +3,7 @@
 /**
  * @fileOverview Defines and exports server actions for managing restaurant orders.
  */
-import { adminDb } from '@/lib/firebase-admin';
+import { getFirebaseAdmin } from '@/lib/firebase-admin';
 import { getRestaurant, getSettings } from '@/lib/settings';
 import {
   PlaceOrderInput,
@@ -53,6 +53,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
   }
 
   try {
+    const { db: adminDb } = getFirebaseAdmin();
     const restaurantRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId);
     
     const logDateId = new Date().toISOString().split('T')[0];
@@ -186,6 +187,7 @@ export async function updateOrder(
     if (!restaurantId) {
       return { order: null, logs: ['[SERVER] Update rejected: Missing restaurantId.'], error: '更新失败，缺少餐馆信息。' };
     }
+    const { db: adminDb } = getFirebaseAdmin();
     const orderRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(ORDERS_COLLECTION).doc(orderId);
 
     const itemsToSave = updatedItems.map(item => JSON.parse(JSON.stringify(item)));

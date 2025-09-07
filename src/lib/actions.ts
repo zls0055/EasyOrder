@@ -2,7 +2,7 @@
 'use server';
 
 import { z } from 'zod';
-import { adminDb } from '@/lib/firebase-admin';
+import { getFirebaseAdmin } from '@/lib/firebase-admin';
 import { revalidateTag } from 'next/cache';
 import { AppSettings, AppSettingsSchema, Dish, DishSchema, FeatureVisibilitySchema } from '@/types';
 import { getSettings, redeemPointCard as redeemCardService, addRestaurant as addRestaurantService } from '@/lib/settings';
@@ -78,6 +78,7 @@ export async function addRestaurantAction(prevState: any, formData: FormData): P
     const name = formData.get('name') as string;
     if (name && name.trim()) {
         try {
+            const { db: adminDb } = getFirebaseAdmin();
             const newRestaurant = await addRestaurantService(name.trim());
             
             // Add placeholder documents to subcollections
@@ -121,6 +122,7 @@ export async function addDishAction(prevState: any, formData: FormData): Promise
 
     const { restaurantId, name, price, category, sortOrder, isRecommended, isAvailable } = validatedFields.data;
     try {
+        const { db: adminDb } = getFirebaseAdmin();
         const newDocRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(DISHES_COLLECTION).doc();
         const newDish: Dish = { id: newDocRef.id, name, price, category, sortOrder, isRecommended, isAvailable };
         
@@ -154,6 +156,7 @@ export async function updateDishAction(prevState: any, formData: FormData): Prom
     }
 
     try {
+        const { db: adminDb } = getFirebaseAdmin();
         const docRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(DISHES_COLLECTION).doc(id);
         await docRef.update(dishData);
         revalidateTag(`dishes-${restaurantId}`);
@@ -172,6 +175,7 @@ export async function deleteDishAction(prevState: any, formData: FormData): Prom
         return { success: null, error: '删除失败：缺少菜品ID或餐馆ID。' };
     }
     try {
+        const { db: adminDb } = getFirebaseAdmin();
         const docRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(DISHES_COLLECTION).doc(id);
         await docRef.delete();
         revalidateTag(`dishes-${restaurantId}`);
@@ -197,6 +201,7 @@ export async function updateDishAvailabilityAction(prevState: any, formData: For
     const { restaurantId, dishId, isAvailable } = validatedFields.data;
 
     try {
+        const { db: adminDb } = getFirebaseAdmin();
         const docRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(DISHES_COLLECTION).doc(dishId);
         await docRef.update({ isAvailable: isAvailable });
         revalidateTag(`dishes-${restaurantId}`);
@@ -226,6 +231,7 @@ export async function updateSettings(prevState: any, formData: FormData): Promis
     }
 
     try {
+        const { db: adminDb } = getFirebaseAdmin();
         const { restaurantId, ...settingsToUpdate } = validatedFields.data;
         const docRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(SETTINGS_COLLECTION).doc(CONFIG_DOC_ID);
         await docRef.update(settingsToUpdate);
@@ -290,6 +296,7 @@ export async function updateSyncSettingsAction(prevState: any, formData: FormDat
     }
 
     try {
+        const { db: adminDb } = getFirebaseAdmin();
         const docRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(SETTINGS_COLLECTION).doc(CONFIG_DOC_ID);
         await docRef.update(settingsToUpdate);
         revalidateTag(`settings-${restaurantId}`);
@@ -309,6 +316,7 @@ export async function updateCategoryOrderAction(prevState: any, formData: FormDa
     }
     
     try {
+        const { db: adminDb } = getFirebaseAdmin();
         const { restaurantId, categoryOrder } = validatedFields.data;
         const docRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(SETTINGS_COLLECTION).doc(CONFIG_DOC_ID);
         await docRef.update({ categoryOrder: categoryOrder });
@@ -342,6 +350,7 @@ export async function updatePassword(prevState: any, formData: FormData): Promis
             settingsToUpdate.adminUsername = adminUsername;
         }
 
+        const { db: adminDb } = getFirebaseAdmin();
         const docRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(SETTINGS_COLLECTION).doc(CONFIG_DOC_ID);
         await docRef.update(settingsToUpdate);
         revalidateTag(`settings-${restaurantId}`);
@@ -367,6 +376,7 @@ export async function batchUpdateDishesAction(restaurantId: string, dishes: Dish
     return { success: null, error: `上传的数据格式有误: ${validatedDishes.error.message}` };
   }
 
+  const { db: adminDb } = getFirebaseAdmin();
   const batch = adminDb.batch();
   const dishesCollectionRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(DISHES_COLLECTION);
   

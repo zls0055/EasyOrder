@@ -1,6 +1,6 @@
 
 'use server';
-import { adminDb } from '@/lib/firebase-admin';
+import { getFirebaseAdmin } from '@/lib/firebase-admin';
 import { AppSettings, AppSettingsSchema, Dish, DishSchema, Restaurant, RestaurantSchema, PointLog, PointLogSchema, PointCardSchema, PointCard, RechargeLogSchema, RechargeLog, DishOrderLog, DishOrderLogSchema } from '@/types';
 import { unstable_cache as cache, revalidateTag } from 'next/cache';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
@@ -20,6 +20,7 @@ const RECHARGE_LOGS_COLLECTION = 'rechargeLogs';
 export async function getRestaurant(restaurantId: string): Promise<Restaurant | null> {
     if (!restaurantId) return null;
     try {
+        const { db: adminDb } = getFirebaseAdmin();
         const restaurantDocRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId);
         const docSnap = await restaurantDocRef.get();
         if (docSnap.exists) {
@@ -43,6 +44,7 @@ export async function getRestaurant(restaurantId: string): Promise<Restaurant | 
 }
 
 export async function getRestaurants(): Promise<Restaurant[]> {
+    const { db: adminDb } = getFirebaseAdmin();
     const restaurantsRef = adminDb.collection(RESTAURANTS_COLLECTION);
     const q = restaurantsRef.orderBy('createdAt', 'desc');
     const snapshot = await q.get();
@@ -69,6 +71,7 @@ export async function getRestaurants(): Promise<Restaurant[]> {
 }
 
 export async function addRestaurant(name: string): Promise<Restaurant> {
+    const { db: adminDb } = getFirebaseAdmin();
     const newDocRef = adminDb.collection(RESTAURANTS_COLLECTION).doc();
     
     const newRestaurant: Restaurant = {
@@ -102,6 +105,7 @@ export async function addRestaurant(name: string): Promise<Restaurant> {
 
 
 async function deleteSubcollection(collectionRef: FirebaseFirestore.CollectionReference) {
+    const { db: adminDb } = getFirebaseAdmin();
     const snapshot = await collectionRef.limit(100).get();
     if (snapshot.size === 0) {
         return;
@@ -120,6 +124,7 @@ async function deleteSubcollection(collectionRef: FirebaseFirestore.CollectionRe
 
 export async function deleteRestaurant(restaurantId: string): Promise<{ success: boolean; error?: string }> {
     try {
+        const { db: adminDb } = getFirebaseAdmin();
         const restaurantDocRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId);
 
         await deleteSubcollection(restaurantDocRef.collection(DISHES_COLLECTION));
@@ -152,6 +157,7 @@ export async function updateRestaurantName(restaurantId: string, newName: string
         return { success: false, error: "餐馆名称不能为空。" };
     }
     try {
+        const { db: adminDb } = getFirebaseAdmin();
         const restaurantDocRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId);
         await restaurantDocRef.update({ name: newName });
 
@@ -170,6 +176,7 @@ export async function rechargePoints(restaurantId: string, amount: number): Prom
     return { success: false, error: "充值点数必须是一个正数。" };
   }
   try {
+    const { db: adminDb } = getFirebaseAdmin();
     const restaurantRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId);
     await restaurantRef.update({
       points: FieldValue.increment(amount),
@@ -197,6 +204,7 @@ export async function rechargePoints(restaurantId: string, amount: number): Prom
 
 export async function clearRestaurantData(restaurantId: string): Promise<{ success: boolean; error?: string }> {
     try {
+        const { db: adminDb } = getFirebaseAdmin();
         const restaurantDocRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId);
         const batch = adminDb.batch();
 
@@ -241,6 +249,7 @@ export async function getSettings(restaurantId: string): Promise<AppSettings> {
     return AppSettingsSchema.parse({});
   }
   try {
+    const { db: adminDb } = getFirebaseAdmin();
     const settingsRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(SETTINGS_COLLECTION).doc(CONFIG_DOC_ID);
     const docSnap = await settingsRef.get();
 
@@ -273,6 +282,7 @@ export async function getDishes(restaurantId: string): Promise<Dish[]> {
         return [];
     }
     try {
+        const { db: adminDb } = getFirebaseAdmin();
         const dishesRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(DISHES_COLLECTION);
         const dishesSnapshot = await dishesRef.get();
 
@@ -305,6 +315,7 @@ export async function getDishes(restaurantId: string): Promise<Dish[]> {
 export async function getPointLogs(restaurantId: string): Promise<PointLog[]> {
     if (!restaurantId) return [];
     try {
+        const { db: adminDb } = getFirebaseAdmin();
         const logsRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(POINT_LOGS_COLLECTION);
         const q = logsRef.orderBy('__name__', 'desc');
         const snapshot = await q.get();
@@ -343,6 +354,7 @@ export async function getDishOrderLogs(restaurantId: string): Promise<DishOrderL
     if (!restaurantId) return [];
     console.log(`[getDishOrderLogs] Fetching for restaurant: ${restaurantId}`);
     try {
+        const { db: adminDb } = getFirebaseAdmin();
         const logsRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(DISH_ORDER_LOGS_COLLECTION);
         const q = logsRef.orderBy('__name__', 'desc');
         const snapshot = await q.get();
@@ -379,6 +391,7 @@ export async function getDishOrderLogs(restaurantId: string): Promise<DishOrderL
 }
 
 export async function createPointCards(amount: number, points: number): Promise<void> {
+    const { db: adminDb } = getFirebaseAdmin();
     const batch = adminDb.batch();
     const cardsCollectionRef = adminDb.collection(POINT_CARDS_COLLECTION);
 
@@ -399,6 +412,7 @@ export async function createPointCards(amount: number, points: number): Promise<
 }
 
 export async function getPointCards(): Promise<PointCard[]> {
+    const { db: adminDb } = getFirebaseAdmin();
     const cardsRef = adminDb.collection(POINT_CARDS_COLLECTION);
     const q = cardsRef.where('status', '==', 'new').orderBy('createdAt', 'desc');
     const snapshot = await q.get();
@@ -408,6 +422,7 @@ export async function getPointCards(): Promise<PointCard[]> {
 }
 
 export async function getUsedPointCards(): Promise<PointCard[]> {
+    const { db: adminDb } = getFirebaseAdmin();
     const cardsRef = adminDb.collection(POINT_CARDS_COLLECTION);
     const q = cardsRef.where('status', '==', 'used').orderBy('usedAt', 'desc').limit(50);
     const snapshot = await q.get();
@@ -427,6 +442,7 @@ export async function getUsedPointCards(): Promise<PointCard[]> {
 
 export async function deletePointCard(cardId: string): Promise<{ success: boolean; error?: string }> {
     try {
+        const { db: adminDb } = getFirebaseAdmin();
         const cardRef = adminDb.collection(POINT_CARDS_COLLECTION).doc(cardId);
         const cardDoc = await cardRef.get();
 
@@ -450,6 +466,7 @@ export async function deletePointCard(cardId: string): Promise<{ success: boolea
 }
 
 export async function redeemPointCard(cardId: string, restaurantId: string): Promise<void> {
+    const { db: adminDb } = getFirebaseAdmin();
     const cardRef = adminDb.collection(POINT_CARDS_COLLECTION).doc(cardId);
     const restaurantRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId);
     const rechargeLogRef = restaurantRef.collection(RECHARGE_LOGS_COLLECTION).doc();
@@ -495,6 +512,7 @@ export async function redeemPointCard(cardId: string, restaurantId: string): Pro
 
 export async function getRechargeLogs(restaurantId: string): Promise<RechargeLog[]> {
     if (!restaurantId) return [];
+    const { db: adminDb } = getFirebaseAdmin();
     const logsRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(RECHARGE_LOGS_COLLECTION);
     const q = logsRef.orderBy('rechargedAt', 'desc').limit(50);
     const snapshot = await q.get();

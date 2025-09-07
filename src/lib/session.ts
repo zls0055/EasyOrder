@@ -5,7 +5,7 @@ import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getSettings } from './settings';
-import { adminDb } from '@/lib/firebase-admin';
+import { getFirebaseAdmin } from '@/lib/firebase-admin';
 
 const sessionSecret = process.env.SESSION_SECRET;
 if (!sessionSecret) {
@@ -100,6 +100,7 @@ const SUPER_ADMIN_COOKIE = 'super_admin_session';
 const DEFAULT_SUPER_ADMIN_PASSWORD = 'admin123456';
 
 async function getSuperAdminPassword(): Promise<string> {
+    const { db: adminDb } = getFirebaseAdmin();
     const configRef = adminDb.collection(SUPER_ADMIN_COLLECTION).doc(SUPER_ADMIN_CONFIG_DOC);
     const docSnap = await configRef.get();
     if (!docSnap.exists || !docSnap.data()?.password) {
@@ -164,6 +165,7 @@ export async function updateSuperAdminPassword(prevState: any, formData: FormDat
     }
     
     try {
+        const { db: adminDb } = getFirebaseAdmin();
         const configRef = adminDb.collection(SUPER_ADMIN_COLLECTION).doc(SUPER_ADMIN_CONFIG_DOC);
         await configRef.update({ password: newPassword });
     } catch (error) {

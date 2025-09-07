@@ -3,39 +3,49 @@ import * as admin from 'firebase-admin';
 
 const FIREBASE_DATABASE_ID = 'easy-order-items';
 
-let app: admin.app.App;
-let firestore: admin.firestore.Firestore;
+// This will be our singleton instance
+let firebaseAdmin: { app: admin.app.App, db: admin.firestore.Firestore } | null = null;
 
-if (admin.apps.length === 0) {
+/**
+ * Initializes and/or returns the Firebase Admin SDK instances.
+ * This function ensures that initializeApp is called only once.
+ * @returns An object containing the admin app and the firestore db instance.
+ */
+export function getFirebaseAdmin() {
+  if (firebaseAdmin) {
+    return firebaseAdmin;
+  }
+
+  if (admin.apps.length === 0) {
     try {
-        // Check if applicationDefault is available before using it.
-        const credential = admin.credential.applicationDefault ? admin.credential.applicationDefault() : undefined;
-        
-        app = admin.initializeApp({
-            credential,
-        });
-        console.log('Firebase Admin SDK initialized successfully.');
-    } catch(error: any) {
-        console.error("Firebase Admin SDK initialization error", error);
-
-        // Fallback for local development if GOOGLE_APPLICATION_CREDENTIALS is not set
-        if (error.code === 'app/invalid-credential' && process.env.NODE_ENV === 'development') {
-             console.warn("Attempting to initialize Firebase Admin SDK without credentials for local development.");
-             app = admin.initializeApp();
-        } else {
-            throw error;
-        }
+      admin.initializeApp({
+        // The SDK will automatically detect Google Application Default Credentials
+      });
+      console.log('Firebase Admin SDK initialized successfully.');
+    } catch (error: any) {
+      console.error('Firebase admin initialization error', error.stack);
+      // If initialization fails, we should not proceed.
+      // Re-throwing the error might be a good idea depending on desired behavior.
+      throw new Error('Failed to initialize Firebase Admin SDK.');
     }
-} else {
-    app = admin.app()!;
+  }
+
+  const app = admin.app();
+  const db = admin.firestore(app);
+
+  try {
+    db.settings({ databaseId: FIREBASE_DATABASE_ID });
+  } catch (e) {
+    if ((e as any).code !== 'failed-precondition') {
+      console.error('Firestore settings error:', e);
+    }
+  }
+  
+  firebaseAdmin = { app, db };
+  return firebaseAdmin;
 }
 
-firestore = admin.firestore(app);
-try {
-    firestore.settings({ databaseId: FIREBASE_DATABASE_ID });
-} catch(e) {
-    // Ignore error if settings are already set
-}
+// For convenience, you can destructure the exports if you want the old feel
+const { app: adminApp, db: adminDb } = getFirebaseAdmin();
 
-
-export { app as adminApp, firestore as adminDb };
+export { adminApp, adminDb };
