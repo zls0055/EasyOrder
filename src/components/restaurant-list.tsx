@@ -52,6 +52,8 @@ type DishImportData = {
   price: number;
   category: string;
   sortOrder: number;
+  isRecommended?: boolean;
+  isAvailable?: boolean;
 };
 
 interface RestaurantListProps {
@@ -453,7 +455,7 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
       });
       
       const dataToExport = sortedDishesForExport.map(dish => ({ ...dish, new_id: '' }));
-      const csv = Papa.unparse(dataToExport, { columns: ['id', 'new_id', 'name', 'price', 'category', 'sortOrder'] });
+      const csv = Papa.unparse(dataToExport, { columns: ['id', 'new_id', 'name', 'price', 'category', 'sortOrder', 'isRecommended', 'isAvailable'] });
       const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
@@ -488,6 +490,8 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
           price: parseFloat(row.price),
           category: row.category,
           sortOrder: parseInt(row.sortOrder, 10) || 0,
+          isRecommended: row.isRecommended === 'TRUE' || row.isRecommended === '1',
+          isAvailable: !(row.isAvailable === 'FALSE' || row.isAvailable === '0'), // Default to true
         })).filter(d => (d.id || d.new_id) && d.name && !isNaN(d.price) && d.category);
         
         if (parsedDishes.length === 0) {
