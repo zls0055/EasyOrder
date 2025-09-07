@@ -1,4 +1,4 @@
-// "use client";
+
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore, initializeFirestore } from "firebase/firestore";
@@ -23,8 +23,5 @@ initializeFirestore(app, {
 }, "easy-order-items");
 
 const db = getFirestore(app,"easy-order-items");
-
-
-// const db = getFirestore(app);
 
 export { app, db };
