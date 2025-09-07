@@ -60,6 +60,7 @@ interface RestaurantListProps {
   restaurants: Restaurant[];
   onRestaurantAdded: () => void;
   isLoading: boolean;
+  onRefresh: () => void;
 }
 
 type DialogState = 
@@ -290,7 +291,7 @@ function ViewDishesSheet({ restaurant, open, onOpenChange }: { restaurant: Resta
 }
 
 
-export default function RestaurantList({ restaurants: initialRestaurants, onRestaurantAdded, isLoading }: RestaurantListProps) {
+export default function RestaurantList({ restaurants: initialRestaurants, onRestaurantAdded, isLoading, onRefresh }: RestaurantListProps) {
   const [isPending, startTransition] = useTransition();
   const [isRefreshing, startRefreshTransition] = useTransition();
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
@@ -733,35 +734,40 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
                     className="pl-8 w-full"
                 />
             </div>
-            <Sheet open={isAddSheetOpen} onOpenChange={setIsAddSheetOpen}>
-              <SheetTrigger asChild>
-                <Button size="icon" aria-label="添加新餐馆"><PlusCircle className="h-4 w-4" /></Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-full sm:max-w-sm">
-                <SheetHeader>
-                  <SheetTitle>添加新餐馆</SheetTitle>
-                  <SheetDescription>
-                    输入新餐馆的名称，点击添加即可创建。
-                  </SheetDescription>
-                </SheetHeader>
-                <form ref={formRef} action={formAction} className="py-4 space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">餐馆名称</Label>
-                    <Input id="name" name="name" placeholder="例如：小四川总店" required />
-                  </div>
-                  <SheetFooter>
-                    <SheetClose asChild>
-                      <Button type="button" variant="secondary">取消</Button>
+             <div className="flex items-center gap-2">
+                <Button variant="outline" size="icon" onClick={onRefresh} disabled={isLoading}>
+                    <RotateCcw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+                </Button>
+                <Sheet open={isAddSheetOpen} onOpenChange={setIsAddSheetOpen}>
+                <SheetTrigger asChild>
+                    <Button size="icon" aria-label="添加新餐馆"><PlusCircle className="h-4 w-4" /></Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-full sm:max-w-sm">
+                    <SheetHeader>
+                    <SheetTitle>添加新餐馆</SheetTitle>
+                    <SheetDescription>
+                        输入新餐馆的名称，点击添加即可创建。
+                    </SheetDescription>
+                    </SheetHeader>
+                    <form ref={formRef} action={formAction} className="py-4 space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="name">餐馆名称</Label>
+                        <Input id="name" name="name" placeholder="例如：小四川总店" required />
+                    </div>
+                    <SheetFooter>
+                        <SheetClose asChild>
+                        <Button type="button" variant="secondary">取消</Button>
+                        </SheetClose>
+                        <AddRestaurantButton />
+                    </SheetFooter>
+                    </form>
+                    <SheetClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">Close</span>
                     </SheetClose>
-                    <AddRestaurantButton />
-                  </SheetFooter>
-                </form>
-                 <SheetClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
-                  <X className="h-4 w-4" />
-                  <span className="sr-only">Close</span>
-                </SheetClose>
-              </SheetContent>
-            </Sheet>
+                </SheetContent>
+                </Sheet>
+            </div>
         </div>
         
         <div className="border overflow-hidden rounded-lg">

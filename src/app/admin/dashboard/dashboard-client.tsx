@@ -144,8 +144,9 @@ export default function DashboardClient() {
             fetchRestaurants();
         } else if (activeView === 'point-cards' && !hasLoaded['point-cards']) {
             fetchNewCards();
+            fetchUsedCards();
         }
-    }, [activeView, hasLoaded, fetchRestaurants, fetchNewCards]);
+    }, [activeView, hasLoaded, fetchRestaurants, fetchNewCards, fetchUsedCards]);
 
 
     const handleLogoutSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -163,7 +164,8 @@ export default function DashboardClient() {
         'restaurants': { 
             restaurants: restaurants, 
             onRestaurantAdded: fetchRestaurants,
-            isLoading: isRestaurantsLoading
+            isLoading: isRestaurantsLoading,
+            onRefresh: fetchRestaurants
         },
         'point-cards': { 
             restaurants: restaurants,
@@ -194,13 +196,7 @@ export default function DashboardClient() {
                 </DropdownMenu>
 
                 <h1 className="text-2xl font-bold">{viewConfig[activeView].title}</h1>
-
-                {activeView === 'restaurants' && (
-                    <Button variant="ghost" size="icon" onClick={fetchRestaurants} disabled={isRestaurantsLoading} className="ml-4">
-                        <RotateCcw className={cn("h-4 w-4", isRestaurantsLoading && "animate-spin")} />
-                    </Button>
-                )}
-
+                
                 <div className="ml-auto">
                     <form onSubmit={handleLogoutSubmit}>
                     <Button variant="outline" size="sm" type="submit" disabled={isLogoutPending}>
