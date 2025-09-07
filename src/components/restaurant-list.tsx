@@ -80,7 +80,7 @@ const initialState = {
 
 const ITEMS_PER_PAGE = 10;
 
-const RestaurantRow = ({ restaurant, onAction, onRefresh, onImport, onExport, onViewLogs, index, refreshingId, copiedId, onCopy }: { 
+const RestaurantRow = ({ restaurant, onAction, onRefresh, onImport, onExport, onViewLogs, index, refreshingId, copiedId, onCopy, exportingId }: { 
     restaurant: Restaurant, 
     onAction: (state: DialogState) => void,
     onRefresh: (restaurantId: string) => void,
@@ -91,8 +91,10 @@ const RestaurantRow = ({ restaurant, onAction, onRefresh, onImport, onExport, on
     refreshingId: string | null,
     copiedId: string | null,
     onCopy: (id: string) => void,
+    exportingId: string | null,
 }) => {
     const isRefreshingThisRow = refreshingId === restaurant.id;
+    const isExportingThisRow = exportingId === restaurant.id;
     const isCopied = copiedId === restaurant.id;
 
     return (
@@ -139,7 +141,10 @@ const RestaurantRow = ({ restaurant, onAction, onRefresh, onImport, onExport, on
                                     <DropdownMenuItem onSelect={() => onAction({ type: 'view-dishes', restaurant })}><FileText className="mr-2 h-4 w-4" /><span>查看菜品</span></DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem onSelect={() => onImport(restaurant)}><Upload className="mr-2 h-4 w-4" /><span>导入菜品 (CSV)</span></DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={() => onExport(restaurant)}><Download className="mr-2 h-4 w-4" /><span>导出菜品 (CSV)</span></DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={() => onExport(restaurant)} disabled={isExportingThisRow}>
+                                        {isExportingThisRow ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                                        <span>{isExportingThisRow ? '导出中...' : '导出菜品 (CSV)'}</span>
+                                    </DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                      <DropdownMenuItem onSelect={() => onAction({ type: 'clear', restaurant })} className="text-amber-600 focus:text-amber-600">
                                         <RotateCcw className="mr-2 h-4 w-4" /><span>清空数据</span>
@@ -305,6 +310,7 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
   const [currentPage, setCurrentPage] = useState(1);
   const [importingDishes, setImportingDishes] = useState<DishImportData[] | null>(null);
   const [isImportPending, startImportTransition] = useTransition();
+  const [exportingId, setExportingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
@@ -442,49 +448,54 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
   };
 
   const handleExportCSV = async (restaurant: Restaurant) => {
-      const dishes = await getDishes(restaurant.id);
-      if (dishes.length === 0) {
-        sonnerToast.info("没有菜品可以导出", {
-          description: `餐馆 "${restaurant.name}" 的菜单是空的。`,
-        });
-        return;
-      }
-
-      const settings = await getSettings(restaurant.id);
-
-      const categoryOrder = settings.categoryOrder || [];
-      const categoryIndexMap = new Map(categoryOrder.map((cat, index) => [cat, index]));
-      
-      const sortedDishesForExport = [...dishes].sort((a, b) => {
-          const catIndexA = categoryIndexMap.has(a.category) ? categoryIndexMap.get(a.category)! : Infinity;
-          const catIndexB = categoryIndexMap.has(b.category) ? categoryIndexMap.get(b.category)! : Infinity;
-
-          if (catIndexA !== catIndexB) {
-              return catIndexA - catIndexB;
+      setExportingId(restaurant.id);
+      try {
+          const dishes = await getDishes(restaurant.id);
+          if (dishes.length === 0) {
+            sonnerToast.info("没有菜品可以导出", {
+              description: `餐馆 "${restaurant.name}" 的菜单是空的。`,
+            });
+            return;
           }
+
+          const settings = await getSettings(restaurant.id);
+          const categoryOrder = settings.categoryOrder || [];
+
+          const sortedDishesForExport = [...dishes].sort((a, b) => {
+              const catIndexA = categoryOrder.indexOf(a.category);
+              const catIndexB = categoryOrder.indexOf(b.category);
+
+              if (catIndexA !== -1 && catIndexB !== -1) {
+                  if (catIndexA !== catIndexB) return catIndexA - catIndexB;
+              } else if (catIndexA !== -1) {
+                  return -1;
+              } else if (catIndexB !== -1) {
+                  return 1;
+              } else {
+                   const catCompare = a.category.localeCompare(b.category, 'zh-Hans-CN');
+                   if (catCompare !== 0) return catCompare;
+              }
+
+              if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
+              return a.name.localeCompare(b.name, 'zh-Hans-CN');
+          });
           
-          if (catIndexA === Infinity) {
-              const catCompare = a.category.localeCompare(b.category, 'zh-Hans-CN');
-              if (catCompare !== 0) return catCompare;
-          }
-
-          if (a.sortOrder !== b.sortOrder) {
-              return a.sortOrder - b.sortOrder;
-          }
-
-          return a.name.localeCompare(b.name, 'zh-Hans-CN');
-      });
-      
-      const dataToExport = sortedDishesForExport.map(dish => ({ ...dish, new_id: '' }));
-      const csv = Papa.unparse(dataToExport, { columns: ['id', 'new_id', 'name', 'price', 'category', 'sortOrder', 'isRecommended', 'isAvailable'] });
-      const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.setAttribute('download', `${restaurant.name}菜品数据.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      sonnerToast.success(`"${restaurant.name}" 的菜品已导出`);
+          const dataToExport = sortedDishesForExport.map(dish => ({ ...dish, new_id: '' }));
+          const csv = Papa.unparse(dataToExport, { columns: ['id', 'new_id', 'name', 'price', 'category', 'sortOrder', 'isRecommended', 'isAvailable'] });
+          const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.setAttribute('download', `${restaurant.name}菜品数据.csv`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          sonnerToast.success(`"${restaurant.name}" 的菜品已导出`);
+      } catch (error) {
+          console.error("Failed to export CSV:", error);
+          sonnerToast.error("导出失败", { description: error instanceof Error ? error.message : "发生未知错误" });
+      } finally {
+          setExportingId(null);
+      }
   };
 
   const handleImportClick = (restaurant: Restaurant) => {
@@ -819,6 +830,7 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
                         refreshingId={refreshingId}
                         copiedId={copiedId}
                         onCopy={handleCopyToClipboard}
+                        exportingId={exportingId}
                     />
                 )) : (
                 <TableRow>
