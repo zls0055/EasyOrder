@@ -1,8 +1,9 @@
 
+'use client';
+
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore, initializeFirestore } from "firebase/firestore";
-
+import { getFirestore, onSnapshot, collection, query, orderBy, limit, Timestamp } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -17,11 +18,6 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Use the asia-east2 (Hong Kong) regional endpoint for Firestore.
-initializeFirestore(app, {
-  host: 'firestore.douzhidao.dpdns.org'
-}, "easy-order-items");
+const db = getFirestore(app, "easy-order-items");
 
-const db = getFirestore(app,"easy-order-items");
-
-export { app, db };
+export { app, db, onSnapshot, collection, query, orderBy, limit, Timestamp };

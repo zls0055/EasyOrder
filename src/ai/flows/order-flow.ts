@@ -3,7 +3,7 @@
 /**
  * @fileOverview Defines and exports server actions for managing restaurant orders.
  */
-import { db } from '@/lib/firebase';
+import { adminDb } from '@/lib/firebase-admin';
 import { getRestaurant, getSettings } from '@/lib/settings';
 import {
   PlaceOrderInput,
@@ -14,7 +14,8 @@ import {
   GetPlacedOrdersResult,
 } from '@/types';
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { collection, addDoc, doc, getDoc, updateDoc, query, orderBy, limit, getDocs, Timestamp, runTransaction, increment } from 'firebase/firestore';
+import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+
 
 const RESTAURANTS_COLLECTION = 'restaurants';
 const ORDERS_COLLECTION = 'orders';
@@ -52,25 +53,25 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
   }
 
   try {
-    const restaurantRef = doc(db, RESTAURANTS_COLLECTION, restaurantId);
+    const restaurantRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId);
     
     const logDateId = new Date().toISOString().split('T')[0];
-    const pointLogRef = doc(db, RESTAURANTS_COLLECTION, restaurantId, POINT_LOGS_COLLECTION, logDateId);
-    const dishLogRef = doc(db, RESTAURANTS_COLLECTION, restaurantId, DISH_ORDER_LOGS_COLLECTION, logDateId);
+    const pointLogRef = restaurantRef.collection(POINT_LOGS_COLLECTION).doc(logDateId);
+    const dishLogRef = restaurantRef.collection(DISH_ORDER_LOGS_COLLECTION).doc(logDateId);
 
 
-    const placeOrderResult = await runTransaction(db, async (transaction) => {
+    const placeOrderResult = await adminDb.runTransaction(async (transaction) => {
       // --- ALL READS FIRST ---
       const restaurantDoc = await transaction.get(restaurantRef);
       const pointLogDoc = await transaction.get(pointLogRef);
       const dishLogDoc = await transaction.get(dishLogRef);
 
       // --- VALIDATION AND LOGIC ---
-      if (!restaurantDoc.exists()) {
+      if (!restaurantDoc.exists) {
         throw new Error("餐馆不存在。");
       }
       const restaurant = restaurantDoc.data();
-      if (restaurant.points <= 0) {
+      if (!restaurant || restaurant.points <= 0) {
         return { order: null, logs: ['[SERVER] Order rejected: Insufficient points.'], error: '点数不足，请联系管理员充值。' };
       }
 
@@ -100,23 +101,22 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
       };
       
       // --- ALL WRITES LAST ---
-      const ordersCollectionRef = collection(db, RESTAURANTS_COLLECTION, restaurantId, ORDERS_COLLECTION);
-      const newOrderRef = doc(ordersCollectionRef);
+      const newOrderRef = restaurantRef.collection(ORDERS_COLLECTION).doc();
       
       // Write 1: Create the new order
       transaction.set(newOrderRef, orderToSave);
 
       // Write 2: Decrement points
-      transaction.update(restaurantRef, { points: increment(-1) });
+      transaction.update(restaurantRef, { points: FieldValue.increment(-1) });
 
       // Write 3: Update or create the daily point log (expires in 90 days)
       const pointLogExpirationDate = new Date();
       pointLogExpirationDate.setDate(pointLogExpirationDate.getDate() + 90);
       const pointLogExpireAt = Timestamp.fromDate(pointLogExpirationDate);
 
-      if (pointLogDoc.exists()) {
+      if (pointLogDoc.exists) {
         transaction.update(pointLogRef, { 
-            count: increment(1),
+            count: FieldValue.increment(1),
             expireAt: pointLogExpireAt 
         });
       } else {
@@ -127,10 +127,10 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
       }
 
       // Write 4: Update or create daily dish order logs (expires in 30 days)
-      if (dishLogDoc.exists()) {
+      if (dishLogDoc.exists) {
         const dishUpdates: { [key: string]: any } = { expireAt };
         order.forEach(item => {
-            dishUpdates[`counts.${item.dish.id}`] = increment(item.quantity);
+            dishUpdates[`counts.${item.dish.id}`] = FieldValue.increment(item.quantity);
         });
         transaction.update(dishLogRef, dishUpdates);
       } else {
@@ -158,7 +158,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     });
     
     // Revalidate caches after transaction to show updated data
-    if(placeOrderResult.order) {
+    if(placeOrderResult && placeOrderResult.order) {
         revalidateTag(`restaurant-${restaurantId}`);
         revalidateTag('restaurants');
         revalidateTag(`pointLogs-${restaurantId}`);
@@ -186,28 +186,26 @@ export async function updateOrder(
     if (!restaurantId) {
       return { order: null, logs: ['[SERVER] Update rejected: Missing restaurantId.'], error: '更新失败，缺少餐馆信息。' };
     }
-    const orderRef = doc(db, RESTAURANTS_COLLECTION, restaurantId, ORDERS_COLLECTION, orderId);
+    const orderRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(ORDERS_COLLECTION).doc(orderId);
 
     const itemsToSave = updatedItems.map(item => JSON.parse(JSON.stringify(item)));
 
-    await updateDoc(orderRef, {
+    await orderRef.update({
       order: itemsToSave,
       total: newTotal,
     });
 
-    const updatedDoc = await getDoc(orderRef);
-    if (!updatedDoc.exists()) {
+    const updatedDoc = await orderRef.get();
+    if (!updatedDoc.exists) {
       throw new Error('Updated document not found after update operation.');
     }
     const data = updatedDoc.data()!;
     
     let placedAtISO: string;
-    const placedAtTimestamp = data.placedAt;
+    const placedAtTimestamp = data.placedAt as Timestamp;
 
-    if (placedAtTimestamp instanceof Timestamp) {
+    if (placedAtTimestamp) {
         placedAtISO = placedAtTimestamp.toDate().toISOString();
-    } else if (typeof placedAtTimestamp === 'string') {
-        placedAtISO = new Date(placedAtTimestamp).toISOString();
     } else {
         placedAtISO = new Date().toISOString();
     }

@@ -1,11 +1,9 @@
 
-
 'use server';
-import { db } from '@/lib/firebase';
+import { adminDb } from '@/lib/firebase-admin';
 import { AppSettings, AppSettingsSchema, Dish, DishSchema, Restaurant, RestaurantSchema, PointLog, PointLogSchema, PointCardSchema, PointCard, RechargeLogSchema, RechargeLog, DishOrderLog, DishOrderLogSchema } from '@/types';
-import { initialDishes } from '@/lib/data';
-import { collection, doc, getDoc, getDocs, setDoc, writeBatch, query, orderBy, deleteDoc, updateDoc, Timestamp, increment, runTransaction, limit, where } from 'firebase/firestore';
 import { unstable_cache as cache, revalidateTag } from 'next/cache';
+import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 
 
 const RESTAURANTS_COLLECTION = 'restaurants';
@@ -22,11 +20,11 @@ const RECHARGE_LOGS_COLLECTION = 'rechargeLogs';
 export async function getRestaurant(restaurantId: string): Promise<Restaurant | null> {
     if (!restaurantId) return null;
     try {
-        const restaurantDocRef = doc(db, RESTAURANTS_COLLECTION, restaurantId);
-        const docSnap = await getDoc(restaurantDocRef);
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-             if (data.createdAt instanceof Timestamp) {
+        const restaurantDocRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId);
+        const docSnap = await restaurantDocRef.get();
+        if (docSnap.exists) {
+            const data = docSnap.data()!;
+            if (data.createdAt instanceof Timestamp) {
                 data.createdAt = data.createdAt.toDate().toISOString();
             }
             const parsed = RestaurantSchema.safeParse(data);
@@ -45,9 +43,9 @@ export async function getRestaurant(restaurantId: string): Promise<Restaurant | 
 }
 
 export async function getRestaurants(): Promise<Restaurant[]> {
-    const restaurantsRef = collection(db, RESTAURANTS_COLLECTION);
-    const q = query(restaurantsRef, orderBy('createdAt', 'desc'));
-    const snapshot = await getDocs(q);
+    const restaurantsRef = adminDb.collection(RESTAURANTS_COLLECTION);
+    const q = restaurantsRef.orderBy('createdAt', 'desc');
+    const snapshot = await q.get();
     
     if (snapshot.empty) {
         return [];
@@ -71,7 +69,7 @@ export async function getRestaurants(): Promise<Restaurant[]> {
 }
 
 export async function addRestaurant(name: string): Promise<Restaurant> {
-    const newDocRef = doc(collection(db, RESTAURANTS_COLLECTION));
+    const newDocRef = adminDb.collection(RESTAURANTS_COLLECTION).doc();
     
     const newRestaurant: Restaurant = {
         id: newDocRef.id,
@@ -80,20 +78,20 @@ export async function addRestaurant(name: string): Promise<Restaurant> {
         points: 1000,
     };
     
-    const batch = writeBatch(db);
+    const batch = adminDb.batch();
 
     batch.set(newDocRef, { ...newRestaurant, createdAt: Timestamp.fromDate(new Date(newRestaurant.createdAt!)) });
 
-    const settingsRef = doc(db, RESTAURANTS_COLLECTION, newRestaurant.id, SETTINGS_COLLECTION, CONFIG_DOC_ID);
+    const settingsRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(newRestaurant.id).collection(SETTINGS_COLLECTION).doc(CONFIG_DOC_ID);
     const defaultSettings = AppSettingsSchema.parse({});
     batch.set(settingsRef, defaultSettings);
     
     const placeholderData = { initialized: true, at: Timestamp.now() };
-    batch.set(doc(newDocRef, DISHES_COLLECTION, '.placeholder'), placeholderData);
-    batch.set(doc(newDocRef, ORDERS_COLLECTION, '.placeholder'), placeholderData);
-    batch.set(doc(newDocRef, POINT_LOGS_COLLECTION, '.placeholder'), placeholderData);
-    batch.set(doc(newDocRef, RECHARGE_LOGS_COLLECTION, '.placeholder'), placeholderData);
-    batch.set(doc(newDocRef, DISH_ORDER_LOGS_COLLECTION, '.placeholder'), placeholderData);
+    batch.set(newDocRef.collection(DISHES_COLLECTION).doc('.placeholder'), placeholderData);
+    batch.set(newDocRef.collection(ORDERS_COLLECTION).doc('.placeholder'), placeholderData);
+    batch.set(newDocRef.collection(POINT_LOGS_COLLECTION).doc('.placeholder'), placeholderData);
+    batch.set(newDocRef.collection(RECHARGE_LOGS_COLLECTION).doc('.placeholder'), placeholderData);
+    batch.set(newDocRef.collection(DISH_ORDER_LOGS_COLLECTION).doc('.placeholder'), placeholderData);
 
 
     await batch.commit();
@@ -103,31 +101,36 @@ export async function addRestaurant(name: string): Promise<Restaurant> {
 }
 
 
-async function deleteSubcollection(collectionRef: any) {
-    const snapshot = await getDocs(collectionRef);
+async function deleteSubcollection(collectionRef: FirebaseFirestore.CollectionReference) {
+    const snapshot = await collectionRef.limit(100).get();
     if (snapshot.size === 0) {
         return;
     }
-    const batch = writeBatch(db);
+    const batch = adminDb.batch();
     snapshot.docs.forEach(doc => {
         batch.delete(doc.ref);
     });
     await batch.commit();
+    
+    // Recurse until the collection is empty
+    if (snapshot.size > 0) {
+      await deleteSubcollection(collectionRef);
+    }
 }
 
 export async function deleteRestaurant(restaurantId: string): Promise<{ success: boolean; error?: string }> {
     try {
-        const restaurantDocRef = doc(db, RESTAURANTS_COLLECTION, restaurantId);
+        const restaurantDocRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId);
 
-        await deleteSubcollection(collection(restaurantDocRef, DISHES_COLLECTION));
-        await deleteSubcollection(collection(restaurantDocRef, SETTINGS_COLLECTION));
-        await deleteSubcollection(collection(restaurantDocRef, ORDERS_COLLECTION));
-        await deleteSubcollection(collection(restaurantDocRef, POINT_LOGS_COLLECTION));
-        await deleteSubcollection(collection(restaurantDocRef, RECHARGE_LOGS_COLLECTION));
-        await deleteSubcollection(collection(restaurantDocRef, DISH_ORDER_LOGS_COLLECTION));
+        await deleteSubcollection(restaurantDocRef.collection(DISHES_COLLECTION));
+        await deleteSubcollection(restaurantDocRef.collection(SETTINGS_COLLECTION));
+        await deleteSubcollection(restaurantDocRef.collection(ORDERS_COLLECTION));
+        await deleteSubcollection(restaurantDocRef.collection(POINT_LOGS_COLLECTION));
+        await deleteSubcollection(restaurantDocRef.collection(RECHARGE_LOGS_COLLECTION));
+        await deleteSubcollection(restaurantDocRef.collection(DISH_ORDER_LOGS_COLLECTION));
 
 
-        await deleteDoc(restaurantDocRef);
+        await restaurantDocRef.delete();
 
         revalidateTag('restaurants');
         revalidateTag(`settings-${restaurantId}`);
@@ -149,8 +152,8 @@ export async function updateRestaurantName(restaurantId: string, newName: string
         return { success: false, error: "餐馆名称不能为空。" };
     }
     try {
-        const restaurantDocRef = doc(db, RESTAURANTS_COLLECTION, restaurantId);
-        await updateDoc(restaurantDocRef, { name: newName });
+        const restaurantDocRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId);
+        await restaurantDocRef.update({ name: newName });
 
         revalidateTag('restaurants');
         revalidateTag(`restaurant-${restaurantId}`);
@@ -167,19 +170,19 @@ export async function rechargePoints(restaurantId: string, amount: number): Prom
     return { success: false, error: "充值点数必须是一个正数。" };
   }
   try {
-    const restaurantRef = doc(db, RESTAURANTS_COLLECTION, restaurantId);
-    await updateDoc(restaurantRef, {
-      points: increment(amount),
+    const restaurantRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId);
+    await restaurantRef.update({
+      points: FieldValue.increment(amount),
     });
     revalidateTag('restaurants');
     revalidateTag(`restaurant-${restaurantId}`);
     
-    const updatedDoc = await getDoc(restaurantRef);
-    if (!updatedDoc.exists()) {
+    const updatedDoc = await restaurantRef.get();
+    if (!updatedDoc.exists) {
         return { success: false, error: "充值后无法找到该餐馆信息。" };
     }
     
-    const updatedData = updatedDoc.data();
+    const updatedData = updatedDoc.data()!;
     if (updatedData.createdAt instanceof Timestamp) {
         updatedData.createdAt = updatedData.createdAt.toDate().toISOString();
     }
@@ -194,26 +197,26 @@ export async function rechargePoints(restaurantId: string, amount: number): Prom
 
 export async function clearRestaurantData(restaurantId: string): Promise<{ success: boolean; error?: string }> {
     try {
-        const restaurantDocRef = doc(db, RESTAURANTS_COLLECTION, restaurantId);
-        const batch = writeBatch(db);
+        const restaurantDocRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId);
+        const batch = adminDb.batch();
 
-        await deleteSubcollection(collection(restaurantDocRef, DISHES_COLLECTION));
-        await deleteSubcollection(collection(restaurantDocRef, ORDERS_COLLECTION));
-        await deleteSubcollection(collection(restaurantDocRef, POINT_LOGS_COLLECTION));
-        await deleteSubcollection(collection(restaurantDocRef, RECHARGE_LOGS_COLLECTION));
-        await deleteSubcollection(collection(restaurantDocRef, DISH_ORDER_LOGS_COLLECTION));
+        await deleteSubcollection(restaurantDocRef.collection(DISHES_COLLECTION));
+        await deleteSubcollection(restaurantDocRef.collection(ORDERS_COLLECTION));
+        await deleteSubcollection(restaurantDocRef.collection(POINT_LOGS_COLLECTION));
+        await deleteSubcollection(restaurantDocRef.collection(RECHARGE_LOGS_COLLECTION));
+        await deleteSubcollection(restaurantDocRef.collection(DISH_ORDER_LOGS_COLLECTION));
 
 
-        const settingsRef = doc(restaurantDocRef, SETTINGS_COLLECTION, CONFIG_DOC_ID);
+        const settingsRef = restaurantDocRef.collection(SETTINGS_COLLECTION).doc(CONFIG_DOC_ID);
         const defaultSettings = AppSettingsSchema.parse({});
         batch.set(settingsRef, defaultSettings);
 
         const placeholderData = { initialized: true, at: Timestamp.now() };
-        batch.set(doc(restaurantDocRef, DISHES_COLLECTION, '.placeholder'), placeholderData);
-        batch.set(doc(restaurantDocRef, ORDERS_COLLECTION, '.placeholder'), placeholderData);
-        batch.set(doc(restaurantDocRef, POINT_LOGS_COLLECTION, '.placeholder'), placeholderData);
-        batch.set(doc(restaurantDocRef, RECHARGE_LOGS_COLLECTION, '.placeholder'), placeholderData);
-        batch.set(doc(restaurantDocRef, DISH_ORDER_LOGS_COLLECTION, '.placeholder'), placeholderData);
+        batch.set(restaurantDocRef.collection(DISHES_COLLECTION).doc('.placeholder'), placeholderData);
+        batch.set(restaurantDocRef.collection(ORDERS_COLLECTION).doc('.placeholder'), placeholderData);
+        batch.set(restaurantDocRef.collection(POINT_LOGS_COLLECTION).doc('.placeholder'), placeholderData);
+        batch.set(restaurantDocRef.collection(RECHARGE_LOGS_COLLECTION).doc('.placeholder'), placeholderData);
+        batch.set(restaurantDocRef.collection(DISH_ORDER_LOGS_COLLECTION).doc('.placeholder'), placeholderData);
         
         await batch.commit();
 
@@ -238,10 +241,10 @@ export async function getSettings(restaurantId: string): Promise<AppSettings> {
     return AppSettingsSchema.parse({});
   }
   try {
-    const settingsRef = doc(db, RESTAURANTS_COLLECTION, restaurantId, SETTINGS_COLLECTION, CONFIG_DOC_ID);
-    const docSnap = await getDoc(settingsRef);
+    const settingsRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(SETTINGS_COLLECTION).doc(CONFIG_DOC_ID);
+    const docSnap = await settingsRef.get();
 
-    if (docSnap.exists()) {
+    if (docSnap.exists) {
       const settingsData = docSnap.data();
       const parsedSettings = AppSettingsSchema.safeParse(settingsData);
       if (parsedSettings.success) {
@@ -270,8 +273,8 @@ export async function getDishes(restaurantId: string): Promise<Dish[]> {
         return [];
     }
     try {
-        const dishesRef = collection(db, RESTAURANTS_COLLECTION, restaurantId, DISHES_COLLECTION);
-        const dishesSnapshot = await getDocs(dishesRef);
+        const dishesRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(DISHES_COLLECTION);
+        const dishesSnapshot = await dishesRef.get();
 
         if (dishesSnapshot.empty) {
             console.log(`[getDishes] No dishes found for ${restaurantId}. Returning empty array.`);
@@ -302,9 +305,9 @@ export async function getDishes(restaurantId: string): Promise<Dish[]> {
 export async function getPointLogs(restaurantId: string): Promise<PointLog[]> {
     if (!restaurantId) return [];
     try {
-        const logsRef = collection(db, RESTAURANTS_COLLECTION, restaurantId, POINT_LOGS_COLLECTION);
-        const q = query(logsRef, orderBy('__name__', 'desc'));
-        const snapshot = await getDocs(q);
+        const logsRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(POINT_LOGS_COLLECTION);
+        const q = logsRef.orderBy('__name__', 'desc');
+        const snapshot = await q.get();
 
         if (snapshot.empty) {
             return [];
@@ -340,9 +343,9 @@ export async function getDishOrderLogs(restaurantId: string): Promise<DishOrderL
     if (!restaurantId) return [];
     console.log(`[getDishOrderLogs] Fetching for restaurant: ${restaurantId}`);
     try {
-        const logsRef = collection(db, RESTAURANTS_COLLECTION, restaurantId, DISH_ORDER_LOGS_COLLECTION);
-        const q = query(logsRef, orderBy('__name__', 'desc'));
-        const snapshot = await getDocs(q);
+        const logsRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(DISH_ORDER_LOGS_COLLECTION);
+        const q = logsRef.orderBy('__name__', 'desc');
+        const snapshot = await q.get();
 
         if (snapshot.empty) {
             console.log(`[getDishOrderLogs][${restaurantId}] No logs found (collection is empty).`);
@@ -376,11 +379,11 @@ export async function getDishOrderLogs(restaurantId: string): Promise<DishOrderL
 }
 
 export async function createPointCards(amount: number, points: number): Promise<void> {
-    const batch = writeBatch(db);
-    const cardsCollectionRef = collection(db, POINT_CARDS_COLLECTION);
+    const batch = adminDb.batch();
+    const cardsCollectionRef = adminDb.collection(POINT_CARDS_COLLECTION);
 
     for (let i = 0; i < amount; i++) {
-        const newCardRef = doc(cardsCollectionRef);
+        const newCardRef = cardsCollectionRef.doc();
         const cardData: PointCard = {
             id: newCardRef.id,
             points,
@@ -396,18 +399,18 @@ export async function createPointCards(amount: number, points: number): Promise<
 }
 
 export async function getPointCards(): Promise<PointCard[]> {
-    const cardsRef = collection(db, POINT_CARDS_COLLECTION);
-    const q = query(cardsRef, where('status', '==', 'new'), orderBy('createdAt', 'desc'));
-    const snapshot = await getDocs(q);
+    const cardsRef = adminDb.collection(POINT_CARDS_COLLECTION);
+    const q = cardsRef.where('status', '==', 'new').orderBy('createdAt', 'desc');
+    const snapshot = await q.get();
     if (snapshot.empty) return [];
     
     return snapshot.docs.map(doc => PointCardSchema.parse(doc.data()));
 }
 
 export async function getUsedPointCards(): Promise<PointCard[]> {
-    const cardsRef = collection(db, POINT_CARDS_COLLECTION);
-    const q = query(cardsRef, where('status', '==', 'used'), orderBy('usedAt', 'desc'), limit(50));
-    const snapshot = await getDocs(q);
+    const cardsRef = adminDb.collection(POINT_CARDS_COLLECTION);
+    const q = cardsRef.where('status', '==', 'used').orderBy('usedAt', 'desc').limit(50);
+    const snapshot = await q.get();
     if (snapshot.empty) return [];
     
     const cards = snapshot.docs.map(doc => {
@@ -424,10 +427,10 @@ export async function getUsedPointCards(): Promise<PointCard[]> {
 
 export async function deletePointCard(cardId: string): Promise<{ success: boolean; error?: string }> {
     try {
-        const cardRef = doc(db, POINT_CARDS_COLLECTION, cardId);
-        const cardDoc = await getDoc(cardRef);
+        const cardRef = adminDb.collection(POINT_CARDS_COLLECTION).doc(cardId);
+        const cardDoc = await cardRef.get();
 
-        if (!cardDoc.exists()) {
+        if (!cardDoc.exists) {
             return { success: false, error: "点卡不存在。" };
         }
 
@@ -436,7 +439,7 @@ export async function deletePointCard(cardId: string): Promise<{ success: boolea
             return { success: false, error: "不能删除已使用的点卡。" };
         }
 
-        await deleteDoc(cardRef);
+        await cardRef.delete();
         revalidateTag('pointCards');
         return { success: true };
     } catch (e) {
@@ -447,15 +450,15 @@ export async function deletePointCard(cardId: string): Promise<{ success: boolea
 }
 
 export async function redeemPointCard(cardId: string, restaurantId: string): Promise<void> {
-    const cardRef = doc(db, POINT_CARDS_COLLECTION, cardId);
-    const restaurantRef = doc(db, RESTAURANTS_COLLECTION, restaurantId);
-    const rechargeLogRef = doc(collection(restaurantRef, RECHARGE_LOGS_COLLECTION));
+    const cardRef = adminDb.collection(POINT_CARDS_COLLECTION).doc(cardId);
+    const restaurantRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId);
+    const rechargeLogRef = restaurantRef.collection(RECHARGE_LOGS_COLLECTION).doc();
 
     try {
-        await runTransaction(db, async (transaction) => {
+        await adminDb.runTransaction(async (transaction) => {
             const cardDoc = await transaction.get(cardRef);
 
-            if (!cardDoc.exists()) {
+            if (!cardDoc.exists) {
                 throw new Error("点卡代码无效或不存在。");
             }
             const card = PointCardSchema.parse(cardDoc.data());
@@ -464,7 +467,7 @@ export async function redeemPointCard(cardId: string, restaurantId: string): Pro
             }
             
             // 1. Update restaurant points
-            transaction.update(restaurantRef, { points: increment(card.points) });
+            transaction.update(restaurantRef, { points: FieldValue.increment(card.points) });
 
             // 2. Mark card as used
             transaction.update(cardRef, {
@@ -492,9 +495,9 @@ export async function redeemPointCard(cardId: string, restaurantId: string): Pro
 
 export async function getRechargeLogs(restaurantId: string): Promise<RechargeLog[]> {
     if (!restaurantId) return [];
-    const logsRef = collection(db, RESTAURANTS_COLLECTION, restaurantId, RECHARGE_LOGS_COLLECTION);
-    const q = query(logsRef, orderBy('rechargedAt', 'desc'), limit(50));
-    const snapshot = await getDocs(q);
+    const logsRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(RECHARGE_LOGS_COLLECTION);
+    const q = logsRef.orderBy('rechargedAt', 'desc').limit(50);
+    const snapshot = await q.get();
     if (snapshot.empty) return [];
 
     return snapshot.docs.map(doc => RechargeLogSchema.parse(doc.data()));

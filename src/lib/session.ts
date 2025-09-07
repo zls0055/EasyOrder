@@ -5,8 +5,7 @@ import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getSettings } from './settings';
-import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { adminDb } from '@/lib/firebase-admin';
 
 const sessionSecret = process.env.SESSION_SECRET;
 if (!sessionSecret) {
@@ -101,14 +100,14 @@ const SUPER_ADMIN_COOKIE = 'super_admin_session';
 const DEFAULT_SUPER_ADMIN_PASSWORD = 'admin123456';
 
 async function getSuperAdminPassword(): Promise<string> {
-    const configRef = doc(db, SUPER_ADMIN_COLLECTION, SUPER_ADMIN_CONFIG_DOC);
-    const docSnap = await getDoc(configRef);
-    if (!docSnap.exists() || !docSnap.data()?.password) {
+    const configRef = adminDb.collection(SUPER_ADMIN_COLLECTION).doc(SUPER_ADMIN_CONFIG_DOC);
+    const docSnap = await configRef.get();
+    if (!docSnap.exists || !docSnap.data()?.password) {
         // If doc or password doesn't exist, create it with a default password
-        await setDoc(configRef, { password: DEFAULT_SUPER_ADMIN_PASSWORD }, { merge: true });
+        await configRef.set({ password: DEFAULT_SUPER_ADMIN_PASSWORD }, { merge: true });
         return DEFAULT_SUPER_ADMIN_PASSWORD;
     }
-    return docSnap.data().password;
+    return docSnap.data()!.password;
 }
 
 export async function loginSuperAdmin(password: string): Promise<{error?: string}> {
@@ -165,8 +164,8 @@ export async function updateSuperAdminPassword(prevState: any, formData: FormDat
     }
     
     try {
-        const configRef = doc(db, SUPER_ADMIN_COLLECTION, SUPER_ADMIN_CONFIG_DOC);
-        await updateDoc(configRef, { password: newPassword });
+        const configRef = adminDb.collection(SUPER_ADMIN_COLLECTION).doc(SUPER_ADMIN_CONFIG_DOC);
+        await configRef.update({ password: newPassword });
     } catch (error) {
         console.error("Failed to update super admin password in Firestore:", error);
         return { error: '更新密码时发生服务器错误。' };

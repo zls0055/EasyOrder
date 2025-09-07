@@ -3,8 +3,7 @@
 
 import type { AppSettings, Dish, PlacedOrder } from '@/types';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { collection, query, orderBy, limit, onSnapshot, Timestamp, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db, onSnapshot, collection, query, orderBy, limit, Timestamp } from '@/lib/firebase';
 import { PlacedOrderSchema } from '@/types';
 import { toast as sonnerToast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -14,7 +13,7 @@ import { Table, TableBody, TableCell, TableRow, TableHead, TableHeader } from '.
 import OrderDetailView from './full-screen-order';
 import { CheckCircle2, Loader2, LayoutGrid, Columns, BarChartHorizontal, X } from 'lucide-react';
 import { ScrollArea } from './ui/scroll-area';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from './ui/tooltip';
 import {
   Sheet,
   SheetContent,
@@ -100,55 +99,26 @@ export default function KitchenDisplay({ allDishes, settings, restaurantId }: Ki
 
   useEffect(() => {
     if (!restaurantId) return;
-
-    let unsubscribe: (() => void) | null = null;
-    let intervalId: NodeJS.Timeout | null = null;
-
+    
+    setIsLoading(true);
     const ordersQuery = query(collection(db, RESTAURANTS_COLLECTION, restaurantId, ORDERS_COLLECTION), orderBy('placedAt', 'desc'), limit(settings.syncOrderCount));
 
-    if (settings.orderFetchMode === 'push') {
-        setIsLoading(true);
-        unsubscribe = onSnapshot(ordersQuery, 
-            (snapshot) => {
-                processAndSetOrders(snapshot, 'push');
-                setIsLoading(false);
-            }, 
-            (error) => {
-                console.error("[Push] Error fetching orders:", error);
-                sonnerToast.error("订单同步失败", { description: "无法从服务器建立实时连接。" });
-                setIsLoading(false);
-            }
-        );
-    } else { // 'pull' mode
-        let isMounted = true;
-        const fetchServerOrders = async () => {
-            if (!isMounted) return;
-            try {
-                const snapshot = await getDocs(ordersQuery);
-                if (isMounted) processAndSetOrders(snapshot, 'pull');
-            } catch (error) {
-                console.error("[Pull] Error fetching orders:", error);
-                sonnerToast.error("订单同步失败", { description: "无法从服务器获取订单数据。" });
-            } finally {
-                if (isMounted) setIsLoading(false);
-            }
-        };
-        
-        setIsLoading(true);
-        fetchServerOrders();
-        intervalId = setInterval(fetchServerOrders, settings.orderPullIntervalSeconds * 1000);
-
-        return () => {
-            isMounted = false;
-            if (intervalId) clearInterval(intervalId);
-        };
-    }
-
+    const unsubscribe = onSnapshot(ordersQuery, 
+        (snapshot) => {
+            processAndSetOrders(snapshot.docs, 'push');
+            setIsLoading(false);
+        }, 
+        (error) => {
+            console.error("[Push] Error fetching orders:", error);
+            sonnerToast.error("订单同步失败", { description: "无法从服务器建立实时连接。" });
+            setIsLoading(false);
+        }
+    );
+    
     return () => {
-        if (unsubscribe) unsubscribe();
-        if (intervalId) clearInterval(intervalId);
+        unsubscribe();
     };
-  }, [restaurantId, settings.syncOrderCount, settings.orderFetchMode, settings.orderPullIntervalSeconds, processAndSetOrders]);
+  }, [restaurantId, settings.syncOrderCount, processAndSetOrders]);
 
   const handleToggleOrderStatus = (orderId: string) => {
     setServedOrderIds(prev => prev.includes(orderId) ? prev.filter(id => id !== orderId) : [...prev, orderId]);

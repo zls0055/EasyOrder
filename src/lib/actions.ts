@@ -2,12 +2,12 @@
 'use server';
 
 import { z } from 'zod';
-import { db } from '@/lib/firebase';
+import { adminDb } from '@/lib/firebase-admin';
 import { revalidateTag } from 'next/cache';
 import { AppSettings, AppSettingsSchema, Dish, DishSchema, FeatureVisibilitySchema } from '@/types';
 import { getSettings, redeemPointCard as redeemCardService, addRestaurant as addRestaurantService } from '@/lib/settings';
 import { logout } from '@/lib/session';
-import { collection, doc, setDoc, updateDoc, deleteDoc, writeBatch, getDoc, runTransaction, Timestamp } from 'firebase/firestore';
+import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 
 
 const RESTAURANTS_COLLECTION = 'restaurants';
@@ -81,15 +81,15 @@ export async function addRestaurantAction(prevState: any, formData: FormData): P
             const newRestaurant = await addRestaurantService(name.trim());
             
             // Add placeholder documents to subcollections
-            const batch = writeBatch(db);
+            const batch = adminDb.batch();
             const placeholderData = { initialized: true, at: Timestamp.now() };
-            const restaurantRef = doc(db, RESTAURANTS_COLLECTION, newRestaurant.id);
+            const restaurantRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(newRestaurant.id);
             
-            batch.set(doc(restaurantRef, DISHES_COLLECTION, '.placeholder'), placeholderData);
-            batch.set(doc(restaurantRef, ORDERS_COLLECTION, '.placeholder'), placeholderData);
-            batch.set(doc(restaurantRef, POINT_LOGS_COLLECTION, '.placeholder'), placeholderData);
-            batch.set(doc(restaurantRef, RECHARGE_LOGS_COLLECTION, '.placeholder'), placeholderData);
-            batch.set(doc(restaurantRef, DISH_ORDER_LOGS_COLLECTION, '.placeholder'), placeholderData);
+            batch.set(restaurantRef.collection(DISHES_COLLECTION).doc('.placeholder'), placeholderData);
+            batch.set(restaurantRef.collection(ORDERS_COLLECTION).doc('.placeholder'), placeholderData);
+            batch.set(restaurantRef.collection(POINT_LOGS_COLLECTION).doc('.placeholder'), placeholderData);
+            batch.set(restaurantRef.collection(RECHARGE_LOGS_COLLECTION).doc('.placeholder'), placeholderData);
+            batch.set(restaurantRef.collection(DISH_ORDER_LOGS_COLLECTION).doc('.placeholder'), placeholderData);
             
             await batch.commit();
 
@@ -121,10 +121,10 @@ export async function addDishAction(prevState: any, formData: FormData): Promise
 
     const { restaurantId, name, price, category, sortOrder, isRecommended, isAvailable } = validatedFields.data;
     try {
-        const newDocRef = doc(collection(db, RESTAURANTS_COLLECTION, restaurantId, DISHES_COLLECTION));
+        const newDocRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(DISHES_COLLECTION).doc();
         const newDish: Dish = { id: newDocRef.id, name, price, category, sortOrder, isRecommended, isAvailable };
         
-        await setDoc(newDocRef, newDish);
+        await newDocRef.set(newDish);
         revalidateTag(`dishes-${restaurantId}`);
         revalidateTag(`restaurant-page-${restaurantId}`);
         return { success: "新菜品已成功添加。", error: null };
@@ -154,8 +154,8 @@ export async function updateDishAction(prevState: any, formData: FormData): Prom
     }
 
     try {
-        const docRef = doc(db, RESTAURANTS_COLLECTION, restaurantId, DISHES_COLLECTION, id);
-        await updateDoc(docRef, dishData);
+        const docRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(DISHES_COLLECTION).doc(id);
+        await docRef.update(dishData);
         revalidateTag(`dishes-${restaurantId}`);
         revalidateTag(`restaurant-page-${restaurantId}`);
         return { success: "菜品信息已成功更新。", error: null };
@@ -172,8 +172,8 @@ export async function deleteDishAction(prevState: any, formData: FormData): Prom
         return { success: null, error: '删除失败：缺少菜品ID或餐馆ID。' };
     }
     try {
-        const docRef = doc(db, RESTAURANTS_COLLECTION, restaurantId, DISHES_COLLECTION, id);
-        await deleteDoc(docRef);
+        const docRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(DISHES_COLLECTION).doc(id);
+        await docRef.delete();
         revalidateTag(`dishes-${restaurantId}`);
         revalidateTag(`restaurant-page-${restaurantId}`);
         return { success: "菜品已删除。", error: null };
@@ -197,8 +197,8 @@ export async function updateDishAvailabilityAction(prevState: any, formData: For
     const { restaurantId, dishId, isAvailable } = validatedFields.data;
 
     try {
-        const docRef = doc(db, RESTAURANTS_COLLECTION, restaurantId, DISHES_COLLECTION, dishId);
-        await updateDoc(docRef, { isAvailable: isAvailable });
+        const docRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(DISHES_COLLECTION).doc(dishId);
+        await docRef.update({ isAvailable: isAvailable });
         revalidateTag(`dishes-${restaurantId}`);
         revalidateTag(`restaurant-page-${restaurantId}`);
         return { success: `菜品状态已更新为“${isAvailable ? '上架' : '下架'}”。` };
@@ -227,8 +227,8 @@ export async function updateSettings(prevState: any, formData: FormData): Promis
 
     try {
         const { restaurantId, ...settingsToUpdate } = validatedFields.data;
-        const docRef = doc(db, RESTAURANTS_COLLECTION, restaurantId, SETTINGS_COLLECTION, CONFIG_DOC_ID);
-        await updateDoc(docRef, settingsToUpdate);
+        const docRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(SETTINGS_COLLECTION).doc(CONFIG_DOC_ID);
+        await docRef.update(settingsToUpdate);
         revalidateTag(`settings-${restaurantId}`);
         revalidateTag(`restaurant-page-${restaurantId}`);
         return { success: "设置已成功更新。", error: null };
@@ -290,8 +290,8 @@ export async function updateSyncSettingsAction(prevState: any, formData: FormDat
     }
 
     try {
-        const docRef = doc(db, RESTAURANTS_COLLECTION, restaurantId, SETTINGS_COLLECTION, CONFIG_DOC_ID);
-        await updateDoc(docRef, settingsToUpdate);
+        const docRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(SETTINGS_COLLECTION).doc(CONFIG_DOC_ID);
+        await docRef.update(settingsToUpdate);
         revalidateTag(`settings-${restaurantId}`);
         const updatedSettings = await getSettings(restaurantId);
         return { success: "高级设置已更新。", error: null, updatedSettings };
@@ -310,8 +310,8 @@ export async function updateCategoryOrderAction(prevState: any, formData: FormDa
     
     try {
         const { restaurantId, categoryOrder } = validatedFields.data;
-        const docRef = doc(db, RESTAURANTS_COLLECTION, restaurantId, SETTINGS_COLLECTION, CONFIG_DOC_ID);
-        await updateDoc(docRef, { categoryOrder: categoryOrder });
+        const docRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(SETTINGS_COLLECTION).doc(CONFIG_DOC_ID);
+        await docRef.update({ categoryOrder: categoryOrder });
         revalidateTag(`settings-${restaurantId}`);
         revalidateTag(`restaurant-page-${restaurantId}`);
         return { success: "分类排序已保存。", error: null };
@@ -342,8 +342,8 @@ export async function updatePassword(prevState: any, formData: FormData): Promis
             settingsToUpdate.adminUsername = adminUsername;
         }
 
-        const docRef = doc(db, RESTAURANTS_COLLECTION, restaurantId, SETTINGS_COLLECTION, CONFIG_DOC_ID);
-        await updateDoc(docRef, settingsToUpdate);
+        const docRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(SETTINGS_COLLECTION).doc(CONFIG_DOC_ID);
+        await docRef.update(settingsToUpdate);
         revalidateTag(`settings-${restaurantId}`);
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
@@ -367,26 +367,26 @@ export async function batchUpdateDishesAction(restaurantId: string, dishes: Dish
     return { success: null, error: `上传的数据格式有误: ${validatedDishes.error.message}` };
   }
 
-  const batch = writeBatch(db);
-  const dishesCollectionRef = collection(db, RESTAURANTS_COLLECTION, restaurantId, DISHES_COLLECTION);
+  const batch = adminDb.batch();
+  const dishesCollectionRef = adminDb.collection(RESTAURANTS_COLLECTION).doc(restaurantId).collection(DISHES_COLLECTION);
   
   for (const dish of validatedDishes.data) {
     const { id, new_id, ...dishData } = dish;
 
     if (id && new_id) {
       // Logic to rename/remap a dish ID
-      const oldDocRef = doc(dishesCollectionRef, id);
+      const oldDocRef = dishesCollectionRef.doc(id);
       try {
-        const oldDocSnap = await getDoc(oldDocRef);
-        if (oldDocSnap.exists()) {
+        const oldDocSnap = await oldDocRef.get();
+        if (oldDocSnap.exists) {
           const oldData = oldDocSnap.data();
           const newData = { ...oldData, ...dishData, id: new_id };
-          const newDocRef = doc(dishesCollectionRef, new_id);
+          const newDocRef = dishesCollectionRef.doc(new_id);
           batch.set(newDocRef, newData);
           batch.delete(oldDocRef);
         } else {
           // If the old doc doesn't exist, just create the new one
-          const newDocRef = doc(dishesCollectionRef, new_id);
+          const newDocRef = dishesCollectionRef.doc(new_id);
           batch.set(newDocRef, { ...dishData, id: new_id });
         }
       } catch (e) {
@@ -394,12 +394,12 @@ export async function batchUpdateDishesAction(restaurantId: string, dishes: Dish
       }
     } else if (id && !new_id) {
       // Logic to update or create a dish with a specific ID
-      const docRef = doc(dishesCollectionRef, id);
+      const docRef = dishesCollectionRef.doc(id);
       // Use set with merge to create if it doesn't exist, or update if it does.
       batch.set(docRef, { ...dishData, id }, { merge: true });
     } else if (!id && new_id) {
       // Logic to create a new dish with a specific new_id
-      const newDocRef = doc(dishesCollectionRef, new_id);
+      const newDocRef = dishesCollectionRef.doc(new_id);
       batch.set(newDocRef, { ...dishData, id: new_id });
     }
   }
