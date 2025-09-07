@@ -480,7 +480,7 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
       const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.setAttribute('download', `${restaurant.name}餐馆菜品数据.csv`);
+      link.setAttribute('download', `${restaurant.name}菜品数据.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
