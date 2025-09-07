@@ -3,8 +3,9 @@ export const runtime = 'nodejs';
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getSession, getSuperAdminSession, getKitchenSession } from '@/lib/session';
-import { getSettings } from './lib/settings';
+
+const SUPER_ADMIN_COOKIE = 'super_admin_session';
+const KITCHEN_COOKIE_PREFIX = 'kitchen-session-';
 
 // In-memory store for rate limiting
 const ipRequestCounts = new Map<string, { count: number; expires: number }>();
@@ -16,22 +17,18 @@ async function checkRateLimit(request: NextRequest) {
   }
 
   const limit = parseInt(process.env.RATE_LIMIT_REQUESTS || '20', 10);
-  // console.log(`process.env.RATE_LIMIT_REQUESTS -> ${process.env.RATE_LIMIT_REQUESTS}`)
-  // console.log(`limit-----> ${limit}`)
   const windowSeconds = parseInt(process.env.RATE_LIMIT_WINDOW_SECONDS || '60', 10);
-  // console.log(`windowSeconds----> ${windowSeconds}`)
-  // console.log(`process.env.RATE_LIMIT_WINDOW_SECONDS -> ${process.env.RATE_LIMIT_WINDOW_SECONDS}`)
   const ip = request.headers.get('x-forwarded-for') ?? '127.0.0.1';
   const now = Date.now();
 
   let ipData = ipRequestCounts.get(ip);
   
-  // If record has expired, reset it
   if (ipData && ipData.expires < now) {
     ipRequestCounts.delete(ip);
+    ipData = undefined;
   }
-  ipData = ipRequestCounts.get(ip);
-  const currentCount = (ipRequestCounts.get(ip)?.count || 0) + 1;
+
+  const currentCount = (ipData?.count || 0) + 1;
   const expires = ipData?.expires || now + windowSeconds * 1000;
 
   if (currentCount > limit) {
@@ -44,7 +41,6 @@ async function checkRateLimit(request: NextRequest) {
     expires: expires,
   });
 
-  // Clean up expired entries periodically to prevent memory leaks
   if (ipRequestCounts.size % 100 === 0) {
     for (const [key, value] of ipRequestCounts.entries()) {
       if (value.expires < now) {
@@ -64,14 +60,15 @@ export async function middleware(request: NextRequest) {
   }
 
   const { pathname } = request.nextUrl;
+  const cookies = request.cookies;
 
   // Super Admin routes
   if (pathname.startsWith('/admin')) {
-    const superAdminSession = await getSuperAdminSession();
-    if (!superAdminSession && pathname !== '/admin') {
+    const hasSuperAdminSession = cookies.has(SUPER_ADMIN_COOKIE);
+    if (!hasSuperAdminSession && pathname.startsWith('/admin/dashboard')) {
       return NextResponse.redirect(new URL('/admin', request.url));
     }
-    if (superAdminSession && pathname === '/admin') {
+    if (hasSuperAdminSession && pathname === '/admin') {
       return NextResponse.redirect(new URL('/admin/dashboard', request.url));
     }
     return NextResponse.next();
@@ -83,50 +80,34 @@ export async function middleware(request: NextRequest) {
   }
   const restaurantId = restaurantIdMatch[1];
   
-  // Exclude non-restaurant routes that might match the dynamic segment
   if (['api', '_next', 'favicon.ico', 'images'].includes(restaurantId)) {
     return NextResponse.next();
   }
 
-  // Restaurant-specific routes
-  const session = await getSession(restaurantId);
-
-  // Redirect to dashboard if trying to access login page while logged in
-  if (session && pathname.endsWith('/management')) {
-      return NextResponse.redirect(new URL(`/${restaurantId}/management/dashboard`, request.url));
-  }
-  
-  // Protect dashboard and redirect to login if not authenticated
-  if (!session && pathname.includes('/management/dashboard')) {
-      return NextResponse.redirect(new URL(`/${restaurantId}/management`, request.url));
-  }
-
-
-  // Kitchen display routes
-  if (pathname.startsWith(`/${restaurantId}/orders`)) {
-    // Fetch settings to check if password is required
-    const settings = await getSettings(restaurantId);
-    const passwordRequired = !!settings.kitchenDisplayPassword;
-    const isVerifyPage = pathname.endsWith('/verify');
+  // Restaurant management routes
+  if (pathname.includes('/management')) {
+    const hasSession = cookies.has(`session-${restaurantId}`);
     
-    if (passwordRequired) {
-        const kitchenSession = await getKitchenSession(restaurantId);
-        // If password is required but no session, and user is NOT on verify page, redirect to verify
-        if (!kitchenSession && !isVerifyPage) {
-            return NextResponse.redirect(new URL(`/${restaurantId}/orders/verify`, request.url));
-        }
-        // If password is required and session EXISTS, but user is ON verify page, redirect to orders
-        if (kitchenSession && isVerifyPage) {
-            return NextResponse.redirect(new URL(`/${restaurantId}/orders`, request.url));
-        }
-    } else {
-        // If password is NOT required and user is ON verify page, redirect to orders
-        if (isVerifyPage) {
-            return NextResponse.redirect(new URL(`/${restaurantId}/orders`, request.url));
-        }
+    if (hasSession && pathname.endsWith('/management')) {
+        return NextResponse.redirect(new URL(`/${restaurantId}/management/dashboard`, request.url));
+    }
+    
+    if (!hasSession && pathname.includes('/management/dashboard')) {
+        return NextResponse.redirect(new URL(`/${restaurantId}/management`, request.url));
     }
   }
 
+  // Kitchen display routes
+  if (pathname.startsWith(`/${restaurantId}/orders`)) {
+    const hasKitchenSession = cookies.has(`${KITCHEN_COOKIE_PREFIX}${restaurantId}`);
+    const isVerifyPage = pathname.endsWith('/verify');
+
+    // This logic is now simplified and relies on page-level checks for password requirement.
+    // If a user has a session but lands on verify, redirect them.
+    if (hasKitchenSession && isVerifyPage) {
+        return NextResponse.redirect(new URL(`/${restaurantId}/orders`, request.url));
+    }
+  }
 
   return NextResponse.next();
 }
