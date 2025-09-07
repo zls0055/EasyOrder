@@ -53,8 +53,8 @@ type DishImportData = {
   price: number;
   category: string;
   sortOrder: number;
-  isRecommended?: boolean;
-  isAvailable?: boolean;
+  isRecommended: boolean;
+  isAvailable: boolean;
 };
 
 interface RestaurantListProps {
@@ -476,17 +476,20 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
           }
 
           const settings = await getSettings(restaurant.id);
-          const categoryOrder = settings.categoryOrder || [];
           
-          const categoryIndexMap = new Map(categoryOrder.map((cat, index) => [cat, index]));
+          const categoryOrder = settings.categoryOrder || [];
           const allCategoriesFromDishes = Array.from(new Set(dishes.map(d => d.category)));
-          const unOrderedCategories = allCategoriesFromDishes.filter(c => !categoryIndexMap.has(c)).sort((a,b) => a.localeCompare(b, 'zh-Hans-CN'));
-          const finalCategoryOrder = [...categoryOrder, ...unOrderedCategories];
-          const finalCategoryIndexMap = new Map(finalCategoryOrder.map((cat, index) => [cat, index]));
+          
+          // Combine saved order with any new categories (sorted alphabetically)
+          const savedOrderSet = new Set(categoryOrder);
+          const newCategories = allCategoriesFromDishes.filter(c => !savedOrderSet.has(c)).sort((a,b) => a.localeCompare(b, 'zh-Hans-CN'));
+          const finalCategoryOrder = [...categoryOrder, ...newCategories];
+          
+          const categoryIndexMap = new Map(finalCategoryOrder.map((cat, index) => [cat, index]));
 
           const sortedDishesForExport = [...dishes].sort((a, b) => {
-              const catIndexA = finalCategoryIndexMap.get(a.category) ?? Infinity;
-              const catIndexB = finalCategoryIndexMap.get(b.category) ?? Infinity;
+              const catIndexA = categoryIndexMap.get(a.category) ?? Infinity;
+              const catIndexB = categoryIndexMap.get(b.category) ?? Infinity;
               
               if (catIndexA !== catIndexB) {
                 return catIndexA - catIndexB;
@@ -541,8 +544,8 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
           price: parseFloat(row.price),
           category: row.category,
           sortOrder: parseInt(row.sortOrder, 10) || 0,
-          isRecommended: row.isRecommended === 'TRUE' || row.isRecommended === 'true' || row.isRecommended === '1',
-          isAvailable: !(row.isAvailable === 'FALSE' || row.isAvailable === 'false' || row.isAvailable === '0'),
+          isRecommended: ['TRUE', 'true', '1'].includes(String(row.isRecommended)),
+          isAvailable: !['FALSE', 'false', '0'].includes(String(row.isAvailable)),
         })).filter(d => (d.id || d.new_id) && d.name && !isNaN(d.price) && d.category);
         
         if (parsedDishes.length === 0) {
