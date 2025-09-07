@@ -443,42 +443,36 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
 
   const handleExportCSV = async (restaurant: Restaurant) => {
       const dishes = await getDishes(restaurant.id);
+      if (dishes.length === 0) {
+        sonnerToast.info("没有菜品可以导出", {
+          description: `餐馆 "${restaurant.name}" 的菜单是空的。`,
+        });
+        return;
+      }
+
       const settings = await getSettings(restaurant.id);
 
+      const categoryOrder = settings.categoryOrder || [];
+      const categoryIndexMap = new Map(categoryOrder.map((cat, index) => [cat, index]));
+      
       const sortedDishesForExport = [...dishes].sort((a, b) => {
-        const categoryOrder = settings.categoryOrder || [];
-        const catIndexA = categoryOrder.indexOf(a.category);
-        const catIndexB = categoryOrder.indexOf(b.category);
+          const catIndexA = categoryIndexMap.has(a.category) ? categoryIndexMap.get(a.category)! : Infinity;
+          const catIndexB = categoryIndexMap.has(b.category) ? categoryIndexMap.get(b.category)! : Infinity;
 
-        // Both categories are in the custom sort order
-        if (catIndexA !== -1 && catIndexB !== -1) {
-            if (catIndexA !== catIndexB) {
-                return catIndexA - catIndexB;
-            }
-        }
-        // Only category A is in the custom sort order
-        else if (catIndexA !== -1) {
-            return -1;
-        }
-        // Only category B is in the custom sort order
-        else if (catIndexB !== -1) {
-            return 1;
-        }
-        // Neither category is in the custom sort order, sort them alphabetically
-        else {
-            const catCompare = a.category.localeCompare(b.category, 'zh-Hans-CN');
-            if (catCompare !== 0) {
-                return catCompare;
-            }
-        }
+          if (catIndexA !== catIndexB) {
+              return catIndexA - catIndexB;
+          }
+          
+          if (catIndexA === Infinity) {
+              const catCompare = a.category.localeCompare(b.category, 'zh-Hans-CN');
+              if (catCompare !== 0) return catCompare;
+          }
 
-        // If categories are the same or have the same custom order index, sort by sortOrder
-        if (a.sortOrder !== b.sortOrder) {
-            return a.sortOrder - b.sortOrder;
-        }
+          if (a.sortOrder !== b.sortOrder) {
+              return a.sortOrder - b.sortOrder;
+          }
 
-        // If sortOrder is also the same, sort by name
-        return a.name.localeCompare(b.name, 'zh-Hans-CN');
+          return a.name.localeCompare(b.name, 'zh-Hans-CN');
       });
       
       const dataToExport = sortedDishesForExport.map(dish => ({ ...dish, new_id: '' }));
@@ -865,4 +859,3 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
     </div>
   );
 }
-
