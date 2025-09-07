@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogDescription } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetClose, SheetTrigger } from '@/components/ui/sheet';
-import { Loader2, Trash2, MoreVertical, Edit, RotateCcw, Save, Search, DollarSign, ChevronLeft, ChevronRight, PanelsTopLeft, KeyRound, Utensils, Settings as SettingsIcon, Upload, Download, Database, Link as LinkIcon, Wrench, Clipboard, ClipboardCheck, FileText, X, PlusCircle, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Loader2, Trash2, MoreVertical, Edit, RotateCcw, Save, Search, DollarSign, ChevronLeft, ChevronRight, PanelsTopLeft, KeyRound, Utensils, Settings as SettingsIcon, Upload, Download, Database, Link as LinkIcon, Wrench, Clipboard, ClipboardCheck, FileText, X, PlusCircle, ChevronsLeft, ChevronsRight, Star, PackageOpen, Package } from 'lucide-react';
 import Link from 'next/link';
 import { deleteRestaurant, clearRestaurantData, updateRestaurantName, rechargePoints, getRestaurant, getSettings, getDishes } from '@/lib/settings';
 import { toast as sonnerToast } from 'sonner';
@@ -44,6 +44,7 @@ import Papa from 'papaparse';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from './ui/scroll-area';
 import { Separator } from './ui/separator';
+import { Badge } from './ui/badge';
 
 type DishImportData = {
   id?: string;
@@ -276,14 +277,21 @@ function ViewDishesSheet({ restaurant, open, onOpenChange }: { restaurant: Resta
                         <TableHeader>
                             <TableRow>
                             <TableHead className="w-[40%]">名称</TableHead>
+                            <TableHead>状态</TableHead>
                             <TableHead>价格</TableHead>
                             <TableHead className="text-right">排序值</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {dishesInCategory.map((dish) => (
-                            <TableRow key={dish.id}>
-                                <TableCell className="font-medium">{dish.name}</TableCell>
+                            <TableRow key={dish.id} className={cn(!dish.isAvailable && "text-muted-foreground")}>
+                                <TableCell className="font-medium flex items-center">
+                                  {dish.name}
+                                  {dish.isRecommended && <Star className="ml-2 h-4 w-4 text-yellow-500 fill-yellow-400" />}
+                                </TableCell>
+                                 <TableCell>
+                                  {dish.isAvailable ? <Badge variant="outline">已上架</Badge> : <Badge variant="secondary">已下架</Badge>}
+                                </TableCell>
                                 <TableCell>￥{dish.price.toFixed(1)}</TableCell>
                                 <TableCell className="text-right">{dish.sortOrder}</TableCell>
                             </TableRow>
@@ -471,26 +479,23 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
           const categoryOrder = settings.categoryOrder || [];
           
           const categoryIndexMap = new Map(categoryOrder.map((cat, index) => [cat, index]));
+          const allCategoriesFromDishes = Array.from(new Set(dishes.map(d => d.category)));
+          const unOrderedCategories = allCategoriesFromDishes.filter(c => !categoryIndexMap.has(c)).sort((a,b) => a.localeCompare(b, 'zh-Hans-CN'));
+          const finalCategoryOrder = [...categoryOrder, ...unOrderedCategories];
+          const finalCategoryIndexMap = new Map(finalCategoryOrder.map((cat, index) => [cat, index]));
 
           const sortedDishesForExport = [...dishes].sort((a, b) => {
-              const catIndexA = categoryIndexMap.get(a.category) ?? Infinity;
-              const catIndexB = categoryIndexMap.get(b.category) ?? Infinity;
+              const catIndexA = finalCategoryIndexMap.get(a.category) ?? Infinity;
+              const catIndexB = finalCategoryIndexMap.get(b.category) ?? Infinity;
               
               if (catIndexA !== catIndexB) {
                 return catIndexA - catIndexB;
               }
-
-              // If categories are the same (or both are unsorted), sort by their names
-              if (a.category !== b.category) {
-                  return a.category.localeCompare(b.category, 'zh-Hans-CN');
-              }
               
-              // Then sort by sortOrder
               if (a.sortOrder !== b.sortOrder) {
                   return a.sortOrder - b.sortOrder;
               }
 
-              // Finally, sort by name
               return a.name.localeCompare(b.name, 'zh-Hans-CN');
           });
           
@@ -536,8 +541,8 @@ export default function RestaurantList({ restaurants: initialRestaurants, onRest
           price: parseFloat(row.price),
           category: row.category,
           sortOrder: parseInt(row.sortOrder, 10) || 0,
-          isRecommended: row.isRecommended === 'TRUE' || row.isRecommended === '1' || row.isRecommended === true,
-          isAvailable: !(row.isAvailable === 'FALSE' || row.isAvailable === '0' || row.isAvailable === false), // Default to true
+          isRecommended: row.isRecommended === 'TRUE' || row.isRecommended === 'true' || row.isRecommended === '1',
+          isAvailable: !(row.isAvailable === 'FALSE' || row.isAvailable === 'false' || row.isAvailable === '0'),
         })).filter(d => (d.id || d.new_id) && d.name && !isNaN(d.price) && d.category);
         
         if (parsedDishes.length === 0) {
