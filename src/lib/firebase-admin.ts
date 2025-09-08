@@ -1,10 +1,13 @@
 
-import * as admin from 'firebase-admin';
+import admin from 'firebase-admin';
+import { cert } from 'firebase-admin/app';
 
 const FIREBASE_DATABASE_ID = 'easy-order-items';
 
 // This will be our singleton instance
 let firebaseAdmin: { app: admin.app.App, db: admin.firestore.Firestore } | null = null;
+const key: string = process.env.FIREBASE_SERVICE_ACCOUNT_KEY || ''
+const serviceAccount = JSON.parse(key);
 
 /**
  * Initializes and/or returns the Firebase Admin SDK instances.
@@ -19,6 +22,8 @@ export function getFirebaseAdmin() {
   if (admin.apps.length === 0) {
     try {
       admin.initializeApp({
+        credential: cert(serviceAccount)
+        // credential: admin.credential.cert(serviceAccount)
         // The SDK will automatically detect Google Application Default Credentials
       });
       console.log('Firebase Admin SDK initialized successfully.');
@@ -34,7 +39,9 @@ export function getFirebaseAdmin() {
   const db = admin.firestore(app);
 
   try {
-    db.settings({ databaseId: FIREBASE_DATABASE_ID });
+    db.settings({ 
+      databaseId: FIREBASE_DATABASE_ID
+    });
   } catch (e) {
     if ((e as any).code !== 'failed-precondition') {
       console.error('Firestore settings error:', e);

@@ -3,7 +3,7 @@
 
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore, onSnapshot, collection, query, orderBy, limit, Timestamp } from "firebase/firestore";
+import { getFirestore, initializeFirestore, onSnapshot, collection, query, orderBy, limit, Timestamp } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -17,6 +17,10 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+
+initializeFirestore(app, {
+  host: 'firestore.douzhidao.dpdns.org'
+}, "easy-order-items");
 
 const db = getFirestore(app, "easy-order-items");
 

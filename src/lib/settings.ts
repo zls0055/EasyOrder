@@ -370,7 +370,7 @@ export async function getDishOrderLogs(restaurantId: string): Promise<DishOrderL
                 if (doc.id === '.placeholder') return null;
                 const data = doc.data();
                 const dataToParse = { date: doc.id, counts: data.counts || {} };
-                console.log(`[getDishOrderLogs][${restaurantId}] Parsing doc ${doc.id}:`, dataToParse);
+                // console.log(`[getDishOrderLogs][${restaurantId}] Parsing doc ${doc.id}:`, dataToParse);
                 const parsed = DishOrderLogSchema.safeParse(dataToParse);
                 if (parsed.success) {
                     console.log(`[getDishOrderLogs][${restaurantId}] Successfully parsed doc ${doc.id}`);
